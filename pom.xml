@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Puoi cambiare groupId/artifactId come preferisci -->
+  <groupId>eu.opensoftware.hawtio</groupId>
+  <artifactId>activemq-classic-hawtio</artifactId>
+  <version>1.0.0</version>
+  <name>${project.artifactId}</name>
+  <description>ActiveMQ Classic Hawtio 4.x plugin</description>
+
+  <properties>
+    <node-version>v20.19.0</node-version>    
+    <yarn-version>v1.22.19</yarn-version>
+    <plugin.path>${project.basedir}</plugin.path>
+  </properties>
+
+  <build>
+    <resources>
+      <!-- Copia la build React nel JAR -->
+      <resource>
+        <directory>${plugin.path}/build</directory>
+        <targetPath>META-INF/resources</targetPath>
+        <excludes>
+          <exclude>index.html</exclude>
+        </excludes>
+      </resource>
+    </resources>
+
+    <plugins>
+
+      <!-- Build React/TypeScript tramite Maven -->
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+        <version>1.12.1</version>
+
+        <configuration>
+          <workingDirectory>${plugin.path}</workingDirectory>
+        </configuration>
+
+        <executions>
+
+          <execution>
+            <id>install node and yarn</id>
+            <goals>
+              <goal>install-node-and-yarn</goal>
+            </goals>
+            <configuration>
+              <nodeVersion>${node-version}</nodeVersion>
+              <yarnVersion>${yarn-version}</yarnVersion>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>yarn install</id>
+            <goals>
+              <goal>yarn</goal>
+            </goals>
+            <configuration>
+              <arguments>install</arguments>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>yarn build</id>
+            <goals>
+              <goal>yarn</goal>
+            </goals>
+            <configuration>
+              <arguments>build</arguments>
+            </configuration>
+          </execution>
+
+        </executions>
+      </plugin>
+
+      <!-- Cleanup -->
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>3.3.2</version>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>${plugin.path}/build</directory>
+              <includes><include>**/*</include></includes>
+            </fileset>
+            <fileset>
+              <directory>${plugin.path}/node_modules</directory>
+              <includes><include>**/*</include></includes>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </build>
+
+</project>

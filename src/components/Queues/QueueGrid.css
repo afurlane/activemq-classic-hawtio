@@ -1,0 +1,22 @@
+.queue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.queue-panel {
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 16px;
+  color: #eee;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  border: 1px solid #333;
+}
+
+.queue-panel h4 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  color: #fff;
+}
