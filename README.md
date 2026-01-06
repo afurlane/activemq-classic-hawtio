@@ -2,6 +2,9 @@
 
 Una console moderna, veloce e modulare per ActiveMQ Classic, costruita come plugin Hawtio 1.x.
 
+![Build](https://github.com/afurlane/activemq-classic-hawtio/actions/workflows/build.yml/badge.svg)
+![License](https://img.shields.io/badge/license-Apache%202.0-blue)
+
 ## Funzionalità principali
 
 ### ✔️ Code

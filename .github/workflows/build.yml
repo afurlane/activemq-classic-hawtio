@@ -1,0 +1,53 @@
+name: Build & Quality Checks
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Cache Maven
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ hashFiles('**/pom.xml') }}
+
+      - name: Cache Yarn
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/yarn
+            node_modules
+          key: yarn-${{ hashFiles('**/yarn.lock', '**/package.json') }}
+
+      - name: Install dependencies (npm audit)
+        run: |
+          yarn install
+          yarn audit --groups dependencies || true
+
+      - name: Build plugin (Maven)
+        run: ./mvnw -B clean install
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: activemq-classic-plugin
+          path: target/*.jar
