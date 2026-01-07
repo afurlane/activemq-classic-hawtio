@@ -9,9 +9,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-       NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+      NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
 
     steps:
+#      - name: Debug env
+#        run: 'printf "KEY LENGTH: %s\n" "${#NVD_API_KEY}"'
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -21,6 +24,20 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      - name: Cache Dependency-Check DB
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/owasp/dependency-check-data
+          key: dc-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          
+#      - name: Debug Maven env
+#        run: ./mvnw -q help:evaluate -Dexpression=nvd.api-key -DforceStdout
+
+#      - name: Debug Maven property length
+#        run: |
+#          VAL=$(./mvnw -q help:evaluate -Dexpression=nvd.api-key -DforceStdout)
+#          echo "LEN=${#VAL}"
+        
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
