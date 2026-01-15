@@ -1,0 +1,12 @@
+package eu.opensoftware;
+import javax.management.MBeanServer;
+import eu.opensoftware.ActiveMQClassicPluginRegister;
+import eu.opensoftware.HawtioPluginProvider;
+
+public class ActiveMQClassicPluginProvider implements HawtioPluginProvider {
+    
+    @Override
+    public void register(MBeanServer server) throws Exception {
+         HawtioPluginRegistrar.register(server); 
+    }
+} 

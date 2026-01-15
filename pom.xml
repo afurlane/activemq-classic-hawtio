@@ -1,64 +1,72 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
-  <!-- Puoi cambiare groupId/artifactId come preferisci -->
   <groupId>eu.opensoftware.hawtio</groupId>
   <artifactId>activemq-classic-hawtio</artifactId>
   <version>1.0.0</version>
-  <name>${project.artifactId}</name>
-  <description>ActiveMQ Classic Hawtio 4.x plugin</description>
+  <packaging>jar</packaging>
 
   <properties>
-    <node-version>v20.19.0</node-version>    
-    <yarn-version>v1.22.19</yarn-version>
-    <plugin.path>${project.basedir}</plugin.path>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <encoding>UTF-8</encoding>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+
+    <node.version>v20.19.0</node.version>
+    <yarn.version>v1.22.19</yarn.version>
   </properties>
 
+  <dependencies>
+
+    <!-- Servlet API (necessaria per @WebListener, ServletContextListener, ecc.) -->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>4.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Hawtio plugin API (necessaria per HawtioPlugin) -->
+    <dependency>
+      <groupId>io.hawt</groupId>
+      <artifactId>hawtio-plugin-mbean</artifactId>
+      <version>4.4.1</version>
+    </dependency>
+  </dependencies>
+
   <build>
-    <resources>
-      <!-- Copia la build React nel JAR -->
-      <resource>
-        <directory>${plugin.path}/build</directory>
-        <targetPath>META-INF/resources</targetPath>
-        <excludes>
-          <exclude>index.html</exclude>
-        </excludes>
-      </resource>
-    </resources>
 
     <plugins>
 
-      <!-- Build React/TypeScript tramite Maven -->
+      <!-- Build frontend -->
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
         <version>1.12.1</version>
 
         <configuration>
-          <workingDirectory>${plugin.path}</workingDirectory>
+          <workingDirectory>${project.basedir}/frontend</workingDirectory>
         </configuration>
 
         <executions>
 
           <execution>
-            <id>install node and yarn</id>
+            <id>install-node-and-yarn</id>
             <goals>
               <goal>install-node-and-yarn</goal>
             </goals>
             <configuration>
-              <nodeVersion>${node-version}</nodeVersion>
-              <yarnVersion>${yarn-version}</yarnVersion>
+              <nodeVersion>${node.version}</nodeVersion>
+              <yarnVersion>${yarn.version}</yarnVersion>
             </configuration>
           </execution>
 
           <execution>
-            <id>yarn install</id>
+            <id>yarn-install</id>
             <goals>
               <goal>yarn</goal>
             </goals>
@@ -68,7 +76,8 @@
           </execution>
 
           <execution>
-            <id>yarn build</id>
+            <id>yarn-build</id>
+            <phase>generate-resources</phase>
             <goals>
               <goal>yarn</goal>
             </goals>
@@ -80,40 +89,41 @@
         </executions>
       </plugin>
 
-      <!-- Cleanup -->
+      <!-- Copia plugin FE nel WAR -->
       <plugin>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>3.3.2</version>
-        <configuration>
-          <filesets>
-            <fileset>
-              <directory>${plugin.path}/build</directory>
-              <includes><include>**/*</include></includes>
-            </fileset>
-            <fileset>
-              <directory>${plugin.path}/node_modules</directory>
-              <includes><include>**/*</include></includes>
-            </fileset>
-          </filesets>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.owasp</groupId>
-        <artifactId>dependency-check-maven</artifactId>
-        <version>12.1.9</version>
-        <configuration>
-          <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
-          <nvdApiDelay>10000</nvdApiDelay>
-          <dataDirectory>${user.home}/.m2/repository/org/owasp/dependency-check-data</dataDirectory>
-        </configuration>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.3.1</version>
         <executions>
           <execution>
+            <id>copy-frontend</id>
+            <phase>process-resources</phase>
             <goals>
-              <goal>check</goal>
+              <goal>copy-resources</goal>
             </goals>
+            <configuration>
+              <encoding>${project.build.sourceEncoding}</encoding>
+              <outputDirectory>${project.build.outputDirectory}/hawtio/activemq-classic</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.basedir}/frontend/dist</directory>
+                  <includes>
+                    <include>plugin.js</include>
+                    <include>*.css</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
           </execution>
         </executions>
+      </plugin>
+
+      <!-- WAR plugin -->
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.4.0</version>
+        <configuration>
+          <failOnMissingWebXml>false</failOnMissingWebXml>
+        </configuration>
       </plugin>
 
     </plugins>

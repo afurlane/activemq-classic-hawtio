@@ -1,12 +1,27 @@
 # Node
 node_modules/
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
 package-lock.json
-yarn.lock
 pnpm-lock.yaml
+
+# Frontend build
+frontend/build
+frontend/node
+target
+
+# yarn (non zero-installs)
+yarn-debug.log*
+yarn-error.log*
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+/.pnp
+.pnp.js
 
 # Vite
 dist/
