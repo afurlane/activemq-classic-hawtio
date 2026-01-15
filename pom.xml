@@ -107,7 +107,7 @@
                 <resource>
                   <directory>${project.basedir}/frontend/dist</directory>
                   <includes>
-                    <include>plugin.js</include>
+                    <include>*.js</include>
                     <include>*.css</include>
                   </includes>
                 </resource>
