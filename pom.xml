@@ -105,7 +105,7 @@
               <outputDirectory>${project.build.outputDirectory}/hawtio/activemq-classic</outputDirectory>
               <resources>
                 <resource>
-                  <directory>${project.basedir}/frontend/dist</directory>
+                  <directory>${project.basedir}/frontend/build/static</directory>
                   <includes>
                     <include>*.js</include>
                     <include>*.css</include>
