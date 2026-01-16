@@ -24,9 +24,9 @@
 
     <!-- Servlet API (necessaria per @WebListener, ServletContextListener, ecc.) -->
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>4.0.1</version>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>5.0.0</version>
       <scope>provided</scope>
     </dependency>
 
@@ -105,7 +105,7 @@
               <outputDirectory>${project.build.outputDirectory}/hawtio/activemq-classic</outputDirectory>
               <resources>
                 <resource>
-                  <directory>${project.basedir}/frontend/build/static</directory>
+                  <directory>${project.basedir}/frontend/build/</directory>
                   <includes>
                     <include>*.js</include>
                     <include>*.css</include>

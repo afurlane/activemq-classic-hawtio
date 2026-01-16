@@ -44,21 +44,4 @@ public class ActiveMQClassicPlugin implements HawtioPluginMBean  {
     public String getPluginEntry() {
         return pluginEntry;
     }
-  
-    /* 
-    public void contextInitialized(ServletContextEvent sce) {
-        plugin = new HawtioPlugin();
-        plugin.scope("activemqClassic")                     // nome logico, basta che sia unico
-            .module("./plugin")                           // corrisponde all'esportazione (plugin.js → default export)
-            .pluginEntry("activemq-classic/plugin.js")    // percorso relativo sotto /hawtio/
-            .url("")                                      // vuoto = plugin locale nel WAR
-            .init();
-    }
-
-    public void contextDestroyed(ServletContextEvent sce) {
-        if (plugin != null) {
-            plugin.destroy();
-        }
-    }
-    */
 }
