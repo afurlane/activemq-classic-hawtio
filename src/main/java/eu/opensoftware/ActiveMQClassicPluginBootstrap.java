@@ -3,47 +3,30 @@ package eu.opensoftware;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 
-import java.lang.management.ManagementFactory;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
+import io.hawt.web.plugin.HawtioPlugin;
 
 public class ActiveMQClassicPluginBootstrap implements ServletContextListener {
 
-    private static final String OBJECT_NAME = "hawtio:type=plugin,name=ActiveMQClassic";
-
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        ActiveMQClassicPluginBootstrap.register();
+        registerMBean();
+        registerServlet(sce);
+    }
+
+    private void registerMBean() {
+        HawtioPlugin plugin = new HawtioPlugin();
+        plugin.url("/activemq-classic/remoteEntry.js")
+            .scope("activemqClassic")
+            .module("./ActiveMQClassic")
+            .remoteEntryFileName("remoteEntry.js")
+            .bustRemoteEntryCache(false)
+            .pluginEntry(null)
+            .init();
+    }
+
+    private void registerServlet(ServletContextEvent sce) {
         sce.getServletContext()
-            .addServlet("activemq-classic-plugin", 
-                new ActiveMQClassicPluginServlet())
-                .addMapping("/activemq-classic/*");
-
-    }
-
-    @Override
-    public void contextDestroyed(ServletContextEvent sce) {
-        // opzionale
-    }
-    
-    public static void register() {
-        try {
-            MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-            ObjectName name = new ObjectName(OBJECT_NAME);
-
-            if (server.isRegistered(name)) {
-                return; // idempotente
-            }
-
-        ActiveMQClassicPlugin  plugin = new ActiveMQClassicPlugin("/activemq-classic/remoteEntry.js", "activemqClassic", "./ActiveMQClassic", 
-            "remoteEntry.js", false, null);
-
-        server.registerMBean(plugin, name);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to register Hawtio plugin MBean", e);
-        }
+            .addServlet("activemq-classic-plugin", new ActiveMQClassicPluginServlet())
+            .addMapping("/activemq-classic/*");
     }
 }
-
