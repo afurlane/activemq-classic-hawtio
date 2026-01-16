@@ -102,13 +102,14 @@
             </goals>
             <configuration>
               <encoding>${project.build.sourceEncoding}</encoding>
-              <outputDirectory>${project.build.outputDirectory}/hawtio/activemq-classic</outputDirectory>
+              <outputDirectory>${project.build.outputDirectory}/activemq-classic</outputDirectory>
               <resources>
                 <resource>
                   <directory>${project.basedir}/frontend/build/</directory>
                   <includes>
                     <include>*.js</include>
                     <include>*.css</include>
+                    <include>static/**</include>
                   </includes>
                 </resource>
               </resources>

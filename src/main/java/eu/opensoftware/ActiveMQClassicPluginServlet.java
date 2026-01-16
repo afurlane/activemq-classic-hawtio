@@ -14,7 +14,8 @@ public class ActiveMQClassicPluginServlet extends HttpServlet {
             throws IOException {
 
         String path = req.getPathInfo();
-
+        String contextPath = req.getContextPath();
+        
         if (path == null || path.equals("/")) {
             path = "/remoteEntry.js";
         }
