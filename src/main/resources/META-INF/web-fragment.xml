@@ -1,0 +1,6 @@
+<web-fragment xmlns="https://jakarta.ee/xml/ns/jakartaee"
+              version="5.0">
+    <listener>
+        <listener-class>eu.opensoftware.ActiveMQClassicPluginBootstrap</listener-class>
+    </listener>
+</web-fragment>

@@ -1,5 +1,6 @@
 package eu.opensoftware;
 
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,6 +32,17 @@ public class ActiveMQClassicPluginServlet extends HttpServlet {
         }
         pluginId = props.getProperty("plugin.id");
         LOG.debug("Plugin ID: {}", pluginId);
+    }
+
+    @Override
+    public void init() {
+        ServletContext ctx = getServletContext();
+        LOG.debug("=== Servlet INIT ===");
+        LOG.debug("Context path: {}", ctx.getContextPath());
+        LOG.debug("Servlet context name: {}", ctx.getServletContextName());
+        LOG.debug("Classloader: {}", this.getClass().getClassLoader());
+        LOG.debug("Servlet mappings: {}", ctx.getServletRegistrations());
+        LOG.debug("====================");
     }
 
     @Override

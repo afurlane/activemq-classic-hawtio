@@ -57,7 +57,7 @@ public class ActiveMQClassicPluginBootstrap implements ServletContextListener {
     }
 
     private void registerServlet(ServletContextEvent sce) {
-        ServletRegistration.Dynamic servlet = sce.getServletContext()
+        ServletRegistration.Dynamic servlet = sce.getServletContext()        
             .addServlet(pluginId + "-plugin", new ActiveMQClassicPluginServlet());
 
         servlet.addMapping("/" + pluginId + "/*");
