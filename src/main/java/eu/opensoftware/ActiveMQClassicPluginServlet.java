@@ -46,7 +46,7 @@ public class ActiveMQClassicPluginServlet extends HttpServlet {
             LOG.debug("Path is null or /, using remoteEntry path");
         }
 
-        String resourcePath  = "/" + (pluginId != null ? pluginId : "") + path;
+        String resourcePath  = "/" + pluginId + path;
         LOG.debug("Resource path in JAR: {}", resourcePath);
         try (InputStream in = getClass().getResourceAsStream(resourcePath)) {
             LOG.debug("Writing to output stream....");
