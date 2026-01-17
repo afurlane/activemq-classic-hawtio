@@ -30,6 +30,7 @@ public class ActiveMQClassicPluginServlet extends HttpServlet {
             throw new IllegalStateException("No properties found, cannot retrieve plugin ID");
         }
         pluginId = props.getProperty("plugin.id");
+        LOG.debug("Plugin ID: {}", pluginId);
     }
 
     @Override

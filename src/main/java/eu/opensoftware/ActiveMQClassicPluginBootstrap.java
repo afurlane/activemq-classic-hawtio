@@ -15,12 +15,14 @@ import io.hawt.web.plugin.HawtioPlugin;
 public class ActiveMQClassicPluginBootstrap implements ServletContextListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(ActiveMQClassicPluginBootstrap.class);
+
     private String pluginId;
     private String pluginScope;
     private String pluginModule;
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
+        LOG.info("Bootstrapping custom plugin");
         Properties props = new Properties(); 
         try {
             props.load(getClass().getResourceAsStream("/plugin.properties"));
@@ -34,6 +36,9 @@ public class ActiveMQClassicPluginBootstrap implements ServletContextListener {
         pluginId = props.getProperty("plugin.id"); 
         pluginScope = props.getProperty("plugin.scope"); 
         pluginModule = props.getProperty("plugin.module"); 
+        LOG.debug("Plugin ID: {}", pluginId);
+        LOG.debug("Plugin Scope: {}", pluginScope);
+        LOG.debug("Plugin Module: {}", pluginModule);
         registerMBean(sce);
         registerServlet(sce);
     }
