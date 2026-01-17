@@ -10,6 +10,11 @@
   <packaging>jar</packaging>
 
   <properties>
+    <!-- module info -->
+    <plugin.id>activemq-classic</plugin.id>
+    <plugin.scope>activemqClassic</plugin.scope>
+    <plugin.module>ActiveMQClassic</plugin.module>
+
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <encoding>UTF-8</encoding>
@@ -18,6 +23,10 @@
 
     <node.version>v20.19.0</node.version>
     <yarn.version>v1.22.19</yarn.version>
+
+    <!-- Da hawtio project pom.xml -->
+    <slf4j-version>2.0.11</slf4j-version>
+
   </properties>
 
   <dependencies>
@@ -36,6 +45,14 @@
       <artifactId>hawtio-plugin-mbean</artifactId>
       <version>4.4.1</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j-version}</version>
+      <scope>provided</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -50,6 +67,11 @@
 
         <configuration>
           <workingDirectory>${project.basedir}/frontend</workingDirectory>
+          <environmentVariables>
+            <PLUGIN_ID>${plugin.id}</PLUGIN_ID>
+            <PLUGIN_SCOPE>${plugin.scope}</PLUGIN_SCOPE>
+            <PLUGIN_MODULE>${plugin.module}</PLUGIN_MODULE>
+          </environmentVariables>
         </configuration>
 
         <executions>
@@ -102,7 +124,7 @@
             </goals>
             <configuration>
               <encoding>${project.build.sourceEncoding}</encoding>
-              <outputDirectory>${project.build.outputDirectory}/activemq-classic</outputDirectory>
+              <outputDirectory>${project.build.outputDirectory}/${plugin.id}</outputDirectory>
               <resources>
                 <resource>
                   <directory>${project.basedir}/frontend/build/</directory>

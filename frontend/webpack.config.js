@@ -1,3 +1,7 @@
+const pluginId = process.env.PLUGIN_ID;
+const pluginScope = process.env.PLUGIN_SCOPE;
+const pluginModule = process.env.PLUGIN_MODULE;
+
 const { ModuleFederationPlugin } = require('webpack').container
 const path = require('path')
 
@@ -49,10 +53,10 @@ module.exports = {
 
   plugins: [
     new ModuleFederationPlugin({
-      name: 'activemqClassic',
+      name: pluginScope,
       filename: 'remoteEntry.js',
       exposes: {
-        './ActiveMQClassic': './src/ActiveMQClassicPlugin.tsx',
+         [`./${pluginModule}`]: './src/ActiveMQClassicPlugin.tsx',
       },
       shared: {
         react: { singleton: true },
