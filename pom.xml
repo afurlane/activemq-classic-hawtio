@@ -134,6 +134,13 @@
                     <include>static/**</include>
                   </includes>
                 </resource>
+                <resource>
+                  <directory>src/main/resources</directory>
+                  <includes>
+                    <include>plugin.properties</include>
+                  </includes>
+                  <filtering>true</filtering>
+                </resource>
               </resources>
             </configuration>
           </execution>
