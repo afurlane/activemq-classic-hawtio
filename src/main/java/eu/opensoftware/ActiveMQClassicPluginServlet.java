@@ -18,6 +18,7 @@ public class ActiveMQClassicPluginServlet extends HttpServlet {
 
     public ActiveMQClassicPluginServlet() {
         super();
+        LOG.info("Initializing plugin servlet");
         Properties props = new Properties();
         try {
             props.load(getClass().getResourceAsStream("/plugin.properties"));

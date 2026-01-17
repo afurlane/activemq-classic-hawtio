@@ -15,14 +15,12 @@ import io.hawt.web.plugin.HawtioPlugin;
 public class ActiveMQClassicPluginBootstrap implements ServletContextListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(ActiveMQClassicPluginBootstrap.class);
+    private String pluginId;
+    private String pluginScope;
+    private String pluginModule;
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        registerMBean(sce);
-        registerServlet(sce);
-    }
-
-    private void registerMBean(ServletContextEvent sce) {
         Properties props = new Properties(); 
         try {
             props.load(getClass().getResourceAsStream("/plugin.properties"));
@@ -33,9 +31,14 @@ public class ActiveMQClassicPluginBootstrap implements ServletContextListener {
             LOG.error("No properties found, cannot register plugin MBean");
             return;
         }
-        String pluginId = props.getProperty("plugin.id"); 
-        String pluginScope = props.getProperty("plugin.scope"); 
-        String pluginModule = props.getProperty("plugin.module"); 
+        pluginId = props.getProperty("plugin.id"); 
+        pluginScope = props.getProperty("plugin.scope"); 
+        pluginModule = props.getProperty("plugin.module"); 
+        registerMBean(sce);
+        registerServlet(sce);
+    }
+
+    private void registerMBean(ServletContextEvent sce) {
 
         String contextPath = sce.getServletContext().getContextPath();
         HawtioPlugin plugin = new HawtioPlugin();
@@ -50,9 +53,9 @@ public class ActiveMQClassicPluginBootstrap implements ServletContextListener {
 
     private void registerServlet(ServletContextEvent sce) {
         ServletRegistration.Dynamic servlet = sce.getServletContext()
-            .addServlet("activemq-classic-plugin", new ActiveMQClassicPluginServlet());
+            .addServlet(pluginId + "-plugin", new ActiveMQClassicPluginServlet());
 
-        servlet.addMapping("/activemq-classic/*");
+        servlet.addMapping("/" + pluginId + "/*");
         servlet.setLoadOnStartup(1);
     }
 }
