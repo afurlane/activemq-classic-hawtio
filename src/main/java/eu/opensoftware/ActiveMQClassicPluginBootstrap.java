@@ -47,7 +47,7 @@ public class ActiveMQClassicPluginBootstrap implements ServletContextListener {
 
         String contextPath = sce.getServletContext().getContextPath();
         HawtioPlugin plugin = new HawtioPlugin();
-        plugin.url(contextPath + "/" + pluginId)
+        plugin.url(contextPath + "/plugins/" + pluginId)
             .scope(pluginScope)
             .module("./"+pluginModule)
             .remoteEntryFileName("remoteEntry.js")
@@ -60,7 +60,7 @@ public class ActiveMQClassicPluginBootstrap implements ServletContextListener {
         ServletRegistration.Dynamic servlet = sce.getServletContext()        
             .addServlet(pluginId + "-plugin", new ActiveMQClassicPluginServlet());
 
-        servlet.addMapping("/" + pluginId + "/*");
+        servlet.addMapping("/plugins/" + pluginId + "/*");
         servlet.setLoadOnStartup(1);
     }
 }

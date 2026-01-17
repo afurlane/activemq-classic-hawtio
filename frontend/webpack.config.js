@@ -56,7 +56,7 @@ module.exports = {
       name: pluginScope,
       filename: 'remoteEntry.js',
       exposes: {
-         [`./${pluginModule}`]: './src/ActiveMQClassicPlugin.tsx',
+         [`./${pluginModule}`]: './src/index',
       },
       shared: {
         react: { singleton: true },

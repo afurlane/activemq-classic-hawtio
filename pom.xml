@@ -13,7 +13,7 @@
     <!-- module info -->
     <plugin.id>activemq-classic</plugin.id>
     <plugin.scope>activemqClassic</plugin.scope>
-    <plugin.module>ActiveMQClassic</plugin.module>
+    <plugin.module>plugin</plugin.module>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
