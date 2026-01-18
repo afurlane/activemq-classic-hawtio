@@ -2,20 +2,15 @@ version: 2
 
 updates:
   # ============================================================
-  # 1. MAVEN DEPENDENCIES
-  #    Annual updates, grouped by ecosystem, with exclusions
+  # 1. MAVEN DEPENDENCIES (monthly)
   # ============================================================
   - package-ecosystem: "maven"
     directory: "/"
     schedule:
-      interval: "yearly"
+      interval: "monthly"
 
-    # ---- Update groups (coherent PRs) ----
+    # ---- Groups ----
     groups:
-      hawtio:
-        patterns:
-          - "io.hawtio*"
-          - "io.hawt*"
       jetty:
         patterns:
           - "org.eclipse.jetty*"
@@ -37,15 +32,15 @@ updates:
           - "*maven-plugin*"
           - "org.apache.maven.plugins*"
 
-    # ---- Exclusions (dependencies that must follow Hawtio) ----
+    # ---- Exclusions (Hawtio manual + Jakarta + SLF4J) ----
     ignore:
-      - dependency-name: "org.slf4j:*"          # Must stay aligned with Hawtio
-      - dependency-name: "jakarta.servlet:*"    # Jakarta API versions controlled manually
+      - dependency-name: "io.hawtio*"
+      - dependency-name: "io.hawt*"
+      - dependency-name: "org.slf4j:*"
+      - dependency-name: "jakarta.servlet:*"
       - dependency-name: "jakarta.annotation:*"
       - dependency-name: "jakarta.ws.rs:*"
 
-    # ---- PR metadata ----
-    open-pull-requests-limit: 5
     labels:
       - "dependencies"
       - "automated"
@@ -54,16 +49,40 @@ updates:
       include: "scope"
 
   # ============================================================
-  # 2. GITHUB ACTIONS
-  #    Annual updates for CI workflows
+  # 2. GITHUB ACTIONS (weekly)
   # ============================================================
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "yearly"
+      interval: "weekly"
+    groups:
+      github-actions:
+        patterns:
+          - "actions/*"
     labels:
       - "ci"
       - "dependencies"
     commit-message:
       prefix: "ci"
+      include: "scope"
+
+  # ============================================================
+  # 3. NPM BUILD TOOLS (weekly)
+  # ============================================================
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      build-tools:
+        patterns:
+          - "vite"
+          - "eslint*"
+          - "@typescript-eslint/*"
+          - "typescript"
+    labels:
+      - "dependencies"
+      - "automated"
+    commit-message:
+      prefix: "deps"
       include: "scope"
