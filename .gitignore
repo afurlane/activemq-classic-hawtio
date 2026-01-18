@@ -75,3 +75,5 @@ coverage/
 .env
 .env.*
 node/node
+
+.fake

@@ -1,0 +1,22 @@
+name: Bug report
+description: Report a malfunction or unexpected behavior
+labels: [bug]
+
+body:
+  - type: textarea
+    attributes:
+      label: Problem description
+      placeholder: What is not working?
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+  - type: textarea
+    attributes:
+      label: Expected behavior
+  - type: textarea
+    attributes:
+      label: Logs, stacktrace, or screenshots
+  - type: input
+    attributes:
+      label: ActiveMC Classic 6 version
+

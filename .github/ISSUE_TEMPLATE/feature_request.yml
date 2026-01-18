@@ -1,0 +1,19 @@
+name: Feature request
+description: Suggest a new feature or improvement
+labels: [enhancement]
+
+body:
+  - type: textarea
+    attributes:
+      label: Motivation
+      placeholder: Why is this feature useful?
+  - type: textarea
+    attributes:
+      label: Proposed solution
+  - type: textarea
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    attributes:
+      label: Project impact
+
