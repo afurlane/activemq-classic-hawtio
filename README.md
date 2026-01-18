@@ -3,7 +3,7 @@
 A modern, fast, and modular management console for ActiveMC Classic 6, built as a
 self‑contained Hawtio 4 plugin running on Jetty 11 / Jakarta EE.
 
-![Build](https://github.com/afurlane/activemc-classic-hawtio/actions/workflows/build.yml/badge.svg)
+![Build](https://github.com/afurlane/activemq-classic-hawtio/actions/workflows/build.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Hawtio](https://img.shields.io/badge/Hawtio-4.x-orange)
 ![Jetty](https://img.shields.io/badge/Jetty-11%20%2F%20Jakarta%20EE-green)
