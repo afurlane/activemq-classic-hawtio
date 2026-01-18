@@ -1,0 +1,69 @@
+version: 2
+
+updates:
+  # ============================================================
+  # 1. MAVEN DEPENDENCIES
+  #    Annual updates, grouped by ecosystem, with exclusions
+  # ============================================================
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "yearly"
+
+    # ---- Update groups (coherent PRs) ----
+    groups:
+      hawtio:
+        patterns:
+          - "io.hawtio*"
+          - "io.hawt*"
+      jetty:
+        patterns:
+          - "org.eclipse.jetty*"
+      logging:
+        patterns:
+          - "ch.qos.logback*"
+          - "org.apache.logging.log4j*"
+      jackson:
+        patterns:
+          - "com.fasterxml.jackson*"
+      test:
+        patterns:
+          - "org.junit*"
+          - "org.mockito*"
+          - "org.assertj*"
+          - "org.testcontainers*"
+      build:
+        patterns:
+          - "*maven-plugin*"
+          - "org.apache.maven.plugins*"
+
+    # ---- Exclusions (dependencies that must follow Hawtio) ----
+    ignore:
+      - dependency-name: "org.slf4j:*"          # Must stay aligned with Hawtio
+      - dependency-name: "jakarta.servlet:*"    # Jakarta API versions controlled manually
+      - dependency-name: "jakarta.annotation:*"
+      - dependency-name: "jakarta.ws.rs:*"
+
+    # ---- PR metadata ----
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "automated"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+
+  # ============================================================
+  # 2. GITHUB ACTIONS
+  #    Annual updates for CI workflows
+  # ============================================================
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "yearly"
+    labels:
+      - "ci"
+      - "dependencies"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
