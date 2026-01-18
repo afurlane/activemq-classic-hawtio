@@ -8,6 +8,8 @@ self‑contained Hawtio 4 plugin running on Jetty 11 / Jakarta EE.
 ![Hawtio](https://img.shields.io/badge/Hawtio-4.x-orange)
 ![Jetty](https://img.shields.io/badge/Jetty-11%20%2F%20Jakarta%20EE-green)
 ![Dependabot](https://img.shields.io/badge/dependabot-enabled-brightgreen)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://www.conventionalcommits.org/en/v1.0.0/)
+[![Release Automation](https://img.shields.io/badge/Release%20Automation-Enabled-brightgreen)](RELEASE_PROCESS.md)
 
 ---
 

@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Step 1 — Run release-please to generate:
+      # - CHANGELOG.md
+      # - version bump
+      # - Git tag
+      # - GitHub Release
+      - name: Release Please
+        id: release
+        uses: google-github-actions/release-please-action@v4
+        with:
+          release-type: simple
+          package-name: activemc-classic-hawtio
+
+      # Step 2 — If a release was created, build the JAR
+      - name: Set up JDK
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Build plugin
+        if: ${{ steps.release.outputs.release_created }}
+        run: mvn -B clean package
+
+      # Step 3 — Upload the JAR to the GitHub Release
+      - name: Upload JAR to Release
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: target/activemc-classic-hawtio.jar
+          asset_name: activemc-classic-hawtio.jar
+          asset_content_type: application/java-archive

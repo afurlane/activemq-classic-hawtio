@@ -1,21 +1,21 @@
-# Pull Request Template
+# Pull Request
 
 ## Description
-Briefly describe what this PR introduces and why.
+Explain what this PR changes and why.
 
-## Type of change
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Refactoring
-- [ ] Documentation
-- [ ] Other (specify)
+## Type of Change
+- [ ] feat (new feature)
+- [ ] fix (bug fix)
+- [ ] docs (documentation)
+- [ ] refactor (no functional changes)
+- [ ] chore (maintenance)
+- [ ] ci (workflow changes)
 
 ## Checklist
-- [ ] Code compiles and tests pass
-- [ ] Changes are documented
-- [ ] No known regressions introduced
-- [ ] Follows project style and guidelines
-- [ ] Verified compatibility with Hawtio / Jetty / ActiveMC Classic 6
+- [ ] My commits follow the Conventional Commits specification
+- [ ] I added screenshots if the UI was modified
+- [ ] I tested the changes locally
+- [ ] I updated documentation where needed
 
-## Additional notes
-Any extra context for reviewers.
+## Related Issues
+Link any related issues here.
