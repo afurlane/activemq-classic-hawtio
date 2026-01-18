@@ -129,6 +129,9 @@ Dependabot is configured with:
 - GitHub Actions updates included
 See .github/dependabot.yml for details.
 
+# ActiveMQ support
+Read the [ACTIVEMQ.md](ACTIVEMQ.md) for deployment notes
+
 # License
 MIT License.
 See the [LICENSE.md](LICENSE.md) file for more information.
