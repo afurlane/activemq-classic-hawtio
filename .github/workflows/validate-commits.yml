@@ -2,6 +2,7 @@ name: Validate Conventional Commits
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   lint-commits:
