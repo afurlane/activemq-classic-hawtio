@@ -41,7 +41,7 @@ export const QueueCharts: React.FC<Props> = ({ history }) => {
   const chartProps = {
     height: 200,
     padding: { top: 20, bottom: 40, left: 50, right: 20 },
-    animate: { duration: 500, easing: 'ease-out' },
+    animate: { duration: 500, easing: "cubicOut"as const},
     containerComponent: (
       <ChartVoronoiContainer
         labels={({ datum }) => `${datum.x}: ${datum.y}`}

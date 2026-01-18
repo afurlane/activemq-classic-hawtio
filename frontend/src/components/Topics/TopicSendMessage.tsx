@@ -31,7 +31,7 @@ export const TopicSendMessage: React.FC<{ mbean: string }> = ({ mbean }) => {
             <TextArea
               id="topic-body"
               value={body}
-              onChange={value => setBody(value)}
+              onChange={(event, value) => setBody(value)}
               resizeOrientation="vertical"
             />
           </FormGroup>

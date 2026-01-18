@@ -19,6 +19,8 @@ import {  Table,
   Th,
   Td,
 } from '@patternfly/react-table';
+import { Label } from '@patternfly/react-core';
+
 export const ConnectorsView: React.FC = () => {
   const [connectors, setConnectors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -125,12 +127,9 @@ export const ConnectorsView: React.FC = () => {
                     <Td>{c.name}</Td>
                     <Td>{c.protocol}</Td>
                     <Td>
-                      <Badge
-                        isRead
-                        variant={c.active ? 'success' : 'danger'}
-                      >
+                      <Label color={c.active ? 'green' : 'red'}>
                         {c.active ? 'Active' : 'Inactive'}
-                      </Badge>
+                      </Label>
                     </Td>
                     <Td>{c.connectionCount}</Td>
                     <Td>{c.inbound}</Td>

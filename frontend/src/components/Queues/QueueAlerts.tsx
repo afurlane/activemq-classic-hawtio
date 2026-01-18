@@ -44,8 +44,10 @@ export const QueueAlerts: React.FC<Props> = ({ attributes, history }) => {
 
   // Dispatch stall
   if (history.length > 2) {
-    const latest = history[history.length - 1];
-    const prev = history[history.length - 2];
+    const latest = history.at(-1);
+    const prev = history.at(-2);
+
+    if (!latest || !prev) return null; // o semplicemente non fare nulla
 
     const enqueueDelta = latest.EnqueueCount - prev.EnqueueCount;
     const dispatchDelta = latest.DispatchCount - prev.DispatchCount;

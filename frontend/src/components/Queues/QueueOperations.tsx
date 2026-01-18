@@ -245,7 +245,7 @@ export const QueueOperations: React.FC<QueueOperationsProps> = ({ queue, onActio
                   <FormGroup label="Message ID" fieldId="retry-id">
                     <TextInput
                       id="retry-id"
-                      onChange={value => update('id', value)}
+                      onChange={(event) => update('id', event.currentTarget.value)}
                     />
                   </FormGroup>
 
@@ -265,14 +265,14 @@ export const QueueOperations: React.FC<QueueOperationsProps> = ({ queue, onActio
                   <FormGroup label="Message ID" fieldId="move-id">
                     <TextInput
                       id="move-id"
-                      onChange={value => update('id', value)}
+                      onChange={(event) => update('id', event.currentTarget.value)}
                     />
                   </FormGroup>
 
                   <FormGroup label="Destination" fieldId="move-dest">
                     <TextInput
                       id="move-dest"
-                      onChange={value => update('dest', value)}
+                      onChange={(event) => update('id', event.currentTarget.value)}
                     />
                   </FormGroup>
 

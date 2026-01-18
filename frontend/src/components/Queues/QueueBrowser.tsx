@@ -53,7 +53,7 @@ export const QueueBrowser: React.FC<Props> = ({ queue }) => {
                 <Td>{m.messageId}</Td>
                 <Td>{m.timestamp}</Td>
                 <Td>
-                  <CodeBlock isReadOnly isExpandable>
+                  <CodeBlock readOnly>
                     <CodeBlockCode>
                       {JSON.stringify(m.body, null, 2)}
                     </CodeBlockCode>

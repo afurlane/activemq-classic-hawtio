@@ -25,7 +25,7 @@ export const TopicCharts: React.FC<{ history: any[] }> = ({ history }) => {
           height={200}
           width={500}
           padding={{ top: 20, bottom: 40, left: 50, right: 20 }}
-          animate={{ duration: 500, easing: 'ease-out' }}
+          animate={{ duration: 500, easing: "cubicOut" as const }}
           containerComponent={<ChartTooltip />}
         >
           <ChartAxis fixLabelOverlap />

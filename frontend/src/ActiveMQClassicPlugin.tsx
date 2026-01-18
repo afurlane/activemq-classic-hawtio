@@ -42,25 +42,34 @@ export const ActiveMQClassicPlugin: React.FC = () => {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  const activeKey = (() => {
-    switch (route.view) {
-      case 'connectors': return 0;
-      case 'queues': return 1;
-      case 'topics': return 2;
-      case 'broker': return 3;
-      case 'overview': return 4;
-      default: return 0;
-    }
-  })();
+  const viewToTab = {
+    connectors: 0,
+    queues: 1,
+    topics: 2,
+    broker: 3,
+    overview: 4
+  } as const;
 
-  const onSelect = (_: any, key: number) => {
-    switch (key) {
-      case 0: window.location.hash = buildConnectorsUrl(); break;
-      case 1: window.location.hash = buildQueuesUrl(); break;
-      case 2: window.location.hash = buildTopicsUrl(); break;
-      case 3: window.location.hash = buildBrokerUrl(); break;
-      case 4: window.location.hash = buildOverviewUrl(); break;
-    }
+  const tabToView = Object.fromEntries(
+    Object.entries(viewToTab).map(([view, key]) => [key, view])
+  ) as Record<number, Route['view']>;
+
+  const viewToUrl = {
+    connectors: buildConnectorsUrl,
+    queues: buildQueuesUrl,
+    topics: buildTopicsUrl,
+    broker: buildBrokerUrl,
+    overview: buildOverviewUrl
+  } as const;
+
+  const activeKey = viewToTab[route.view];
+
+  const onSelect = (_event: React.MouseEvent, eventKey: string | number) => {
+    const key = Number(eventKey);
+    const view = tabToView[key];
+    if (!view) return;
+
+    window.location.hash = viewToUrl[view]();
   };
 
   return (

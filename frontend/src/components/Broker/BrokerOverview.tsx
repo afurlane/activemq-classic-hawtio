@@ -112,17 +112,19 @@ export const BrokerOverview: React.FC = () => {
             <ToolbarGroup>
               <ToolbarItem>
                 <Checkbox
+                  id="filter-critical"
                   label="Critical only"
                   isChecked={filter.critical}
-                  onChange={checked => setFilter({ ...filter, critical: checked })}
+                  onChange={(event, checked) => setFilter({ ...filter, critical: checked })}
                 />
               </ToolbarItem>
 
               <ToolbarItem>
                 <Checkbox
+                  id="filter-backlog"
                   label="Backlog > 1000"
                   isChecked={filter.backlog}
-                  onChange={checked => setFilter({ ...filter, backlog: checked })}
+                  onChange={(event, checked) => setFilter({ ...filter, backlog: checked })}
                 />
               </ToolbarItem>
 
@@ -131,7 +133,7 @@ export const BrokerOverview: React.FC = () => {
                   value={filter.name}
                   type="text"
                   placeholder="Filter by name..."
-                  onChange={value => setFilter({ ...filter, name: value })}
+                  onChange={(event, value) => setFilter({ ...filter, name: value })}
                 />
               </ToolbarItem>
             </ToolbarGroup>

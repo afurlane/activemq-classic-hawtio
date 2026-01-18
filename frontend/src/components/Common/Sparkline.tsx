@@ -27,7 +27,7 @@ export const Sparkline: React.FC<Props> = ({ data, color = '#00bcd4' }) => {
         height={40}
         padding={{ top: 0, bottom: 0, left: 0, right: 0 }}
         domain={{ y: [yMin, yMax] }}
-        animate={{ duration: 500, easing: 'ease-out' }}
+        animate={{ duration: 500, easing: "cubicOut"as const }}
       >
         <ChartGroup>
           <ChartLine

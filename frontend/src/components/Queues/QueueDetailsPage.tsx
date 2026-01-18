@@ -17,7 +17,7 @@ import { QueueBrowser } from './QueueBrowser';
 import { QueueOperations } from './QueueOperations';
 import { QueueAttributes } from './QueueAttributes';
 import { QueueCharts } from './QueueCharts';
-import { ActiveMQQueueAttributes, QueueInfo } from '../../types/activemq';
+import { QueueInfo } from '../../types/activemq';
 import { useQueueMetrics } from '../../hooks/useQueueMetrics';
 import { QueueHealth } from './QueueHealth';
 import { QueueThroughput } from './QueueThroughput';
