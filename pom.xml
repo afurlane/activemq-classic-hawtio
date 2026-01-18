@@ -43,7 +43,7 @@
     <dependency>
       <groupId>io.hawt</groupId>
       <artifactId>hawtio-plugin-mbean</artifactId>
-      <version>4.4.1</version>
+      <version>4.6.2</version>
     </dependency>
 
     <dependency>
@@ -77,7 +77,7 @@
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
-        <version>1.12.1</version>
+        <version>2.0.0</version>
 
         <configuration>
           <workingDirectory>${project.basedir}/frontend</workingDirectory>
@@ -128,7 +128,7 @@
       <!-- Copia plugin FE nel WAR -->
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>3.3.1</version>
+        <version>3.4.0</version>
         <executions>
           <execution>
             <id>copy-frontend</id>
@@ -157,7 +157,7 @@
       <!-- WAR plugin -->
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
-        <version>3.4.0</version>
+        <version>3.5.1</version>
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
         </configuration>
