@@ -3,7 +3,7 @@ import { jolokia } from './jolokia';
 import { ActiveMQQueueAttributes, QueueInfo, TopicInfo } from '../types/activemq';
 import { JolokiaReadRequest, JolokiaRequest } from '../types/jolokia';
 
-const BROKER = 'org.apache.activemq:type=Broker,brokerName=localhost';
+const BROKER = 'org.apache.activemq:type=Broker,brokerName=*';
 
 export class ActiveMQService {
 
