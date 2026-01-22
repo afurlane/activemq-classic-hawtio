@@ -1,59 +1,56 @@
-import React from 'react';
-import { ActiveMQQueueAttributes } from '../../types/activemq';
+import React from 'react'
 import {
   Card,
   CardBody,
   Title,
   Alert,
   AlertGroup
-} from '@patternfly/react-core';
+} from '@patternfly/react-core'
+
+import { Queue } from '../../types/domain'
 
 interface Props {
-  attributes: ActiveMQQueueAttributes;
-  history: ActiveMQQueueAttributes[];
+  queue: Queue
+  history: Queue[]
 }
 
-export const QueueAlerts: React.FC<Props> = ({ attributes, history }) => {
-  const alerts: string[] = [];
+export const QueueAlerts: React.FC<Props> = ({ queue, history }) => {
+  const alerts: string[] = []
 
-  const lag = attributes.QueueSize - attributes.InflightCount;
+  const lag = queue.size - queue.stats.inflight
 
   // Memory
-  if (attributes.MemoryPercentUsage > 80)
-    alerts.push(`High memory usage: ${attributes.MemoryPercentUsage}%`);
-
-  // Cursor
-  if (attributes.CursorPercentUsage > 80)
-    alerts.push(`Cursor near capacity: ${attributes.CursorPercentUsage}%`);
+  if (queue.memory.percent > 80)
+    alerts.push(`High memory usage: ${queue.memory.percent}%`)
 
   // Consumers
-  if (attributes.ConsumerCount === 0)
-    alerts.push(`No active consumers`);
+  if (queue.consumers === 0)
+    alerts.push(`No active consumers`)
 
   // Lag
   if (lag > 10000)
-    alerts.push(`High consumer lag: ${lag} messages`);
+    alerts.push(`High consumer lag: ${lag} messages`)
 
   // Inflight
-  if (attributes.InflightCount > 500)
-    alerts.push(`Too many inflight messages: ${attributes.InflightCount}`);
+  if (queue.stats.inflight > 500)
+    alerts.push(`Too many inflight messages: ${queue.stats.inflight}`)
 
   // Queue size
-  if (attributes.QueueSize > 10000)
-    alerts.push(`Queue backlog growing: ${attributes.QueueSize} messages`);
+  if (queue.size > 10000)
+    alerts.push(`Queue backlog growing: ${queue.size} messages`)
 
-  // Dispatch stall
+  // Dispatch stall (domain model)
   if (history.length > 2) {
-    const latest = history.at(-1);
-    const prev = history.at(-2);
+    const latest = history.at(-1)
+    const prev = history.at(-2)
 
-    if (!latest || !prev) return null; // o semplicemente non fare nulla
+    if (latest && prev) {
+      const enqueueDelta = latest.stats.enqueue - prev.stats.enqueue
+      const dispatchDelta = latest.stats.dequeue - prev.stats.dequeue
 
-    const enqueueDelta = latest.EnqueueCount - prev.EnqueueCount;
-    const dispatchDelta = latest.DispatchCount - prev.DispatchCount;
-
-    if (enqueueDelta > 0 && dispatchDelta === 0)
-      alerts.push(`Messages enqueued but not dispatched`);
+      if (enqueueDelta > 0 && dispatchDelta === 0)
+        alerts.push(`Messages enqueued but not dispatched`)
+    }
   }
 
   return (
@@ -83,5 +80,5 @@ export const QueueAlerts: React.FC<Props> = ({ attributes, history }) => {
         )}
       </CardBody>
     </Card>
-  );
-};
+  )
+}

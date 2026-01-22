@@ -1,47 +1,48 @@
-import { useEffect, useState } from 'react';
-import { ActiveMQQueueAttributes } from '../types/activemq';
-import { activemq } from '../services/activemq';
+import { useEffect, useState } from 'react'
+import { activemq } from '../services/activemq/ActiveMQClassicService'
+import { Queue } from '../types/domain'
 
 export interface QueueMetrics {
-  latest: ActiveMQQueueAttributes | null;
-  history: ActiveMQQueueAttributes[];
-  loading: boolean;
+  latest: Queue | null
+  history: Queue[]
+  loading: boolean
 }
 
 export function useQueueMetrics(mbean: string, intervalMs: number = 2000): QueueMetrics {
-  const [latest, setLatest] = useState<ActiveMQQueueAttributes | null>(null);
-  const [history, setHistory] = useState<ActiveMQQueueAttributes[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [latest, setLatest] = useState<Queue | null>(null)
+  const [history, setHistory] = useState<Queue[]>([])
+  const [loading, setLoading] = useState(true)
 
   const poll = async () => {
-    if (!mbean) return;
+    if (!mbean) return
 
-    const attrs = await activemq.getQueueAttributes(mbean);
-    if (!attrs) return;
+    // ⬅️ ActiveMQClassicService deve avere questo metodo
+    const q = await activemq.getQueue(mbean)
+    if (!q) return
 
-    setLatest(attrs);
+    setLatest(q)
 
     setHistory(prev => {
-      const next = [...prev, attrs];
-      return next.slice(-120);
-    });
+      const next = [...prev, q]
+      return next.slice(-120)
+    })
 
-    setLoading(false);
-  };
+    setLoading(false)
+  }
 
   useEffect(() => {
-    setLatest(null);
-    setHistory([]);
-    setLoading(true);
+    setLatest(null)
+    setHistory([])
+    setLoading(true)
 
-    if (mbean) poll(); // <── FIX 3: evita poll iniziale senza mbean
+    if (mbean) poll()
 
     const id = setInterval(() => {
-      if (mbean) poll();
-    }, intervalMs);
+      if (mbean) poll()
+    }, intervalMs)
 
-    return () => clearInterval(id);
-  }, [mbean, intervalMs]);
+    return () => clearInterval(id)
+  }, [mbean, intervalMs])
 
-  return { latest, history, loading };
+  return { latest, history, loading }
 }

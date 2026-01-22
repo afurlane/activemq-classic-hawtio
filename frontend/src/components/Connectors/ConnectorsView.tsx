@@ -1,57 +1,77 @@
-import React, { useEffect, useState } from 'react';
-import { activemq } from '../../services/activemq';
+import React, { useEffect, useRef, useState } from 'react'
+import { activemq } from '../../services/activemq/ActiveMQClassicService'
+import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
 import {
   PageSection,
   Title,
   Button,
-  Badge,
   Drawer,
   DrawerContent,
   DrawerContentBody,
   DrawerPanelContent,
   Card,
-  CardBody
-} from '@patternfly/react-core';
-import {  Table,
+  CardBody,
+  Label,
+  Alert
+} from '@patternfly/react-core'
+import {
+  Table,
   Thead,
   Tbody,
   Tr,
   Th,
   Td,
-} from '@patternfly/react-table';
-import { Label } from '@patternfly/react-core';
+} from '@patternfly/react-table'
 
 export const ConnectorsView: React.FC = () => {
-  const [connectors, setConnectors] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState<any | null>(null);
-  const [connections, setConnections] = useState<any[]>([]);
-  const [isDrawerExpanded, setDrawerExpanded] = useState(false);
+  const brokerName = useSelectedBrokerName()
+
+  if (!brokerName) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>
+          <Alert variant="danger" title="No broker selected" isInline />
+        </CardBody>
+      </Card>
+    )
+  }
+
+  const [connectors, setConnectors] = useState<any[]>([])
+  const [selected, setSelected] = useState<any | null>(null)
+  const [connections, setConnections] = useState<any[]>([])
+  const [isDrawerExpanded, setDrawerExpanded] = useState(false)
+
+  const mounted = useRef(false)
 
   const load = async () => {
-    setLoading(true);
-    const data = await activemq.listConnectors();
-    setConnectors(data);
-    setLoading(false);
-  };
+    if (!brokerName || !mounted.current) return
+    const data = await activemq.listConnectors(brokerName)
+    if (mounted.current) setConnectors(data)
+  }
 
   const loadConnections = async (connector: any) => {
-    setSelected(connector);
-    const list = await activemq.listConnections(connector.mbean);
-    setConnections(list);
-    setDrawerExpanded(true);
-  };
+    setSelected(connector)
+    const list = await activemq.listConnections(connector.mbean)
+    if (mounted.current) {
+      setConnections(list)
+      setDrawerExpanded(true)
+    }
+  }
 
   const closeDrawer = () => {
-    setDrawerExpanded(false);
-    setSelected(null);
-  };
+    setDrawerExpanded(false)
+    setSelected(null)
+  }
 
   useEffect(() => {
-    load();
-  }, []);
-
-  if (loading) return <div>Loading connectors…</div>;
+    mounted.current = true
+    load()
+    const id = setInterval(load, 5000)
+    return () => {
+      mounted.current = false
+      clearInterval(id)
+    }
+  }, [brokerName])
 
   const panel = selected && (
     <DrawerPanelContent widths={{ default: 'width_50' }}>
@@ -67,7 +87,7 @@ export const ConnectorsView: React.FC = () => {
                 <Th>Remote Address</Th>
                 <Th>Protocol</Th>
                 <Th>Uptime</Th>
-                <Th></Th>
+                <Th modifier="fitContent"></Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -100,7 +120,7 @@ export const ConnectorsView: React.FC = () => {
         </CardBody>
       </Card>
     </DrawerPanelContent>
-  );
+  )
 
   return (
     <PageSection>
@@ -118,7 +138,7 @@ export const ConnectorsView: React.FC = () => {
                   <Th>Connections</Th>
                   <Th>Inbound</Th>
                   <Th>Outbound</Th>
-                  <Th></Th>
+                  <Th modifier="fitContent" screenReaderText="Actions"></Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -151,5 +171,5 @@ export const ConnectorsView: React.FC = () => {
         </DrawerContent>
       </Drawer>
     </PageSection>
-  );
-};
+  )
+}

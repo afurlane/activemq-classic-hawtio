@@ -1,11 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo } from 'react'
 import {
   Card,
   CardBody,
   Title,
   Grid,
   GridItem
-} from '@patternfly/react-core';
+} from '@patternfly/react-core'
 
 import {
   Chart,
@@ -14,43 +14,41 @@ import {
   ChartLine,
   ChartArea,
   ChartVoronoiContainer
-} from '@patternfly/react-charts';
+} from '@patternfly/react-charts'
 
-import { ActiveMQQueueAttributes } from '../../types/activemq';
+import { Queue } from '../../types/domain'
 
 interface Props {
-  history: ActiveMQQueueAttributes[];
+  history: Queue[]
 }
 
 export const QueueCharts: React.FC<Props> = ({ history }) => {
 
   const data = useMemo(() => {
     return history.map(h => ({
-      time: new Date().toLocaleTimeString(),
-      queueSize: h.QueueSize,
-      enqueueCount: h.EnqueueCount,
-      dequeueCount: h.DequeueCount,
-      memoryPercent: h.MemoryPercentUsage,
-      inflight: h.InflightCount,
-      cursorPercent: h.CursorPercentUsage,
-      producers: h.ProducerCount,
-      dispatch: h.DispatchCount,
-    }));
-  }, [history]);
+      time: new Date(h.timestamp).toLocaleTimeString(),
+      size: h.size,
+      enqueue: h.stats.enqueue,
+      dequeue: h.stats.dequeue,
+      inflight: h.stats.inflight,
+      memoryPercent: h.memory.percent,
+    }))
+  }, [history])
 
   const chartProps = {
     height: 200,
     padding: { top: 20, bottom: 40, left: 50, right: 20 },
-    animate: { duration: 500, easing: "cubicOut"as const},
+    animate: { duration: 500, easing: 'cubicOut' as const },
     containerComponent: (
       <ChartVoronoiContainer
         labels={({ datum }) => `${datum.x}: ${datum.y}`}
       />
     )
-  };
+  }
 
   return (
     <Grid hasGutter>
+
       {/* Queue Size */}
       <GridItem span={12}>
         <Card isFlat isCompact>
@@ -61,7 +59,7 @@ export const QueueCharts: React.FC<Props> = ({ history }) => {
               <ChartAxis dependentAxis />
               <ChartGroup>
                 <ChartLine
-                  data={data.map(d => ({ x: d.time, y: d.queueSize }))}
+                  data={data.map(d => ({ x: d.time, y: d.size }))}
                   style={{ data: { stroke: '#007bff', strokeWidth: 2 } }}
                 />
               </ChartGroup>
@@ -74,17 +72,17 @@ export const QueueCharts: React.FC<Props> = ({ history }) => {
       <GridItem span={12}>
         <Card isFlat isCompact>
           <CardBody>
-            <Title headingLevel="h4">Enqueue / Dequeue Count</Title>
+            <Title headingLevel="h4">Enqueue / Dequeue</Title>
             <Chart {...chartProps}>
               <ChartAxis fixLabelOverlap />
               <ChartAxis dependentAxis />
               <ChartGroup>
                 <ChartLine
-                  data={data.map(d => ({ x: d.time, y: d.enqueueCount }))}
+                  data={data.map(d => ({ x: d.time, y: d.enqueue }))}
                   style={{ data: { stroke: '#28a745', strokeWidth: 2 } }}
                 />
                 <ChartLine
-                  data={data.map(d => ({ x: d.time, y: d.dequeueCount }))}
+                  data={data.map(d => ({ x: d.time, y: d.dequeue }))}
                   style={{ data: { stroke: '#dc3545', strokeWidth: 2 } }}
                 />
               </ChartGroup>
@@ -133,62 +131,6 @@ export const QueueCharts: React.FC<Props> = ({ history }) => {
         </Card>
       </GridItem>
 
-      {/* Cursor Usage */}
-      <GridItem span={12}>
-        <Card isFlat isCompact>
-          <CardBody>
-            <Title headingLevel="h4">Cursor Usage (%)</Title>
-            <Chart {...chartProps} domain={{ y: [0, 100] }}>
-              <ChartAxis fixLabelOverlap />
-              <ChartAxis dependentAxis />
-              <ChartArea
-                data={data.map(d => ({ x: d.time, y: d.cursorPercent }))}
-                style={{
-                  data: {
-                    stroke: '#17a2b8',
-                    fill: '#b8ecf2',
-                    strokeWidth: 2
-                  }
-                }}
-              />
-            </Chart>
-          </CardBody>
-        </Card>
-      </GridItem>
-
-      {/* Producer Count */}
-      <GridItem span={12}>
-        <Card isFlat isCompact>
-          <CardBody>
-            <Title headingLevel="h4">Producer Count</Title>
-            <Chart {...chartProps}>
-              <ChartAxis fixLabelOverlap />
-              <ChartAxis dependentAxis />
-              <ChartLine
-                data={data.map(d => ({ x: d.time, y: d.producers }))}
-                style={{ data: { stroke: '#6610f2', strokeWidth: 2 } }}
-              />
-            </Chart>
-          </CardBody>
-        </Card>
-      </GridItem>
-
-      {/* Dispatch Count */}
-      <GridItem span={12}>
-        <Card isFlat isCompact>
-          <CardBody>
-            <Title headingLevel="h4">Dispatch Count</Title>
-            <Chart {...chartProps}>
-              <ChartAxis fixLabelOverlap />
-              <ChartAxis dependentAxis />
-              <ChartLine
-                data={data.map(d => ({ x: d.time, y: d.dispatch }))}
-                style={{ data: { stroke: '#20c997', strokeWidth: 2 } }}
-              />
-            </Chart>
-          </CardBody>
-        </Card>
-      </GridItem>
     </Grid>
-  );
-};
+  )
+}

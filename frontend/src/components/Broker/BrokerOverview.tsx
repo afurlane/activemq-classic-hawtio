@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'
 import {
   PageSection,
   PageSectionVariants,
@@ -16,84 +16,116 @@ import {
   DescriptionList,
   DescriptionListGroup,
   DescriptionListTerm,
-  DescriptionListDescription
-} from '@patternfly/react-core';
+  DescriptionListDescription,
+  Label,
+  Alert
+} from '@patternfly/react-core'
 
-import { activemq } from '../../services/activemq';
-import { Sparkline } from '../Common/Sparkline';
-import { BrokerTrends } from './BrokerTrends';
-import { Label } from '@patternfly/react-core';
+import { activemq } from '../../services/activemq/ActiveMQClassicService'
+import { Sparkline } from '../Common/Sparkline'
+import { BrokerTrends } from './BrokerTrends'
+import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   ExclamationCircleIcon
-} from '@patternfly/react-icons';
-
+} from '@patternfly/react-icons'
+import { Queue } from 'src/types/domain'
 
 export const BrokerOverview: React.FC = () => {
-  const [queues, setQueues] = useState<any[]>([]);
+  const brokerName = useSelectedBrokerName()
+
+  if (!brokerName) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>
+          <Alert
+            variant="danger"
+            title="No broker selected"
+            isInline
+          />
+        </CardBody>
+      </Card>
+    )
+  }
+
+  const [queues, setQueues] = useState<Queue[]>([])
   const [history, setHistory] = useState<Record<
     string,
     { queueSize: number[]; inflight: number[]; lag: number[] }
-  >>({});
+  >>({})
 
   const [filter, setFilter] = useState({
     critical: false,
     backlog: false,
     name: '',
-  });
+  })
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true)
 
   const load = async () => {
-    setLoading(true);
-    const data = await activemq.listQueuesWithAttributes();
+    if (!brokerName) return
 
-    const newHistory = { ...history };
+    setLoading(true)
+    const data = await activemq.listQueues(brokerName)
 
-    data.forEach(({ info, attrs }) => {
-      const key = info.name;
-      const lag = attrs.QueueSize - attrs.InflightCount;
+    const newHistory = { ...history }
+
+    data.forEach(q => {
+      const key = q.name
+      const inflight = q.stats.inflight ?? 0
+      const size = q.size ?? 0
+      const lag = size - inflight
 
       if (!newHistory[key]) {
-        newHistory[key] = { queueSize: [], inflight: [], lag: [] };
+        newHistory[key] = { queueSize: [], inflight: [], lag: [] }
       }
 
-      newHistory[key].queueSize = [...newHistory[key].queueSize, attrs.QueueSize].slice(-30);
-      newHistory[key].inflight = [...newHistory[key].inflight, attrs.InflightCount].slice(-30);
-      newHistory[key].lag = [...newHistory[key].lag, lag].slice(-30);
-    });
+      newHistory[key].queueSize = [...newHistory[key].queueSize, size].slice(-30)
+      newHistory[key].inflight = [...newHistory[key].inflight, inflight].slice(-30)
+      newHistory[key].lag = [...newHistory[key].lag, lag].slice(-30)
+    })
 
-    setHistory(newHistory);
-    setQueues(data);
-    setLoading(false);
-  };
+    setHistory(newHistory)
+    setQueues(data)
+    setLoading(false)
+  }
 
   useEffect(() => {
-    load();
-    const id = setInterval(load, 5000);
-    return () => clearInterval(id);
-  }, []);
+    load()
+    const id = setInterval(load, 5000)
+    return () => clearInterval(id)
+  }, [brokerName])
 
-  if (loading) return <p>Loading broker overview…</p>;
+  if (!brokerName) return <p>No broker selected</p>
+  if (loading) return <p>Loading broker overview…</p>
 
-  // Filtri
-  const filtered = queues.filter(({ info, attrs }) => {
-    if (filter.critical && attrs.MemoryPercentUsage < 80 && attrs.QueueSize < 10000) return false;
-    if (filter.backlog && attrs.QueueSize < 1000) return false;
-    if (filter.name && !info.name.toLowerCase().includes(filter.name.toLowerCase())) return false;
-    return true;
-  });
+  // FILTRI
+  const filtered = queues.filter(q => {
+    const inflight = q.stats.inflight ?? 0
+    const size = q.size ?? 0
+    const lag = size - inflight
+    const mem = q.memory.percent ?? 0
 
-  // Top 5 slowest queues
+    if (filter.critical && mem < 80 && size < 10000) return false
+    if (filter.backlog && size < 1000) return false
+    if (filter.name && !q.name.toLowerCase().includes(filter.name.toLowerCase())) return false
+
+    return true
+  })
+
+  // TOP 5 SLOWEST
   const slowest = [...queues]
-    .map(({ info, attrs }) => {
-      const lag = attrs.QueueSize - attrs.InflightCount;
-      const score = lag + attrs.InflightCount * 2 - attrs.DispatchCount;
-      return { info, attrs, score };
+    .map(q => {
+      const inflight = q.stats.inflight ?? 0
+      const size = q.size ?? 0
+      const lag = size - inflight
+      const score = lag + inflight * 2 - q.stats.dequeue
+      return { q, score }
     })
     .sort((a, b) => b.score - a.score)
-    .slice(0, 5);
+    .slice(0, 5)
 
   return (
     <>
@@ -130,6 +162,8 @@ export const BrokerOverview: React.FC = () => {
 
               <ToolbarItem>
                 <TextInput
+                  id="broker-filter"
+                  aria-label = "Filter by name"
                   value={filter.name}
                   type="text"
                   placeholder="Filter by name..."
@@ -147,11 +181,17 @@ export const BrokerOverview: React.FC = () => {
           <CardBody>
             <Title headingLevel="h4">Top 5 Slowest Queues</Title>
             <ul>
-              {slowest.map(({ info, attrs }) => (
-                <li key={info.name}>
-                  <b>{info.name}</b> — lag {attrs.QueueSize - attrs.InflightCount}, inflight {attrs.InflightCount}
-                </li>
-              ))}
+              {slowest.map(({ q }) => {
+                const inflight = q.stats.inflight ?? 0
+                const size = q.size ?? 0
+                const lag = size - inflight
+
+                return (
+                  <li key={q.name}>
+                    <b>{q.name}</b> — lag {lag}, inflight {inflight}
+                  </li>
+                )
+              })}
             </ul>
           </CardBody>
         </Card>
@@ -160,27 +200,31 @@ export const BrokerOverview: React.FC = () => {
       {/* GRID PRINCIPALE */}
       <PageSection isFilled>
         <Grid hasGutter md={6} lg={4} xl={3}>
-          {filtered.map(({ info, attrs }) => {
-            const lag = attrs.QueueSize - attrs.InflightCount;
-            const severity =
-              attrs.MemoryPercentUsage > 80 || lag > 10000
-                ? 'red'
-                : attrs.MemoryPercentUsage > 60 || lag > 1000
-                ? 'yellow'
-                : 'green';
+          {filtered.map(q => {
+            const inflight = q.stats.inflight ?? 0
+            const size = q.size ?? 0
+            const lag = size - inflight
+            const mem = q.memory.percent ?? 0
 
-            const h = history[info.name] ?? { queueSize: [], inflight: [], lag: [] };
+            const severity =
+              mem > 80 || lag > 10000
+                ? 'red'
+                : mem > 60 || lag > 1000
+                ? 'yellow'
+                : 'green'
+
+            const h = history[q.name] ?? { queueSize: [], inflight: [], lag: [] }
 
             return (
-              <GridItem key={info.name}>
+              <GridItem key={q.name}>
                 <Card isFlat isCompact>
                   <CardBody>
-                    <Title headingLevel="h4">{info.name}</Title>
+                    <Title headingLevel="h4">{q.name}</Title>
 
                     <DescriptionList isHorizontal>
                       <DescriptionListGroup>
                         <DescriptionListTerm>Size</DescriptionListTerm>
-                        <DescriptionListDescription>{attrs.QueueSize}</DescriptionListDescription>
+                        <DescriptionListDescription>{size}</DescriptionListDescription>
                       </DescriptionListGroup>
                     </DescriptionList>
                     <Sparkline data={h.queueSize} color="#007bff" />
@@ -188,7 +232,7 @@ export const BrokerOverview: React.FC = () => {
                     <DescriptionList isHorizontal>
                       <DescriptionListGroup>
                         <DescriptionListTerm>Inflight</DescriptionListTerm>
-                        <DescriptionListDescription>{attrs.InflightCount}</DescriptionListDescription>
+                        <DescriptionListDescription>{inflight}</DescriptionListDescription>
                       </DescriptionListGroup>
                     </DescriptionList>
                     <Sparkline data={h.inflight} color="#ff8800" />
@@ -201,33 +245,33 @@ export const BrokerOverview: React.FC = () => {
                     </DescriptionList>
                     <Sparkline data={h.lag} color="#dc3545" />
 
-                    <p><b>Consumers:</b> {attrs.ConsumerCount}</p>
-                    <p><b>Memory:</b> {attrs.MemoryPercentUsage}%</p>
+                    <p><b>Consumers:</b> {q.consumers}</p>
+                    <p><b>Memory:</b> {mem}%</p>
 
-                  {severity === 'red' && (
-                    <Label color="red" icon={<ExclamationCircleIcon />}>
-                      Critical
-                    </Label>
-                  )}
+                    {severity === 'red' && (
+                      <Label color="red" icon={<ExclamationCircleIcon />}>
+                        Critical
+                      </Label>
+                    )}
 
-                  {severity === 'yellow' && (
-                    <Label color="orange" icon={<ExclamationTriangleIcon />}>
-                      Warning
-                    </Label>
-                  )}
+                    {severity === 'yellow' && (
+                      <Label color="orange" icon={<ExclamationTriangleIcon />}>
+                        Warning
+                      </Label>
+                    )}
 
-                  {severity === 'green' && (
-                    <Label color="green" icon={<CheckCircleIcon />}>
-                      Healthy
-                    </Label>
-                  )}
+                    {severity === 'green' && (
+                      <Label color="green" icon={<CheckCircleIcon />}>
+                        Healthy
+                      </Label>
+                    )}
                   </CardBody>
                 </Card>
               </GridItem>
-            );
+            )
           })}
         </Grid>
       </PageSection>
     </>
-  );
-};
+  )
+}

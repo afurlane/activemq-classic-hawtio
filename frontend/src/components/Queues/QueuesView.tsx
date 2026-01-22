@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react'
 import {
   PageSection,
   PageSectionVariants,
@@ -6,68 +6,71 @@ import {
   Card,
   CardBody,
   Button,
-  Label
-} from '@patternfly/react-core';
-import {  Table,
+  Label,
+  Alert
+} from '@patternfly/react-core'
+import {
+  Table,
   Thead,
   Tbody,
   Tr,
   Th,
   Td,
-} from '@patternfly/react-table';
+} from '@patternfly/react-table'
 import {
   CheckCircleIcon,
   PauseCircleIcon,
   BanIcon
-} from '@patternfly/react-icons';
+} from '@patternfly/react-icons'
 
-import { activemq } from '../../services/activemq';
-import { buildQueueUrl } from '../../router/router';
+import { activemq } from '../../services/activemq/ActiveMQClassicService'
+import { buildQueueUrl } from '../../router/router'
+import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+import { Queue } from '../../types/domain'
 
 export const QueuesView: React.FC = () => {
-  const [queues, setQueues] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const brokerName = useSelectedBrokerName()
 
-  const load = async () => {
-    setLoading(true);
-    const data = await activemq.listQueues();
-    setQueues(data);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    load();
-  }, []);
-
-  if (loading) {
+  if (!brokerName) {
     return (
-      <PageSection>
-        <Title headingLevel="h3">Loading queues…</Title>
-      </PageSection>
-    );
+      <Card isFlat isCompact>
+        <CardBody>
+          <Alert variant="danger" title="No broker selected" isInline />
+        </CardBody>
+      </Card>
+    )
   }
 
-  const renderState = (q: any) => {
-    if (q.stopped) {
-      return (
-        <Label color="red" icon={<BanIcon />}>
-          Stopped
-        </Label>
-      );
+  const [queues, setQueues] = useState<Queue[]>([])
+  const mounted = useRef(false)
+
+  const load = async () => {
+    if (!brokerName || !mounted.current) return
+    const data = await activemq.listQueues(brokerName)
+    if (mounted.current) setQueues(data)
+  }
+
+  useEffect(() => {
+    mounted.current = true
+    load()
+    const id = setInterval(load, 5000)
+    return () => {
+      mounted.current = false
+      clearInterval(id)
     }
-    if (q.paused) {
-      return (
-        <Label color="orange" icon={<PauseCircleIcon />}>
-          Paused
-        </Label>
-      );
+  }, [brokerName])
+
+  const sorted = [...queues].sort((a, b) => a.name.localeCompare(b.name))
+
+  const renderState = (q: Queue) => {
+    if (q.state.stopped) {
+      return <Label color="red" icon={<BanIcon />}>Stopped</Label>
     }
-    return (
-      <Label color="green" icon={<CheckCircleIcon />}>
-        Running
-      </Label>
-    );
-  };
+    if (q.state.paused) {
+      return <Label color="orange" icon={<PauseCircleIcon />}>Paused</Label>
+    }
+    return <Label color="green" icon={<CheckCircleIcon />}>Running</Label>
+  }
 
   return (
     <PageSection variant={PageSectionVariants.light}>
@@ -84,18 +87,18 @@ export const QueuesView: React.FC = () => {
                 <Th>Deq</Th>
                 <Th>Consumers</Th>
                 <Th>State</Th>
-                <Th></Th>
+                <Th modifier="fitContent" screenReaderText="Actions"></Th>
               </Tr>
             </Thead>
 
             <Tbody>
-              {queues.map((q, i) => (
-                <Tr key={i}>
+              {sorted.map(q => (
+                <Tr key={q.mbean}>
                   <Td>{q.name}</Td>
-                  <Td>{q.queueSize}</Td>
-                  <Td>{q.enqueueCount}</Td>
-                  <Td>{q.dequeueCount}</Td>
-                  <Td>{q.consumerCount}</Td>
+                  <Td>{q.size}</Td>
+                  <Td>{q.stats.enqueue}</Td>
+                  <Td>{q.stats.dequeue}</Td>
+                  <Td>{q.consumers}</Td>
                   <Td>{renderState(q)}</Td>
                   <Td>
                     <Button
@@ -112,5 +115,5 @@ export const QueuesView: React.FC = () => {
         </CardBody>
       </Card>
     </PageSection>
-  );
-};
+  )
+}

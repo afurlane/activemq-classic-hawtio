@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { activemq } from '../../services/activemq';
+import React, { useEffect, useState } from 'react'
+import { activemq } from '../../services/activemq/ActiveMQClassicService'
+import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
 import {
   Card,
   CardBody,
@@ -7,42 +8,69 @@ import {
   DescriptionList,
   DescriptionListGroup,
   DescriptionListTerm,
-  DescriptionListDescription
-} from '@patternfly/react-core';
+  DescriptionListDescription,
+  Alert
+} from '@patternfly/react-core'
 
 export const BrokerStorage: React.FC = () => {
+  const brokerName = useSelectedBrokerName()
+
+  if (!brokerName) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>
+          <Alert
+            variant="danger"
+            title="No broker selected"
+            isInline
+          />
+        </CardBody>
+      </Card>
+    )
+  }
+  
   const [storage, setStorage] = useState({
     store: 0,
     temp: 0,
     cursor: 0,
     memory: 0,
-  });
+  })
 
-  const poll = async () => {
-    const queues = await activemq.listQueuesWithAttributes();
+const poll = async () => {
+  if (!brokerName) return
 
-    let store = 0;
-    let cursor = 0;
-    let memory = 0;
-    let tempSum = 0;
+  const queues = await activemq.listQueuesWithRawAttributes(brokerName)
 
-    queues.forEach(({ attrs }) => {
-      store += attrs.StoreMessageSize;
-      cursor += attrs.CursorMemoryUsage;
-      memory += attrs.MemoryUsageByteCount;
-      tempSum += attrs.TempUsagePercentUsage;
-    });
+  let store = 0
+  let cursor = 0
+  let memory = 0
+  let tempSum = 0
+  let tempCount = 0
 
-    const temp = queues.length > 0 ? tempSum / queues.length : 0;
+  queues.forEach(({ attrs }) => {
+    store += attrs.StoreMessageSize ?? 0
+    cursor += attrs.CursorMemoryUsage ?? 0
+    memory += attrs.MemoryUsageByteCount ?? 0
 
-    setStorage({ store, temp, cursor, memory });
-  };
+    // AMQ 5 only
+    if (attrs.TempUsagePercentUsage !== undefined) {
+      tempSum += attrs.TempUsagePercentUsage
+      tempCount++
+    }
+  })
+
+  const temp = tempCount > 0 ? tempSum / tempCount : 0
+
+  setStorage({ store, temp, cursor, memory })
+}
 
   useEffect(() => {
-    poll();
-    const id = setInterval(poll, 5000);
-    return () => clearInterval(id);
-  }, []);
+    poll()
+    const id = setInterval(poll, 5000)
+    return () => clearInterval(id)
+  }, [brokerName])
+
+  if (!brokerName) return <p>No broker selected</p>
 
   return (
     <Card isFlat isCompact>
@@ -80,5 +108,5 @@ export const BrokerStorage: React.FC = () => {
         </DescriptionList>
       </CardBody>
     </Card>
-  );
-};
+  )
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {
   Card,
   CardBody,
@@ -7,15 +7,18 @@ import {
   DescriptionListGroup,
   DescriptionListTerm,
   DescriptionListDescription
-} from '@patternfly/react-core';
+} from '@patternfly/react-core'
 
-export const TopicInfo: React.FC<{ attrs: any }> = ({ attrs }) => {
+import { ActiveMQTopicAttributes } from '../../types/activemq'
+
+export const TopicInfo: React.FC<{ attrs: ActiveMQTopicAttributes }> = ({ attrs }) => {
   return (
     <Card isFlat isCompact>
       <CardBody>
         <Title headingLevel="h4">Info</Title>
 
         <DescriptionList isHorizontal>
+
           <DescriptionListGroup>
             <DescriptionListTerm>Producers</DescriptionListTerm>
             <DescriptionListDescription>
@@ -31,9 +34,23 @@ export const TopicInfo: React.FC<{ attrs: any }> = ({ attrs }) => {
           </DescriptionListGroup>
 
           <DescriptionListGroup>
-            <DescriptionListTerm>Queue Size</DescriptionListTerm>
+            <DescriptionListTerm>Enqueued</DescriptionListTerm>
             <DescriptionListDescription>
-              {attrs.QueueSize}
+              {attrs.EnqueueCount}
+            </DescriptionListDescription>
+          </DescriptionListGroup>
+
+          <DescriptionListGroup>
+            <DescriptionListTerm>Dequeued</DescriptionListTerm>
+            <DescriptionListDescription>
+              {attrs.DequeueCount}
+            </DescriptionListDescription>
+          </DescriptionListGroup>
+
+          <DescriptionListGroup>
+            <DescriptionListTerm>Dispatched</DescriptionListTerm>
+            <DescriptionListDescription>
+              {attrs.DispatchCount}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
@@ -45,20 +62,21 @@ export const TopicInfo: React.FC<{ attrs: any }> = ({ attrs }) => {
           </DescriptionListGroup>
 
           <DescriptionListGroup>
-            <DescriptionListTerm>Store Size</DescriptionListTerm>
+            <DescriptionListTerm>Memory Used</DescriptionListTerm>
             <DescriptionListDescription>
-              {attrs.StoreMessageSize}
+              {attrs.MemoryUsageByteCount} bytes
             </DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
-            <DescriptionListTerm>Temp Usage</DescriptionListTerm>
+            <DescriptionListTerm>Memory Limit</DescriptionListTerm>
             <DescriptionListDescription>
-              {attrs.TempUsagePercentUsage}%
+              {attrs.MemoryLimit} bytes
             </DescriptionListDescription>
           </DescriptionListGroup>
+
         </DescriptionList>
       </CardBody>
     </Card>
-  );
-};
+  )
+}

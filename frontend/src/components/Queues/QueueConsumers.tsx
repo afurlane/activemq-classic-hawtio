@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {
   Card,
   CardBody,
@@ -7,26 +7,28 @@ import {
   DescriptionListGroup,
   DescriptionListTerm,
   DescriptionListDescription
-} from '@patternfly/react-core';
+} from '@patternfly/react-core'
 
-import { ActiveMQQueueAttributes } from '../../types/activemq';
+import { Queue } from '../../types/domain'
 
 interface Props {
-  attributes: ActiveMQQueueAttributes;
-  history: ActiveMQQueueAttributes[];
+  queue: Queue
+  history: Queue[]
 }
 
-export const QueueConsumers: React.FC<Props> = ({ attributes, history }) => {
-  const latest = attributes;
-  const prev = history[history.length - 2];
+export const QueueConsumers: React.FC<Props> = ({ queue, history }) => {
+  const latest = queue
+  const prev = history[history.length - 2]
 
-  let dispatchRate = 0;
+  // Dispatch rate (msg/sec)
+  let dispatchRate = 0
   if (prev) {
-    dispatchRate = (latest.DispatchCount - prev.DispatchCount) / 2; // msg/sec
+    dispatchRate = (latest.stats.dequeue - prev.stats.dequeue) / 2
   }
 
+  // Prefetch values from subscriptions
   const prefetchValues =
-    latest.Subscriptions?.map(s => s.prefetchSize).filter(Boolean) ?? [];
+    latest.subscriptions?.map(s => s.flow.prefetchSize).filter(Boolean) ?? []
 
   return (
     <Card isFlat isCompact>
@@ -34,17 +36,18 @@ export const QueueConsumers: React.FC<Props> = ({ attributes, history }) => {
         <Title headingLevel="h4">Consumers</Title>
 
         <DescriptionList isHorizontal>
+
           <DescriptionListGroup>
             <DescriptionListTerm>Active Consumers</DescriptionListTerm>
             <DescriptionListDescription>
-              {latest.ConsumerCount}
+              {latest.consumers}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
             <DescriptionListTerm>Inflight</DescriptionListTerm>
             <DescriptionListDescription>
-              {latest.InflightCount}
+              {latest.stats.inflight}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
@@ -63,8 +66,9 @@ export const QueueConsumers: React.FC<Props> = ({ attributes, history }) => {
               </DescriptionListDescription>
             </DescriptionListGroup>
           )}
+
         </DescriptionList>
       </CardBody>
     </Card>
-  );
-};
+  )
+}

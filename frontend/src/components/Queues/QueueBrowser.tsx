@@ -1,40 +1,44 @@
-import React, { useEffect, useState } from 'react';
-import { activemq } from '../../services/activemq';
+import React, { useEffect, useState } from 'react'
+import { activemq } from '../../services/activemq/ActiveMQClassicService'
 import {
   Card,
   CardBody,
   Pagination,
   CodeBlock,
   CodeBlockCode
-} from '@patternfly/react-core';
-import {  Table,
+} from '@patternfly/react-core'
+import {
+  Table,
   Thead,
   Tbody,
   Tr,
   Th,
   Td,
-} from '@patternfly/react-table';
+} from '@patternfly/react-table'
+
+import { Queue, Message } from '../../types/domain'
+
 interface Props {
-  queue: any;
+  queue: Queue
 }
 
 export const QueueBrowser: React.FC<Props> = ({ queue }) => {
-  const [page, setPage] = useState(0);
-  const [messages, setMessages] = useState<any[]>([]);
-  const pageSize = 20;
+  const [page, setPage] = useState(0)
+  const [messages, setMessages] = useState<Message[]>([])
+  const pageSize = 20
 
   const load = async () => {
-    const data = await activemq.browseQueue(queue.mbean, page, pageSize);
-    setMessages(data);
-  };
+    const data = await activemq.browseQueue(queue.mbean, page, pageSize)
+    setMessages(data)
+  }
 
   useEffect(() => {
-    load();
-  }, [page]);
+    load()
+  }, [page, queue.mbean])
 
   const onSetPage = (_evt: any, newPage: number) => {
-    setPage(newPage - 1); // PatternFly pages are 1-based
-  };
+    setPage(newPage - 1) // PatternFly pages are 1-based
+  }
 
   return (
     <Card isFlat isCompact>
@@ -47,11 +51,12 @@ export const QueueBrowser: React.FC<Props> = ({ queue }) => {
               <Th>Body</Th>
             </Tr>
           </Thead>
+
           <Tbody>
             {messages.map((m, i) => (
               <Tr key={i}>
-                <Td>{m.messageId}</Td>
-                <Td>{m.timestamp}</Td>
+                <Td>{m.id}</Td>
+                <Td>{new Date(m.timestamp).toLocaleString()}</Td>
                 <Td>
                   <CodeBlock readOnly>
                     <CodeBlockCode>
@@ -74,5 +79,5 @@ export const QueueBrowser: React.FC<Props> = ({ queue }) => {
         />
       </CardBody>
     </Card>
-  );
-};
+  )
+}

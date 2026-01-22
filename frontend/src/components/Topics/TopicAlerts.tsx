@@ -1,20 +1,20 @@
-import React from 'react';
+import React from 'react'
 import {
   Card,
   CardBody,
   Title,
   Alert,
   AlertGroup
-} from '@patternfly/react-core';
+} from '@patternfly/react-core'
 
-export const TopicAlerts: React.FC<{ attrs: any; history: any[] }> = ({ attrs }) => {
-  const alerts: string[] = [];
+import { ActiveMQTopicAttributes } from '../../types/activemq'
 
-  if (attrs.MemoryPercentUsage > 80) alerts.push(`High memory usage`);
-  if (attrs.TempUsagePercentUsage > 80) alerts.push(`High temp usage`);
-  if (attrs.ProducerCount === 0) alerts.push(`No producers`);
-  if (attrs.ConsumerCount === 0) alerts.push(`No subscribers`);
-  if (attrs.QueueSize > 10000) alerts.push(`Large backlog`);
+export const TopicAlerts: React.FC<{ attrs: ActiveMQTopicAttributes }> = ({ attrs }) => {
+  const alerts: string[] = []
+
+  if (attrs.MemoryPercentUsage > 80) alerts.push('High memory usage')
+  if (attrs.ProducerCount === 0) alerts.push('No producers')
+  if (attrs.ConsumerCount === 0) alerts.push('No subscribers')
 
   return (
     <Card isFlat isCompact>
@@ -43,5 +43,5 @@ export const TopicAlerts: React.FC<{ attrs: any; history: any[] }> = ({ attrs })
         )}
       </CardBody>
     </Card>
-  );
-};
+  )
+}

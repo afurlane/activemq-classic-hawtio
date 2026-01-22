@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {
   Card,
   CardBody,
@@ -8,25 +8,25 @@ import {
   DescriptionListTerm,
   DescriptionListDescription,
   Label
-} from '@patternfly/react-core';
+} from '@patternfly/react-core'
 
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   ExclamationCircleIcon
-} from '@patternfly/react-icons';
+} from '@patternfly/react-icons'
 
-import { ActiveMQQueueAttributes } from '../../types/activemq';
+import { Queue } from '../../types/domain'
 
 interface Props {
-  attributes: ActiveMQQueueAttributes;
+  queue: Queue
 }
 
 const status = (value: number, green: number, yellow: number) => {
-  if (value < green) return 'green';
-  if (value < yellow) return 'yellow';
-  return 'red';
-};
+  if (value < green) return 'green'
+  if (value < yellow) return 'yellow'
+  return 'red'
+}
 
 const renderStatus = (value: any, severity: string) => {
   if (severity === 'green') {
@@ -34,28 +34,27 @@ const renderStatus = (value: any, severity: string) => {
       <Label color="green" icon={<CheckCircleIcon />}>
         {value}
       </Label>
-    );
+    )
   }
   if (severity === 'yellow') {
     return (
       <Label color="orange" icon={<ExclamationTriangleIcon />}>
         {value}
       </Label>
-    );
+    )
   }
   return (
     <Label color="red" icon={<ExclamationCircleIcon />}>
       {value}
     </Label>
-  );
-};
+  )
+}
 
-export const QueueHealth: React.FC<Props> = ({ attributes }) => {
-  const memory = status(attributes.MemoryPercentUsage, 60, 80);
-  const cursor = status(attributes.CursorPercentUsage, 50, 80);
-  const inflight = status(attributes.InflightCount, 100, 500);
-  const consumers = attributes.ConsumerCount > 0 ? 'green' : 'red';
-  const size = status(attributes.QueueSize, 1000, 10000);
+export const QueueHealth: React.FC<Props> = ({ queue }) => {
+  const memory = status(queue.memory.percent, 60, 80)
+  const inflight = status(queue.stats.inflight, 100, 500)
+  const consumers = queue.consumers > 0 ? 'green' : 'red'
+  const size = status(queue.size, 1000, 10000)
 
   return (
     <Card isFlat isCompact>
@@ -63,42 +62,37 @@ export const QueueHealth: React.FC<Props> = ({ attributes }) => {
         <Title headingLevel="h4">Health Overview</Title>
 
         <DescriptionList isHorizontal>
+
           <DescriptionListGroup>
             <DescriptionListTerm>Memory</DescriptionListTerm>
             <DescriptionListDescription>
-              {renderStatus(`${attributes.MemoryPercentUsage}%`, memory)}
-            </DescriptionListDescription>
-          </DescriptionListGroup>
-
-          <DescriptionListGroup>
-            <DescriptionListTerm>Cursor</DescriptionListTerm>
-            <DescriptionListDescription>
-              {renderStatus(`${attributes.CursorPercentUsage}%`, cursor)}
+              {renderStatus(`${queue.memory.percent}%`, memory)}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
             <DescriptionListTerm>Inflight</DescriptionListTerm>
             <DescriptionListDescription>
-              {renderStatus(attributes.InflightCount, inflight)}
+              {renderStatus(queue.stats.inflight, inflight)}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
             <DescriptionListTerm>Consumers</DescriptionListTerm>
             <DescriptionListDescription>
-              {renderStatus(attributes.ConsumerCount, consumers)}
+              {renderStatus(queue.consumers, consumers)}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
             <DescriptionListTerm>Queue Size</DescriptionListTerm>
             <DescriptionListDescription>
-              {renderStatus(attributes.QueueSize, size)}
+              {renderStatus(queue.size, size)}
             </DescriptionListDescription>
           </DescriptionListGroup>
+
         </DescriptionList>
       </CardBody>
     </Card>
-  );
-};
+  )
+}

@@ -1,52 +1,75 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react'
 import {
+  Alert,
+  Card,
+  CardBody,
   PageSection,
   PageSectionVariants,
-  Title,
-  Card,
-  CardBody
-} from '@patternfly/react-core';
+  Title
+} from '@patternfly/react-core'
 
-import { topics } from '../../services/topics';
-import { TopicInfo } from './TopicInfo';
-import { TopicCharts } from './TopicCharts';
-import { TopicAlerts } from './TopicAlerts';
-import { TopicOperations } from './TopicOperations';
-import { TopicSendMessage } from './TopicSendMessage';
-import { TopicDelete } from './TopicDelete';
-import { TopicSubscribers } from './TopicSubscribers';
-import { TopicProducers } from './TopicProducers';
+import { activemq } from '../../services/activemq/ActiveMQClassicService'
+import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+
+import { TopicInfo } from './TopicInfo'
+import { TopicCharts } from './TopicCharts'
+import { TopicAlerts } from './TopicAlerts'
+import { TopicOperations } from './TopicOperations'
+import { TopicSendMessage } from './TopicSendMessage'
+import { TopicDelete } from './TopicDelete'
+import { TopicSubscribers } from './TopicSubscribers'
+import { TopicProducers } from './TopicProducers'
 
 export const TopicDetailsPage: React.FC<{ topicName: string }> = ({ topicName }) => {
-  const [mbean, setMbean] = useState<string | null>(null);
-  const [attrs, setAttrs] = useState<any>(null);
-  const [history, setHistory] = useState<any[]>([]);
+  const brokerName = useSelectedBrokerName()
+
+  if (!brokerName) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>
+          <Alert variant="danger" title="No broker selected" isInline />
+        </CardBody>
+      </Card>
+    )
+  }
+
+  const [mbean, setMbean] = useState<string | null>(null)
+  const [attrs, setAttrs] = useState<any>(null)
+  const [history, setHistory] = useState<any[]>([])
+  const mounted = useRef(false)
 
   const load = async () => {
-    const list = await topics.listTopics();
-    const topic = list.find(t => t.name === topicName);
-    if (!topic) return;
+    if (!brokerName || !mounted.current) return
 
-    setMbean(topic.mbean);
+    const list = await activemq.listTopics(brokerName)
+    const topic = list.find(t => t.name === topicName)
+    if (!topic) return
 
-    const a = await topics.getTopicAttributes(topic.mbean);
-    setAttrs(a);
+    setMbean(topic.mbean)
 
-    setHistory(prev => [...prev, a].slice(-50));
-  };
+    const a = await activemq.getTopicAttributes(topic.mbean)
+    if (!mounted.current) return
+
+    setAttrs(a)
+    setHistory(prev => [...prev, a].slice(-50))
+  }
 
   useEffect(() => {
-    load();
-    const id = setInterval(load, 5000);
-    return () => clearInterval(id);
-  }, [topicName]);
+    mounted.current = true
+    load()
+    const id = setInterval(load, 5000)
+    return () => {
+      mounted.current = false
+      clearInterval(id)
+    }
+  }, [brokerName, topicName])
 
   if (!attrs) {
     return (
       <PageSection>
         <Title headingLevel="h3">Loading topic…</Title>
       </PageSection>
-    );
+    )
   }
 
   return (
@@ -68,27 +91,27 @@ export const TopicDetailsPage: React.FC<{ topicName: string }> = ({ topicName })
 
       {/* Alerts */}
       <PageSection>
-        <TopicAlerts attrs={attrs} history={history} />
+        <TopicAlerts attrs={attrs} />
       </PageSection>
 
       {/* Subscribers */}
       <PageSection>
-        <TopicSubscribers topicName={topicName} />
+        <TopicSubscribers attrs={attrs} />
       </PageSection>
 
       {/* Producers */}
       <PageSection>
-        <TopicProducers topicName={topicName} />
+        <TopicProducers attrs={attrs} />
       </PageSection>
 
       {/* Operations */}
       <PageSection>
-        <TopicOperations mbean={mbean!} />
+        <TopicOperations />
       </PageSection>
 
       {/* Send Message */}
       <PageSection>
-        <TopicSendMessage mbean={mbean!} />
+        <TopicSendMessage />
       </PageSection>
 
       {/* Delete */}
@@ -96,5 +119,5 @@ export const TopicDetailsPage: React.FC<{ topicName: string }> = ({ topicName })
         <TopicDelete mbean={mbean!} />
       </PageSection>
     </>
-  );
-};
+  )
+}

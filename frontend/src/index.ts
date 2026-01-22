@@ -10,7 +10,7 @@ export const plugin: HawtioPlugin = () => {
   hawtio.addPlugin({
     id: PLUGIN_NAME,
     title: PLUGIN_TITLE,
-    path: PLUGIN_PATH,
+    path: PLUGIN_PATH,    
     component: ActiveMQClassicPlugin,
     isActive: async () => true,
   })

@@ -14,8 +14,8 @@ import {  Table,
   Th,
   Td,
 } from '@patternfly/react-table';
-import { topics } from '../../services/topics';
 import { buildTopicUrl } from '../../router/router';
+import { activemq } from '../../services/activemq/ActiveMQClassicService';
 
 export const TopicsView: React.FC = () => {
   const [list, setList] = useState<any[]>([]);
@@ -23,7 +23,7 @@ export const TopicsView: React.FC = () => {
 
   const load = async () => {
     setLoading(true);
-    const data = await topics.listTopics();
+    const data = await activemq.listTopics();
     setList(data);
     setLoading(false);
   };
@@ -57,7 +57,7 @@ export const TopicsView: React.FC = () => {
                 <Th>Producers</Th>
                 <Th>Subscribers</Th>
                 <Th>Size</Th>
-                <Th></Th>
+                <Th modifier="fitContent" screenReaderText="Actions"></Th>
               </Tr>
             </Thead>
 

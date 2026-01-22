@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { activemq } from "../../services/activemq";
+import React, { useEffect, useState } from "react"
+import { activemq } from "../../services/activemq/ActiveMQClassicService"
+import { useSelectedBrokerName } from "../../hooks/useSelectedBroker"
 import {
   Card,
   CardBody,
@@ -7,43 +8,60 @@ import {
   DescriptionList,
   DescriptionListGroup,
   DescriptionListTerm,
-  DescriptionListDescription
-} from "@patternfly/react-core";
-import { Label } from '@patternfly/react-core';
-import {
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-  ExclamationCircleIcon
-} from '@patternfly/react-icons';
+  DescriptionListDescription,
+  Label,
+  Alert
+} from "@patternfly/react-core"
+import { ExclamationCircleIcon } from '@patternfly/react-icons'
 
 export const TopProducers: React.FC = () => {
-  const [producers, setProducers] = useState<any[]>([]);
+  const brokerName = useSelectedBrokerName()
+
+  if (!brokerName) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>
+          <Alert
+            variant="danger"
+            title="No broker selected"
+            isInline
+          />
+        </CardBody>
+      </Card>
+    )
+  }
+
+  const [producers, setProducers] = useState<any[]>([])
 
   const load = async () => {
-    const mbeans = await activemq.listProducers();
+    if (!brokerName) return
+
+    const mbeans = await activemq.listProducers(brokerName)
     const attrs = await Promise.all(
       mbeans.map(m => activemq.getProducerAttributes(m))
-    );
+    )
 
     const sorted = attrs
       .map(a => ({
-        clientId: a.ClientId,
-        destination: a.DestinationName,
-        sent: a.SentCount,
-        blocked: a.ProducerBlocked,
-        pctBlocked: a.PercentageBlocked
+        clientId: a.ClientId ?? "unknown",
+        destination: a.DestinationName ?? "unknown",
+        sent: a.SentCount ?? 0,
+        blocked: a.ProducerBlocked ?? false,
+        pctBlocked: a.PercentageBlocked ?? 0
       }))
       .sort((a, b) => b.sent - a.sent)
-      .slice(0, 10);
+      .slice(0, 10)
 
-    setProducers(sorted);
-  };
+    setProducers(sorted)
+  }
 
   useEffect(() => {
-    load();
-    const id = setInterval(load, 5000);
-    return () => clearInterval(id);
-  }, []);
+    load()
+    const id = setInterval(load, 5000)
+    return () => clearInterval(id)
+  }, [brokerName])
+
+  if (!brokerName) return <p>No broker selected</p>
 
   return (
     <Card isFlat isCompact>
@@ -79,7 +97,9 @@ export const TopProducers: React.FC = () => {
               <DescriptionListGroup>
                 <DescriptionListTerm>Status</DescriptionListTerm>
                 <DescriptionListDescription>
-                  <Label color="red" icon={<ExclamationCircleIcon />}>Blocked</Label>
+                  <Label color="red" icon={<ExclamationCircleIcon />}>
+                    Blocked
+                  </Label>
                 </DescriptionListDescription>
               </DescriptionListGroup>
             )}
@@ -87,5 +107,5 @@ export const TopProducers: React.FC = () => {
         ))}
       </CardBody>
     </Card>
-  );
-};
+  )
+}

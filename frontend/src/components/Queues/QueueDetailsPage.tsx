@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { activemq } from '../../services/activemq';
-import { buildQueuesUrl } from '../../router/router';
+import React, { useEffect, useRef, useState } from 'react'
+import { activemq } from '../../services/activemq/ActiveMQClassicService'
+import { buildQueuesUrl } from '../../router/router'
 
 import {
   PageSection,
@@ -10,61 +10,74 @@ import {
   Grid,
   GridItem,
   Card,
-  CardBody
-} from '@patternfly/react-core';
+  CardBody,
+  Alert
+} from '@patternfly/react-core'
 
-import { QueueBrowser } from './QueueBrowser';
-import { QueueOperations } from './QueueOperations';
-import { QueueAttributes } from './QueueAttributes';
-import { QueueCharts } from './QueueCharts';
-import { QueueInfo } from '../../types/activemq';
-import { useQueueMetrics } from '../../hooks/useQueueMetrics';
-import { QueueHealth } from './QueueHealth';
-import { QueueThroughput } from './QueueThroughput';
-import { QueueLag } from './QueueLag';
-import { QueueAlerts } from './QueueAlerts';
-import { QueueStorage } from './QueueStorage';
-import { QueueDLQ } from './QueueDLQ';
-import { QueueConsumers } from './QueueConsumers';
+import { QueueBrowser } from './QueueBrowser'
+import { QueueOperations } from './QueueOperations'
+import { QueueAttributes } from './QueueAttributes'
+import { QueueCharts } from './QueueCharts'
+import { QueueHealth } from './QueueHealth'
+import { QueueThroughput } from './QueueThroughput'
+import { QueueLag } from './QueueLag'
+import { QueueAlerts } from './QueueAlerts'
+import { QueueStorage } from './QueueStorage'
+import { QueueDLQ } from './QueueDLQ'
+import { QueueConsumers } from './QueueConsumers'
+
+import { Queue } from '../../types/domain'
+import { useQueueMetrics } from '../../hooks/useQueueMetrics'
+import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
 
 interface Props {
-  queueName: string;
+  queueName: string
 }
 
 export const QueueDetailsPage: React.FC<Props> = ({ queueName }) => {
-  const [info, setInfo] = useState<QueueInfo | null>(null);
-  const [loading, setLoading] = useState(true);
+  const brokerName = useSelectedBrokerName()
+
+  if (!brokerName) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>
+          <Alert variant="danger" title="No broker selected" isInline />
+        </CardBody>
+      </Card>
+    )
+  }
+
+  const [queue, setQueue] = useState<Queue | null>(null)
+  const mounted = useRef(false)
 
   const loadInfo = async () => {
-    setLoading(true);
+    if (!brokerName || !mounted.current) return
 
-    const queues = await activemq.listQueues();
-    const q = queues.find(q => q.name === queueName);
+    const queues = await activemq.listQueues(brokerName)
+    const q = queues.find(q => q.name === queueName)
 
-    if (!q) {
-      setInfo(null);
-      setLoading(false);
-      return;
-    }
-
-    const full = await activemq.getQueueInfo(q.mbean);
-    setInfo(full);
-    setLoading(false);
-  };
+    if (mounted.current) setQueue(q ?? null)
+  }
 
   useEffect(() => {
-    loadInfo();
-  }, [queueName]);
+    mounted.current = true
+    loadInfo()
+    const id = setInterval(loadInfo, 5000)
+    return () => {
+      mounted.current = false
+      clearInterval(id)
+    }
+  }, [brokerName, queueName])
 
-  const { latest: raw, history, loading: metricsLoading } =
-    useQueueMetrics(info?.mbean ?? '');
+  const { latest, history, loading: metricsLoading } =
+    useQueueMetrics(queue?.mbean ?? '')
 
-  if (loading || metricsLoading || !info || !raw) {
+  if (!queue || metricsLoading || !latest) {
     return (
       <PageSection>
         <Title headingLevel="h3">Loading queue {queueName}…</Title>
       </PageSection>
-    );
+    )
   }
 
   return (
@@ -73,7 +86,7 @@ export const QueueDetailsPage: React.FC<Props> = ({ queueName }) => {
       <PageSection variant={PageSectionVariants.light}>
         <Grid hasGutter>
           <GridItem span={8}>
-            <Title headingLevel="h2">Queue: {info.name}</Title>
+            <Title headingLevel="h2">Queue: {queue.name}</Title>
           </GridItem>
           <GridItem span={4} style={{ textAlign: 'right' }}>
             <Button
@@ -91,14 +104,18 @@ export const QueueDetailsPage: React.FC<Props> = ({ queueName }) => {
         <Card isFlat isCompact>
           <CardBody>
             <Grid hasGutter>
-              <GridItem span={2}><b>Size:</b> {info.queueSize}</GridItem>
-              <GridItem span={2}><b>Enqueue:</b> {info.enqueueCount}</GridItem>
-              <GridItem span={2}><b>Dequeue:</b> {info.dequeueCount}</GridItem>
-              <GridItem span={2}><b>Consumers:</b> {info.consumerCount}</GridItem>
-              <GridItem span={2}><b>Memory:</b> {info.memoryPercentUsage}%</GridItem>
+              <GridItem span={2}><b>Size:</b> {queue.size}</GridItem>
+              <GridItem span={2}><b>Enqueue:</b> {queue.stats.enqueue}</GridItem>
+              <GridItem span={2}><b>Dequeue:</b> {queue.stats.dequeue}</GridItem>
+              <GridItem span={2}><b>Consumers:</b> {queue.consumers}</GridItem>
+              <GridItem span={2}><b>Memory:</b> {queue.memory.percent}%</GridItem>
               <GridItem span={2}>
                 <b>State:</b>{' '}
-                {info.stopped ? 'Stopped' : info.paused ? 'Paused' : 'Running'}
+                {queue.state.stopped
+                  ? 'Stopped'
+                  : queue.state.paused
+                  ? 'Paused'
+                  : 'Running'}
               </GridItem>
             </Grid>
           </CardBody>
@@ -108,13 +125,13 @@ export const QueueDetailsPage: React.FC<Props> = ({ queueName }) => {
       {/* Operations */}
       <PageSection>
         <Title headingLevel="h3">Operations</Title>
-        <QueueOperations queue={info} onAction={loadInfo} />
+        <QueueOperations queue={queue} onAction={loadInfo} />
       </PageSection>
 
       {/* Health */}
       <PageSection>
         <Title headingLevel="h3">Health</Title>
-        <QueueHealth attributes={raw} />
+        <QueueHealth queue={latest} />
       </PageSection>
 
       {/* Throughput */}
@@ -126,7 +143,7 @@ export const QueueDetailsPage: React.FC<Props> = ({ queueName }) => {
       {/* Lag */}
       <PageSection>
         <Title headingLevel="h3">Consumer Lag</Title>
-        <QueueLag attributes={raw} />
+        <QueueLag queue={latest} />
       </PageSection>
 
       {/* Charts */}
@@ -138,38 +155,38 @@ export const QueueDetailsPage: React.FC<Props> = ({ queueName }) => {
       {/* Attributes */}
       <PageSection>
         <Title headingLevel="h3">Attributes</Title>
-        <QueueAttributes attributes={raw} />
+        <QueueAttributes queue={latest} />
       </PageSection>
 
       {/* Alerts */}
       <PageSection>
         <Title headingLevel="h3">Alerts</Title>
-        <QueueAlerts attributes={raw} history={history} />
+        <QueueAlerts queue={latest} history={history} />
       </PageSection>
 
       {/* Storage */}
       <PageSection>
         <Title headingLevel="h3">Storage</Title>
-        <QueueStorage attributes={raw} />
+        <QueueStorage queue={latest} />
       </PageSection>
 
       {/* DLQ */}
       <PageSection>
         <Title headingLevel="h3">DLQ</Title>
-        <QueueDLQ attributes={raw} />
+        <QueueDLQ queue={latest} />
       </PageSection>
 
       {/* Consumers */}
       <PageSection>
         <Title headingLevel="h3">Consumers</Title>
-        <QueueConsumers attributes={raw} history={history} />
+        <QueueConsumers queue={latest} history={history} />
       </PageSection>
 
       {/* Messages */}
       <PageSection>
         <Title headingLevel="h3">Messages</Title>
-        <QueueBrowser queue={info} />
+        <QueueBrowser queue={queue} />
       </PageSection>
     </>
-  );
-};
+  )
+}

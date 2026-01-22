@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {
   Card,
   CardBody,
@@ -10,19 +10,20 @@ import {
   DescriptionListGroup,
   DescriptionListTerm,
   DescriptionListDescription
-} from '@patternfly/react-core';
-import { ActiveMQQueueAttributes } from '../../types/activemq';
+} from '@patternfly/react-core'
+
+import { Queue } from '../../types/domain'
 
 interface Props {
-  attributes: ActiveMQQueueAttributes;
+  queue: Queue
 }
 
-export const QueueAttributes: React.FC<Props> = ({ attributes }) => {
-  const [expanded, setExpanded] = React.useState<string | null>(null);
+export const QueueAttributes: React.FC<Props> = ({ queue }) => {
+  const [expanded, setExpanded] = React.useState<string | null>(null)
 
   const onToggle = (id: string) => {
-    setExpanded(prev => (prev === id ? null : id));
-  };
+    setExpanded(prev => (prev === id ? null : id))
+  }
 
   const Section = (props: { id: string; title: string; children: React.ReactNode }) => (
     <AccordionItem>
@@ -37,93 +38,56 @@ export const QueueAttributes: React.FC<Props> = ({ attributes }) => {
         <DescriptionList isHorizontal>{props.children}</DescriptionList>
       </AccordionContent>
     </AccordionItem>
-  );
+  )
 
   const Row = (props: { label: string; value: any }) => (
     <DescriptionListGroup>
       <DescriptionListTerm>{props.label}</DescriptionListTerm>
-      <DescriptionListDescription>{String(props.value)}</DescriptionListDescription>
+      <DescriptionListDescription>
+        {props.value === undefined ? '—' : String(props.value)}
+      </DescriptionListDescription>
     </DescriptionListGroup>
-  );
+  )
 
   return (
     <Card isFlat isCompact>
       <CardBody>
         <Accordion asDefinitionList>
+
+          {/* RUNTIME */}
           <Section id="runtime" title="Runtime">
-            <Row label="Queue size" value={attributes.QueueSize} />
-            <Row label="Enqueue count" value={attributes.EnqueueCount} />
-            <Row label="Dequeue count" value={attributes.DequeueCount} />
-            <Row label="Dispatch count" value={attributes.DispatchCount} />
-            <Row label="In flight count" value={attributes.InflightCount} />
-            <Row label="Consumer count" value={attributes.ConsumerCount} />
-            <Row label="Producer count" value={attributes.ProducerCount} />
-            <Row label="Paused" value={attributes.Paused} />
-            <Row label="Stopped" value={attributes.Stopped} />
+            <Row label="Queue size" value={queue.size} />
+            <Row label="Enqueue count" value={queue.stats.enqueue} />
+            <Row label="Dequeue count" value={queue.stats.dequeue} />
+            <Row label="Expired" value={queue.stats.expired} />
+            <Row label="In flight" value={queue.stats.inflight} />
+            <Row label="Consumers" value={queue.consumers} />
+            <Row label="Producers" value={queue.producers} />
+            <Row label="Paused" value={queue.state.paused} />
+            <Row label="Stopped" value={queue.state.stopped} />
+            <Row label="DLQ" value={queue.state.dlq} />
           </Section>
 
+          {/* MEMORY */}
           <Section id="memory" title="Memory">
-            <Row label="Memory limit" value={attributes.MemoryLimit} />
-            <Row label="Memory usage bytes" value={attributes.MemoryUsageByteCount} />
-            <Row label="Memory percent usage" value={attributes.MemoryPercentUsage} />
-            <Row label="Memory usage portion" value={attributes.MemoryUsagePortion} />
-            <Row label="Temp usage limit" value={attributes.TempUsageLimit} />
-            <Row label="Temp usage percent" value={attributes.TempUsagePercentUsage} />
+            <Row label="Memory limit" value={queue.memory.limit} />
+            <Row label="Memory usage bytes" value={queue.memory.usageBytes} />
+            <Row label="Memory percent usage" value={queue.memory.percent} />
           </Section>
 
-          <Section id="cursor" title="Cursor">
-            <Row label="Cursor full" value={attributes.CursorFull} />
-            <Row label="Cursor memory usage" value={attributes.CursorMemoryUsage} />
-            <Row label="Cursor percent usage" value={attributes.CursorPercentUsage} />
-            <Row label="Store message size" value={attributes.StoreMessageSize} />
-            <Row label="Max page size" value={attributes.MaxPageSize} />
-          </Section>
-
-          <Section id="audit" title="Audit">
-            <Row label="Max audit depth" value={attributes.MaxAuditDepth} />
-            <Row label="Max producers to audit" value={attributes.MaxProducersToAudit} />
-            <Row label="Duplicate from store count" value={attributes.DuplicateFromStoreCount} />
-            <Row label="Send duplicate from store to DLQ" value={attributes.SendDuplicateFromStoreToDLQ} />
-            <Row label="Max uncommitted exceeded count" value={attributes.MaxUncommittedExceededCount} />
-          </Section>
-
-          <Section id="msgsize" title="Message Size Stats">
-            <Row label="Average message size" value={attributes.AverageMessageSize} />
-            <Row label="Max message size" value={attributes.MaxMessageSize} />
-            <Row label="Min message size" value={attributes.MinMessageSize} />
-          </Section>
-
-          <Section id="enqtime" title="Enqueue Time Stats">
-            <Row label="Average enqueue time" value={attributes.AverageEnqueueTime} />
-            <Row label="Max enqueue time" value={attributes.MaxEnqueueTime} />
-            <Row label="Min enqueue time" value={attributes.MinEnqueueTime} />
-          </Section>
-
+          {/* DLQ */}
           <Section id="dlq" title="DLQ">
-            <Row label="DLQ" value={attributes.Dlq} />
-            <Row label="Options" value={attributes.Options} />
+            <Row label="DLQ enabled" value={queue.state.dlq} />
           </Section>
 
-          <Section id="network" title="Network">
-            <Row label="Network enqueues" value={attributes.NetworkEnqueues} />
-            <Row label="Network dequeues" value={attributes.NetworkDequeues} />
-          </Section>
-
-          <Section id="groups" title="Message Groups">
-            <Row label="Message group type" value={attributes.MessageGroupType} />
-            <Row label="Message groups" value={JSON.stringify(attributes.MessageGroups)} />
-          </Section>
-
+          {/* MISC */}
           <Section id="misc" title="Misc">
-            <Row label="Use cache" value={attributes.UseCache} />
-            <Row label="Cache enabled" value={attributes.CacheEnabled} />
-            <Row label="Prioritized messages" value={attributes.PrioritizedMessages} />
-            <Row label="Producer flow control" value={attributes.ProducerFlowControl} />
-            <Row label="Slow consumer strategy" value={attributes.SlowConsumerStrategy} />
-            <Row label="Subscriptions" value={JSON.stringify(attributes.Subscriptions)} />
+            <Row label="MBean" value={queue.mbean} />
+            <Row label="Name" value={queue.name} />
           </Section>
+
         </Accordion>
       </CardBody>
     </Card>
-  );
-};
+  )
+}

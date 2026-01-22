@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {
   Card,
   CardBody,
@@ -8,26 +8,26 @@ import {
   DescriptionListTerm,
   DescriptionListDescription,
   Label
-} from '@patternfly/react-core';
+} from '@patternfly/react-core'
 
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   ExclamationCircleIcon
-} from '@patternfly/react-icons';
+} from '@patternfly/react-icons'
 
-import { ActiveMQQueueAttributes } from '../../types/activemq';
+import { Queue } from '../../types/domain'
 
 interface Props {
-  attributes: ActiveMQQueueAttributes;
+  queue: Queue
 }
 
-export const QueueLag: React.FC<Props> = ({ attributes }) => {
-  const lag = attributes.QueueSize - attributes.InflightCount;
+export const QueueLag: React.FC<Props> = ({ queue }) => {
+  const lag = queue.size - queue.stats.inflight
 
-  let severity: 'green' | 'yellow' | 'red' = 'green';
-  if (lag > 1000) severity = 'yellow';
-  if (lag > 10000) severity = 'red';
+  let severity: 'green' | 'yellow' | 'red' = 'green'
+  if (lag > 1000) severity = 'yellow'
+  if (lag > 10000) severity = 'red'
 
   const renderLabel = () => {
     if (severity === 'green') {
@@ -35,21 +35,21 @@ export const QueueLag: React.FC<Props> = ({ attributes }) => {
         <Label color="green" icon={<CheckCircleIcon />}>
           {lag}
         </Label>
-      );
+      )
     }
     if (severity === 'yellow') {
       return (
         <Label color="orange" icon={<ExclamationTriangleIcon />}>
           {lag}
         </Label>
-      );
+      )
     }
     return (
       <Label color="red" icon={<ExclamationCircleIcon />}>
         {lag}
       </Label>
-    );
-  };
+    )
+  }
 
   return (
     <Card isFlat isCompact>
@@ -66,5 +66,5 @@ export const QueueLag: React.FC<Props> = ({ attributes }) => {
         </DescriptionList>
       </CardBody>
     </Card>
-  );
-};
+  )
+}

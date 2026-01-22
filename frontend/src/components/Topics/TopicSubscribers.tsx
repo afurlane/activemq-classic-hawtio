@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react'
 import {
   Card,
   CardBody,
@@ -8,23 +8,12 @@ import {
   DataListItemRow,
   DataListItemCells,
   DataListCell
-} from '@patternfly/react-core';
+} from '@patternfly/react-core'
 
-import { topics } from '../../services/topics';
+import { ActiveMQTopicAttributes } from '../../types/activemq'
 
-export const TopicSubscribers: React.FC<{ topicName: string }> = ({ topicName }) => {
-  const [subs, setSubs] = useState<any[]>([]);
-
-  const load = async () => {
-    const data = await topics.listSubscribers(topicName);
-    setSubs(data);
-  };
-
-  useEffect(() => {
-    load();
-    const id = setInterval(load, 5000);
-    return () => clearInterval(id);
-  }, [topicName]);
+export const TopicSubscribers: React.FC<{ attrs: ActiveMQTopicAttributes }> = ({ attrs }) => {
+  const subs = attrs.Subscriptions ?? []
 
   return (
     <Card isFlat isCompact>
@@ -48,5 +37,5 @@ export const TopicSubscribers: React.FC<{ topicName: string }> = ({ topicName })
         </DataList>
       </CardBody>
     </Card>
-  );
-};
+  )
+}

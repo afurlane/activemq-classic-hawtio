@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { activemq } from '../../services/activemq';
-import { Sparkline } from '../Common/Sparkline';
+import React, { useEffect, useState } from 'react'
+import { activemq } from '../../services/activemq/ActiveMQClassicService'
+import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+import { Sparkline } from '../Common/Sparkline'
 import {
   Card,
   CardBody,
@@ -8,27 +9,44 @@ import {
   DescriptionList,
   DescriptionListGroup,
   DescriptionListTerm,
-  DescriptionListDescription
-} from '@patternfly/react-core';
-import { Label } from '@patternfly/react-core';
+  DescriptionListDescription,
+  Label,
+  Alert
+} from '@patternfly/react-core'
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   ExclamationCircleIcon
-} from '@patternfly/react-icons';
+} from '@patternfly/react-icons'
 
 interface TrendHistory {
-  totalSize: number[];
-  totalInflight: number[];
-  totalLag: number[];
+  totalSize: number[]
+  totalInflight: number[]
+  totalLag: number[]
 }
 
 export const BrokerTrends: React.FC = () => {
+  const brokerName = useSelectedBrokerName()
+
+  if (!brokerName) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>
+          <Alert
+            variant="danger"
+            title="No broker selected"
+            isInline
+          />
+        </CardBody>
+      </Card>
+    )
+  }
+
   const [history, setHistory] = useState<TrendHistory>({
     totalSize: [],
     totalInflight: [],
     totalLag: [],
-  });
+  })
 
   const [latest, setLatest] = useState({
     totalSize: 0,
@@ -36,28 +54,34 @@ export const BrokerTrends: React.FC = () => {
     totalLag: 0,
     consumers: 0,
     avgMemory: 0,
-  });
+  })
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true)
 
   const poll = async () => {
-    const queues = await activemq.listQueuesWithAttributes();
+    if (!brokerName) return
 
-    let totalSize = 0;
-    let totalInflight = 0;
-    let totalLag = 0;
-    let consumers = 0;
-    let memorySum = 0;
+    const queues = await activemq.listQueues(brokerName)
 
-    queues.forEach(({ attrs }) => {
-      totalSize += attrs.QueueSize;
-      totalInflight += attrs.InflightCount;
-      totalLag += attrs.QueueSize - attrs.InflightCount;
-      consumers += attrs.ConsumerCount;
-      memorySum += attrs.MemoryPercentUsage;
-    });
+    let totalSize = 0
+    let totalInflight = 0
+    let totalLag = 0
+    let consumers = 0
+    let memorySum = 0
 
-    const avgMemory = queues.length > 0 ? memorySum / queues.length : 0;
+    queues.forEach(q => {
+      const size = q.size ?? 0
+      const inflight = q.stats.inflight ?? 0
+      const mem = q.memory.percent ?? 0
+
+      totalSize += size
+      totalInflight += inflight
+      totalLag += size - inflight
+      consumers += q.consumers
+      memorySum += mem
+    })
+
+    const avgMemory = queues.length > 0 ? memorySum / queues.length : 0
 
     setLatest({
       totalSize,
@@ -65,31 +89,32 @@ export const BrokerTrends: React.FC = () => {
       totalLag,
       consumers,
       avgMemory,
-    });
+    })
 
     setHistory(prev => ({
       totalSize: [...prev.totalSize, totalSize].slice(-50),
       totalInflight: [...prev.totalInflight, totalInflight].slice(-50),
       totalLag: [...prev.totalLag, totalLag].slice(-50),
-    }));
+    }))
 
-    setLoading(false);
-  };
+    setLoading(false)
+  }
 
   useEffect(() => {
-    poll();
-    const id = setInterval(poll, 5000);
-    return () => clearInterval(id);
-  }, []);
+    poll()
+    const id = setInterval(poll, 5000)
+    return () => clearInterval(id)
+  }, [brokerName])
 
-  if (loading) return <p>Loading broker trends…</p>;
+  if (!brokerName) return <p>No broker selected</p>
+  if (loading) return <p>Loading broker trends…</p>
 
   const severity =
     latest.avgMemory > 80 || latest.totalLag > 50000
       ? 'red'
       : latest.avgMemory > 60 || latest.totalLag > 10000
       ? 'yellow'
-      : 'green';
+      : 'green'
 
   return (
     <Card isFlat isCompact className="broker-panel">
@@ -142,5 +167,5 @@ export const BrokerTrends: React.FC = () => {
         )}
       </CardBody>
     </Card>
-  );
-};
+  )
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {
   Card,
   CardBody,
@@ -7,50 +7,45 @@ import {
   DescriptionListGroup,
   DescriptionListTerm,
   DescriptionListDescription
-} from '@patternfly/react-core';
+} from '@patternfly/react-core'
 
-import { ActiveMQQueueAttributes } from '../../types/activemq';
+import { Queue } from '../../types/domain'
 
 interface Props {
-  attributes: ActiveMQQueueAttributes;
+  queue: Queue
 }
 
-export const QueueStorage: React.FC<Props> = ({ attributes }) => {
+export const QueueStorage: React.FC<Props> = ({ queue }) => {
   return (
     <Card isFlat isCompact>
       <CardBody>
         <Title headingLevel="h4">Storage</Title>
 
         <DescriptionList isHorizontal>
+
           <DescriptionListGroup>
-            <DescriptionListTerm>Store Message Size</DescriptionListTerm>
+            <DescriptionListTerm>Memory Limit</DescriptionListTerm>
             <DescriptionListDescription>
-              {attributes.StoreMessageSize} bytes
+              {queue.memory.limit} bytes
             </DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
-            <DescriptionListTerm>Temp Usage</DescriptionListTerm>
+            <DescriptionListTerm>Memory Usage</DescriptionListTerm>
             <DescriptionListDescription>
-              {attributes.TempUsagePercentUsage}%
+              {queue.memory.usageBytes} bytes
             </DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
-            <DescriptionListTerm>Cursor Memory Usage</DescriptionListTerm>
+            <DescriptionListTerm>Memory Usage (%)</DescriptionListTerm>
             <DescriptionListDescription>
-              {attributes.CursorMemoryUsage} bytes
+              {queue.memory.percent}%
             </DescriptionListDescription>
           </DescriptionListGroup>
 
-          <DescriptionListGroup>
-            <DescriptionListTerm>Total Memory Usage</DescriptionListTerm>
-            <DescriptionListDescription>
-              {attributes.MemoryUsageByteCount} bytes
-            </DescriptionListDescription>
-          </DescriptionListGroup>
         </DescriptionList>
       </CardBody>
     </Card>
-  );
-};
+  )
+}

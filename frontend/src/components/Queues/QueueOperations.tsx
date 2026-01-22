@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   Card,
   CardBody,
@@ -11,15 +11,18 @@ import {
   TextInput,
   Toolbar,
   ToolbarContent,
-  ToolbarGroup
-} from '@patternfly/react-core';
+  ToolbarGroup,
+  Alert
+} from '@patternfly/react-core'
 
-import { activemq } from '../../services/activemq';
-import { QueueInfo } from '../../types/activemq';
+import { activemq } from '../../services/activemq/ActiveMQClassicService'
+import { Queue } from '../../types/domain'
+import { getBrokerMBean } from '../../services/activemq/ActiveMQClassicService'
+import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
 
 interface QueueOperationsProps {
-  queue: QueueInfo;
-  onAction: () => Promise<void>;
+  queue: Queue
+  onAction: () => Promise<void>
 }
 
 type OperationName =
@@ -31,37 +34,52 @@ type OperationName =
   | 'copyMatching'
   | 'removeMatching'
   | 'removeMessageGroup'
-  | 'sendMessage';
+  | 'sendMessage'
 
 export const QueueOperations: React.FC<QueueOperationsProps> = ({ queue, onAction }) => {
-  const mbean = queue.mbean;
+  const mbean = queue.mbean
+  const brokerName = useSelectedBrokerName();
 
-  const [modal, setModal] = useState<OperationName | null>(null);
-  const [form, setForm] = useState<Record<string, string | number>>({});
+  if (!brokerName) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>
+          <Alert
+            variant="danger"
+            title="No broker selected"
+            isInline
+          />
+        </CardBody>
+      </Card>
+    )
+  }
+
+  const [modal, setModal] = useState<OperationName | null>(null)
+  const [form, setForm] = useState<Record<string, string | number>>({})
   const [confirm, setConfirm] = useState<{
-    message: string;
-    action: () => Promise<void>;
-  } | null>(null);
+    message: string
+    action: () => Promise<void>
+  } | null>(null)
 
   const open = (name: OperationName) => {
-    setForm({});
-    setModal(name);
-  };
+    setForm({})
+    setModal(name)
+  }
 
-  const close = () => setModal(null);
+  const close = () => setModal(null)
 
   const update = (field: string, value: string | number) =>
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm(prev => ({ ...prev, [field]: value }))
 
   const run = async (fn: () => Promise<any>) => {
-    await fn();
-    await onAction();
-    close();
-  };
+    await fn()
+    await onAction()
+    close()
+  }
 
   const confirmAction = (message: string, action: () => Promise<void>) => {
-    setConfirm({ message, action });
-  };
+    setConfirm({ message, action })
+  }
 
   return (
     <Card isFlat isCompact>
@@ -83,7 +101,7 @@ export const QueueOperations: React.FC<QueueOperationsProps> = ({ queue, onActio
                 Purge
               </Button>
 
-              {queue.paused ? (
+              {queue.state.paused ? (
                 <Button onClick={() => run(() => activemq.resumeQueue(mbean))}>
                   Resume
                 </Button>
@@ -102,7 +120,10 @@ export const QueueOperations: React.FC<QueueOperationsProps> = ({ queue, onActio
                 onClick={() =>
                   confirmAction(
                     `Delete queue ${queue.name}? This cannot be undone.`,
-                    () => run(() => activemq.deleteQueue(queue.name))
+                    () => run(() => 
+                      activemq.deleteQueue(
+                        getBrokerMBean(brokerName), 
+                        queue.name))
                   )
                 }
               >
@@ -112,7 +133,7 @@ export const QueueOperations: React.FC<QueueOperationsProps> = ({ queue, onActio
           </ToolbarContent>
         </Toolbar>
 
-        {queue.dlq && (
+        {queue.state.dlq && (
           <>
             <Title headingLevel="h4" style={{ marginTop: '1rem' }}>
               DLQ Tools
@@ -245,6 +266,7 @@ export const QueueOperations: React.FC<QueueOperationsProps> = ({ queue, onActio
                   <FormGroup label="Message ID" fieldId="retry-id">
                     <TextInput
                       id="retry-id"
+                      aria-label = "Message ID to retry"
                       onChange={(event) => update('id', event.currentTarget.value)}
                     />
                   </FormGroup>
@@ -265,6 +287,7 @@ export const QueueOperations: React.FC<QueueOperationsProps> = ({ queue, onActio
                   <FormGroup label="Message ID" fieldId="move-id">
                     <TextInput
                       id="move-id"
+                      aria-label = "Message ID to move"
                       onChange={(event) => update('id', event.currentTarget.value)}
                     />
                   </FormGroup>
@@ -272,7 +295,8 @@ export const QueueOperations: React.FC<QueueOperationsProps> = ({ queue, onActio
                   <FormGroup label="Destination" fieldId="move-dest">
                     <TextInput
                       id="move-dest"
-                      onChange={(event) => update('id', event.currentTarget.value)}
+                      aria-label = "Message ID to move destination"
+                      onChange={(event) => update('dest', event.currentTarget.value)}
                     />
                   </FormGroup>
 
@@ -297,11 +321,11 @@ export const QueueOperations: React.FC<QueueOperationsProps> = ({ queue, onActio
                 </>
               )}
 
-              {/* Qui puoi aggiungere tutte le altre modali nello stesso stile */}
+              {/* TODO: migrate other modals similarly */}
             </Form>
           </Modal>
         )}
       </CardBody>
     </Card>
-  );
-};
+  )
+}

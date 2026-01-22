@@ -1,22 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   Card,
   CardBody,
   Title,
   Button,
   ButtonVariant,
-  Modal
-} from '@patternfly/react-core';
+  Modal,
+  Alert
+} from '@patternfly/react-core'
 
-import { topics } from '../../services/topics';
+import { activemq } from '../../services/activemq/ActiveMQClassicService'
+import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+import { getBrokerMBean } from '../../services/activemq/ActiveMQClassicService'
 
 export const TopicDelete: React.FC<{ mbean: string }> = ({ mbean }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false)
+  const brokerName = useSelectedBrokerName()
+
+  if (!brokerName) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>
+          <Alert
+            variant="danger"
+            title="No broker selected"
+            isInline
+          />
+        </CardBody>
+      </Card>
+    )
+  }
+
+  // Estrae il nome del topic dal mbean
+  const topicName = mbean.split('destinationName=')[1]
+  if (!topicName) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>
+          <Alert
+            variant="danger"
+            title="Invalid topic MBean"
+            isInline
+          />
+        </CardBody>
+      </Card>
+    )
+  }
 
   const del = async () => {
-    await topics.deleteTopic(mbean);
-    setIsOpen(false);
-  };
+    await activemq.deleteTopic(getBrokerMBean(brokerName), topicName)
+    setIsOpen(false)
+  }
 
   return (
     <Card isFlat isCompact>
@@ -51,10 +85,10 @@ export const TopicDelete: React.FC<{ mbean: string }> = ({ mbean }) => {
             </Button>
           ]}
         >
-          This action will permanently delete the topic.  
+          This action will permanently delete the topic <b>{topicName}</b>.  
           This cannot be undone.
         </Modal>
       </CardBody>
     </Card>
-  );
-};
+  )
+}

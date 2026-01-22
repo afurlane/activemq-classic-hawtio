@@ -1,20 +1,21 @@
-import React from 'react';
+import React from 'react'
 import {
   Chart,
   ChartAxis,
   ChartGroup,
   ChartLine,
   ChartTooltip
-} from '@patternfly/react-charts';
+} from '@patternfly/react-charts'
 
-export const TopicCharts: React.FC<{ history: any[] }> = ({ history }) => {
+import { ActiveMQTopicAttributes } from '../../types/activemq'
+
+export const TopicCharts: React.FC<{ history: ActiveMQTopicAttributes[] }> = ({ history }) => {
   const data = history.map((h, i) => ({
     x: i,
     enqueue: h.EnqueueCount,
     dequeue: h.DequeueCount,
-    dispatch: h.DispatchCount,
-    size: h.QueueSize,
-  }));
+    dispatch: h.DispatchCount
+  }))
 
   return (
     <div className="broker-panel">
@@ -25,7 +26,7 @@ export const TopicCharts: React.FC<{ history: any[] }> = ({ history }) => {
           height={200}
           width={500}
           padding={{ top: 20, bottom: 40, left: 50, right: 20 }}
-          animate={{ duration: 500, easing: "cubicOut" as const }}
+          animate={{ duration: 500, easing: 'cubicOut' as const }}
           containerComponent={<ChartTooltip />}
         >
           <ChartAxis fixLabelOverlap />
@@ -44,13 +45,9 @@ export const TopicCharts: React.FC<{ history: any[] }> = ({ history }) => {
               data={data.map(d => ({ x: d.x, y: d.dispatch }))}
               style={{ data: { stroke: '#ff8800', strokeWidth: 2 } }}
             />
-            <ChartLine
-              data={data.map(d => ({ x: d.x, y: d.size }))}
-              style={{ data: { stroke: '#dc3545', strokeWidth: 2 } }}
-            />
           </ChartGroup>
         </Chart>
       </div>
     </div>
-  );
-};
+  )
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {
   Card,
   CardBody,
@@ -7,57 +7,45 @@ import {
   DescriptionListGroup,
   DescriptionListTerm,
   DescriptionListDescription
-} from '@patternfly/react-core';
+} from '@patternfly/react-core'
 
-import { ActiveMQQueueAttributes } from '../../types/activemq';
+import { Queue } from '../../types/domain'
 
 interface Props {
-  attributes: ActiveMQQueueAttributes;
+  queue: Queue
 }
 
-export const QueueDLQ: React.FC<Props> = ({ attributes }) => {
+export const QueueDLQ: React.FC<Props> = ({ queue }) => {
   return (
     <Card isFlat isCompact>
       <CardBody>
         <Title headingLevel="h4">DLQ / Redelivery</Title>
 
         <DescriptionList isHorizontal>
+
           <DescriptionListGroup>
             <DescriptionListTerm>Is DLQ</DescriptionListTerm>
             <DescriptionListDescription>
-              {attributes.Dlq ? 'Yes' : 'No'}
+              {queue.state.dlq ? 'Yes' : 'No'}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
             <DescriptionListTerm>Expired Messages</DescriptionListTerm>
             <DescriptionListDescription>
-              {attributes.ExpiredCount}
+              {queue.stats.expired}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
             <DescriptionListTerm>Redelivered Messages</DescriptionListTerm>
             <DescriptionListDescription>
-              {attributes.RedeliveredCount ?? 'N/A'}
+              {queue.stats.redelivered ?? 'N/A'}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
-          <DescriptionListGroup>
-            <DescriptionListTerm>Duplicate From Store</DescriptionListTerm>
-            <DescriptionListDescription>
-              {attributes.DuplicateFromStoreCount}
-            </DescriptionListDescription>
-          </DescriptionListGroup>
-
-          <DescriptionListGroup>
-            <DescriptionListTerm>Send Duplicate To DLQ</DescriptionListTerm>
-            <DescriptionListDescription>
-              {attributes.SendDuplicateFromStoreToDLQ ? 'Yes' : 'No'}
-            </DescriptionListDescription>
-          </DescriptionListGroup>
         </DescriptionList>
       </CardBody>
     </Card>
-  );
-};
+  )
+}
