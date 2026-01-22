@@ -30,6 +30,13 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Set Maven version from tag
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          VERSION="${{ steps.release.outputs.tag_name }}"
+          VERSION="${VERSION#v}"
+          mvn -B versions:set -DnewVersion="$VERSION"
+
       - name: Build plugin
         if: ${{ steps.release.outputs.release_created }}
         run: mvn -B clean package
