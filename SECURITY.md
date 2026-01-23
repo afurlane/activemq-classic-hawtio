@@ -1,7 +1,7 @@
 # Security Policy
 
 ## Supported Versions
-The following versions of ActiveMC Classic 6 receive security updates:
+The following versions of ActiveMQ Classic 6 receive security updates:
 - Latest stable release
 - `main` branch
 

@@ -1,6 +1,6 @@
-# ActiveMC Classic 6 – Hawtio Plugin
+# ActiveMQ Classic 6 – Hawtio Plugin
 
-A modern, fast, and modular management console for ActiveMC Classic 6, built as a
+A modern, fast, and modular management console for ActiveMQ Classic 6, built as a
 self‑contained Hawtio 4 plugin running on Jetty 11 / Jakarta EE.
 
 ![Build](https://github.com/afurlane/activemq-classic-hawtio/actions/workflows/build.yml/badge.svg)
@@ -11,7 +11,7 @@ self‑contained Hawtio 4 plugin running on Jetty 11 / Jakarta EE.
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://www.conventionalcommits.org/en/v1.0.0/)
 [![Release Automation](https://img.shields.io/badge/Release%20Automation-Enabled-brightgreen)](RELEASE_PROCESS.md)
 ![React](https://img.shields.io/badge/React-18.x-blue)
-![Latest Release](https://img.shields.io/github/v/release/afurlane/activemc-classic-hawtio?label=latest-release&color=blue)
+![Latest Release](https://img.shields.io/github/v/release/afurlane/activemq-classic-hawtio?label=latest-release&color=blue)
 
 ---
 

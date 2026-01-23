@@ -1,7 +1,7 @@
 # Code of Conduct
 
 ## Community Commitment
-The ActiveMC Classic 6 community is built on collaboration, respect, and technical responsibility.  
+The ActiveMQ Classic 6 community is built on collaboration, respect, and technical responsibility.  
 All contributors are expected to help maintain a welcoming, professional, and quality‑oriented environment.
 
 ## Expected Behavior

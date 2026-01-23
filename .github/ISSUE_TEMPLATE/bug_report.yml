@@ -18,5 +18,5 @@ body:
       label: Logs, stacktrace, or screenshots
   - type: input
     attributes:
-      label: ActiveMC Classic 6 version
+      label: ActiveMQ Classic 6 version
 

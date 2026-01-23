@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for your interest in contributing to the ActiveMC Classic 6 Hawtio Plugin.
+Thank you for your interest in contributing to the ActiveMQ Classic 6 Hawtio Plugin.
 
 ## General Guidelines
 
