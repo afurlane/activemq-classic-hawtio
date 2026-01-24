@@ -9,7 +9,8 @@ import {
   DescriptionList,
   DescriptionListGroup,
   DescriptionListTerm,
-  DescriptionListDescription
+  DescriptionListDescription,
+  Label
 } from '@patternfly/react-core'
 
 import { Queue } from '../../types/domain'
@@ -25,26 +26,37 @@ export const QueueAttributes: React.FC<Props> = ({ queue }) => {
     setExpanded(prev => (prev === id ? null : id))
   }
 
-  const Section = (props: { id: string; title: string; children: React.ReactNode }) => (
+  const Section: React.FC<{
+    id: string
+    title: string
+    children: React.ReactNode
+  }> = ({ id, title, children }) => (
     <AccordionItem>
       <AccordionToggle
-        onClick={() => onToggle(props.id)}
-        isExpanded={expanded === props.id}
-        id={props.id}
+        onClick={() => onToggle(id)}
+        isExpanded={expanded === id}
+        id={id}
       >
-        {props.title}
+        {title}
       </AccordionToggle>
-      <AccordionContent isHidden={expanded !== props.id}>
-        <DescriptionList isHorizontal>{props.children}</DescriptionList>
+
+      <AccordionContent isHidden={expanded !== id}>
+        <DescriptionList isHorizontal>{children}</DescriptionList>
       </AccordionContent>
     </AccordionItem>
   )
 
-  const Row = (props: { label: string; value: any }) => (
+  const Row: React.FC<{ label: string; value: any }> = ({ label, value }) => (
     <DescriptionListGroup>
-      <DescriptionListTerm>{props.label}</DescriptionListTerm>
+      <DescriptionListTerm>{label}</DescriptionListTerm>
       <DescriptionListDescription>
-        {props.value === undefined ? '—' : String(props.value)}
+        {value === undefined
+          ? '—'
+          : typeof value === 'boolean'
+          ? value
+            ? <Label color="green">Yes</Label>
+            : <Label color="red">No</Label>
+          : String(value)}
       </DescriptionListDescription>
     </DescriptionListGroup>
   )

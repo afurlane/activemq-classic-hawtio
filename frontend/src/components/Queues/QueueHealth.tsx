@@ -22,38 +22,42 @@ interface Props {
   queue: Queue
 }
 
-const status = (value: number, green: number, yellow: number) => {
+type Severity = 'green' | 'yellow' | 'red'
+
+const status = (value: number, green: number, yellow: number): Severity => {
   if (value < green) return 'green'
   if (value < yellow) return 'yellow'
   return 'red'
 }
 
-const renderStatus = (value: any, severity: string) => {
-  if (severity === 'green') {
-    return (
-      <Label color="green" icon={<CheckCircleIcon />}>
-        {value}
-      </Label>
-    )
+const renderStatus = (value: React.ReactNode, severity: Severity) => {
+  switch (severity) {
+    case 'green':
+      return (
+        <Label color="green" icon={<CheckCircleIcon />}>
+          {value}
+        </Label>
+      )
+    case 'yellow':
+      return (
+        <Label color="orange" icon={<ExclamationTriangleIcon />}>
+          {value}
+        </Label>
+      )
+    case 'red':
+    default:
+      return (
+        <Label color="red" icon={<ExclamationCircleIcon />}>
+          {value}
+        </Label>
+      )
   }
-  if (severity === 'yellow') {
-    return (
-      <Label color="orange" icon={<ExclamationTriangleIcon />}>
-        {value}
-      </Label>
-    )
-  }
-  return (
-    <Label color="red" icon={<ExclamationCircleIcon />}>
-      {value}
-    </Label>
-  )
 }
 
 export const QueueHealth: React.FC<Props> = ({ queue }) => {
   const memory = status(queue.memory.percent, 60, 80)
   const inflight = status(queue.stats.inflight, 100, 500)
-  const consumers = queue.consumers > 0 ? 'green' : 'red'
+  const consumers: Severity = queue.consumers > 0 ? 'green' : 'red'
   const size = status(queue.size, 1000, 10000)
 
   return (

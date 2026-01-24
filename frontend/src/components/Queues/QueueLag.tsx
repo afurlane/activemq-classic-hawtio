@@ -22,33 +22,38 @@ interface Props {
   queue: Queue
 }
 
+type Severity = 'green' | 'yellow' | 'red'
+
 export const QueueLag: React.FC<Props> = ({ queue }) => {
   const lag = queue.size - queue.stats.inflight
 
-  let severity: 'green' | 'yellow' | 'red' = 'green'
-  if (lag > 1000) severity = 'yellow'
-  if (lag > 10000) severity = 'red'
+  const severity: Severity =
+    lag > 10000 ? 'red' :
+    lag > 1000  ? 'yellow' :
+                  'green'
 
-  const renderLabel = () => {
-    if (severity === 'green') {
-      return (
-        <Label color="green" icon={<CheckCircleIcon />}>
-          {lag}
-        </Label>
-      )
+  const renderLabel = (value: number, sev: Severity) => {
+    switch (sev) {
+      case 'green':
+        return (
+          <Label color="green" icon={<CheckCircleIcon />}>
+            {value}
+          </Label>
+        )
+      case 'yellow':
+        return (
+          <Label color="orange" icon={<ExclamationTriangleIcon />}>
+            {value}
+          </Label>
+        )
+      case 'red':
+      default:
+        return (
+          <Label color="red" icon={<ExclamationCircleIcon />}>
+            {value}
+          </Label>
+        )
     }
-    if (severity === 'yellow') {
-      return (
-        <Label color="orange" icon={<ExclamationTriangleIcon />}>
-          {lag}
-        </Label>
-      )
-    }
-    return (
-      <Label color="red" icon={<ExclamationCircleIcon />}>
-        {lag}
-      </Label>
-    )
   }
 
   return (
@@ -60,7 +65,7 @@ export const QueueLag: React.FC<Props> = ({ queue }) => {
           <DescriptionListGroup>
             <DescriptionListTerm>Lag</DescriptionListTerm>
             <DescriptionListDescription>
-              {renderLabel()}
+              {renderLabel(lag, severity)}
             </DescriptionListDescription>
           </DescriptionListGroup>
         </DescriptionList>

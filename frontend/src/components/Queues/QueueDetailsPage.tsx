@@ -1,7 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { activemq } from '../../services/activemq/ActiveMQClassicService'
-import { buildQueuesUrl } from '../../router/router'
-
 import {
   PageSection,
   PageSectionVariants,
@@ -11,13 +8,19 @@ import {
   GridItem,
   Card,
   CardBody,
-  Alert
+  Tabs,
+  Tab,
+  TabTitleText,
+  Alert,
 } from '@patternfly/react-core'
+
+import { activemq } from '../../services/activemq/ActiveMQClassicService'
+import { buildQueuesUrl } from '../../router/router'
 
 import { QueueBrowser } from './QueueBrowser'
 import { QueueOperations } from './QueueOperations'
 import { QueueAttributes } from './QueueAttributes'
-import { QueueCharts } from './QueueCharts'
+import { QueueMetricsOverview } from './QueueMetrics'
 import { QueueHealth } from './QueueHealth'
 import { QueueThroughput } from './QueueThroughput'
 import { QueueLag } from './QueueLag'
@@ -30,11 +33,7 @@ import { Queue } from '../../types/domain'
 import { useQueueMetrics } from '../../hooks/useQueueMetrics'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
 
-interface Props {
-  queueName: string
-}
-
-export const QueueDetailsPage: React.FC<Props> = ({ queueName }) => {
+export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName }) => {
   const brokerName = useSelectedBrokerName()
 
   if (!brokerName) {
@@ -48,6 +47,7 @@ export const QueueDetailsPage: React.FC<Props> = ({ queueName }) => {
   }
 
   const [queue, setQueue] = useState<Queue | null>(null)
+  const [activeTab, setActiveTab] = useState<string>('overview')
   const mounted = useRef(false)
 
   const loadInfo = async () => {
@@ -82,11 +82,11 @@ export const QueueDetailsPage: React.FC<Props> = ({ queueName }) => {
 
   return (
     <>
-      {/* Header */}
+      {/* HEADER */}
       <PageSection variant={PageSectionVariants.light}>
         <Grid hasGutter>
           <GridItem span={8}>
-            <Title headingLevel="h2">Queue: {queue.name}</Title>
+            <Title headingLevel="h2">{queue.name}</Title>
           </GridItem>
           <GridItem span={4} style={{ textAlign: 'right' }}>
             <Button
@@ -99,9 +99,9 @@ export const QueueDetailsPage: React.FC<Props> = ({ queueName }) => {
         </Grid>
       </PageSection>
 
-      {/* Summary */}
+      {/* SUMMARY */}
       <PageSection>
-        <Card isFlat isCompact>
+        <Card isFlat>
           <CardBody>
             <Grid hasGutter>
               <GridItem span={2}><b>Size:</b> {queue.size}</GridItem>
@@ -122,70 +122,62 @@ export const QueueDetailsPage: React.FC<Props> = ({ queueName }) => {
         </Card>
       </PageSection>
 
-      {/* Operations */}
+      {/* TABS */}
       <PageSection>
-        <Title headingLevel="h3">Operations</Title>
-        <QueueOperations queue={queue} onAction={loadInfo} />
+        <Tabs
+          activeKey={activeTab}
+          onSelect={(_, key) => setActiveTab(key as string)}
+        >
+          <Tab eventKey="overview" title={<TabTitleText>Overview</TabTitleText>} />
+          <Tab eventKey="metrics" title={<TabTitleText>Metrics</TabTitleText>} />
+          <Tab eventKey="messages" title={<TabTitleText>Messages</TabTitleText>} />
+          <Tab eventKey="consumers" title={<TabTitleText>Consumers</TabTitleText>} />
+          <Tab eventKey="storage" title={<TabTitleText>Storage</TabTitleText>} />
+          <Tab eventKey="dlq" title={<TabTitleText>DLQ</TabTitleText>} />
+          <Tab eventKey="attributes" title={<TabTitleText>Attributes</TabTitleText>} />
+          <Tab eventKey="alerts" title={<TabTitleText>Alerts</TabTitleText>} />
+          <Tab eventKey="operations" title={<TabTitleText>Operations</TabTitleText>} />
+        </Tabs>
       </PageSection>
 
-      {/* Health */}
+      {/* TAB CONTENT */}
       <PageSection>
-        <Title headingLevel="h3">Health</Title>
-        <QueueHealth queue={latest} />
-      </PageSection>
+        {activeTab === 'overview' && (
+          <>
+            <QueueHealth queue={latest} />
+            <QueueThroughput history={history} />
+            <QueueLag queue={latest} />
+            <QueueMetricsOverview history={history} />
+          </>
+        )}
 
-      {/* Throughput */}
-      <PageSection>
-        <Title headingLevel="h3">Throughput</Title>
-        <QueueThroughput history={history} />
-      </PageSection>
+        {activeTab === 'metrics' && (
+          <>
+            <QueueMetricsOverview history={history} />
+            <QueueThroughput history={history} />
+            <QueueLag queue={latest} />
+          </>
+        )}
 
-      {/* Lag */}
-      <PageSection>
-        <Title headingLevel="h3">Consumer Lag</Title>
-        <QueueLag queue={latest} />
-      </PageSection>
+        {activeTab === 'messages' && <QueueBrowser queue={queue} />}
 
-      {/* Charts */}
-      <PageSection>
-        <Title headingLevel="h3">Charts</Title>
-        <QueueCharts history={history} />
-      </PageSection>
+        {activeTab === 'consumers' && (
+          <QueueConsumers queue={latest} history={history} />
+        )}
 
-      {/* Attributes */}
-      <PageSection>
-        <Title headingLevel="h3">Attributes</Title>
-        <QueueAttributes queue={latest} />
-      </PageSection>
+        {activeTab === 'storage' && <QueueStorage queue={latest} />}
 
-      {/* Alerts */}
-      <PageSection>
-        <Title headingLevel="h3">Alerts</Title>
-        <QueueAlerts queue={latest} history={history} />
-      </PageSection>
+        {activeTab === 'dlq' && <QueueDLQ queue={latest} />}
 
-      {/* Storage */}
-      <PageSection>
-        <Title headingLevel="h3">Storage</Title>
-        <QueueStorage queue={latest} />
-      </PageSection>
+        {activeTab === 'attributes' && <QueueAttributes queue={latest} />}
 
-      {/* DLQ */}
-      <PageSection>
-        <Title headingLevel="h3">DLQ</Title>
-        <QueueDLQ queue={latest} />
-      </PageSection>
+        {activeTab === 'alerts' && (
+          <QueueAlerts queue={latest} history={history} />
+        )}
 
-      {/* Consumers */}
-      <PageSection>
-        <Title headingLevel="h3">Consumers</Title>
-        <QueueConsumers queue={latest} history={history} />
-      </PageSection>
-
-      {/* Messages */}
-      <PageSection>
-        <Title headingLevel="h3">Messages</Title>
-        <QueueBrowser queue={queue} />
+        {activeTab === 'operations' && (
+          <QueueOperations queue={queue} onAction={loadInfo} />
+        )}
       </PageSection>
     </>
   )

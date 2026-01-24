@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react'
-import { brokerRegistry, BrokerInfo } from '../services/activemq/BrokerRegistry'
+import { useBrokerContext } from '../context/BrokerContext'
 
-export function useBrokers() {
-  const [brokers, setBrokers] = useState<BrokerInfo[]>([])
+export function useBroker() {
+  const { brokers, selectedBroker, setSelectedBroker } = useBrokerContext()
 
-  useEffect(() => {
-    brokerRegistry.refresh().then(setBrokers)
-    return brokerRegistry.onChange(setBrokers)
-  }, [])
-
-  return brokers
+  return {
+    brokers,
+    broker: selectedBroker,
+    setBroker: setSelectedBroker,
+    hasBroker: !!selectedBroker,
+    brokerName: selectedBroker?.name ?? null,
+  }
 }

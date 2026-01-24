@@ -6,13 +6,61 @@ import {
   DescriptionList,
   DescriptionListGroup,
   DescriptionListTerm,
-  DescriptionListDescription
+  DescriptionListDescription,
+  Label
 } from '@patternfly/react-core'
+
+import {
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  ExclamationCircleIcon
+} from '@patternfly/react-icons'
 
 import { Queue } from '../../types/domain'
 
 interface Props {
   queue: Queue
+}
+
+const formatBytes = (bytes: number) => {
+  if (!bytes && bytes !== 0) return '—'
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let i = 0
+  let value = bytes
+  while (value >= 1024 && i < units.length - 1) {
+    value /= 1024
+    i++
+  }
+  return `${value.toFixed(1)} ${units[i]}`
+}
+
+const severityForPercent = (percent: number) => {
+  if (percent < 60) return 'green'
+  if (percent < 80) return 'orange'
+  return 'red'
+}
+
+const renderPercentLabel = (percent: number) => {
+  const sev = severityForPercent(percent)
+  if (sev === 'green') {
+    return (
+      <Label color="green" icon={<CheckCircleIcon />}>
+        {percent}%
+      </Label>
+    )
+  }
+  if (sev === 'orange') {
+    return (
+      <Label color="orange" icon={<ExclamationTriangleIcon />}>
+        {percent}%
+      </Label>
+    )
+  }
+  return (
+    <Label color="red" icon={<ExclamationCircleIcon />}>
+      {percent}%
+    </Label>
+  )
 }
 
 export const QueueStorage: React.FC<Props> = ({ queue }) => {
@@ -26,21 +74,21 @@ export const QueueStorage: React.FC<Props> = ({ queue }) => {
           <DescriptionListGroup>
             <DescriptionListTerm>Memory Limit</DescriptionListTerm>
             <DescriptionListDescription>
-              {queue.memory.limit} bytes
+              {formatBytes(queue.memory.limit)}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
             <DescriptionListTerm>Memory Usage</DescriptionListTerm>
             <DescriptionListDescription>
-              {queue.memory.usageBytes} bytes
+              {formatBytes(queue.memory.usageBytes)}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
             <DescriptionListTerm>Memory Usage (%)</DescriptionListTerm>
             <DescriptionListDescription>
-              {queue.memory.percent}%
+              {renderPercentLabel(queue.memory.percent)}
             </DescriptionListDescription>
           </DescriptionListGroup>
 

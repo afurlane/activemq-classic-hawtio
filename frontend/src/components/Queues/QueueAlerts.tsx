@@ -4,8 +4,18 @@ import {
   CardBody,
   Title,
   Alert,
-  AlertGroup
+  AlertGroup,
+  AlertVariant,
+  Flex,
+  FlexItem
 } from '@patternfly/react-core'
+
+import {
+  ExclamationTriangleIcon,
+  ExclamationCircleIcon,
+  InfoCircleIcon,
+  CheckCircleIcon
+} from '@patternfly/react-icons'
 
 import { Queue } from '../../types/domain'
 
@@ -15,31 +25,63 @@ interface Props {
 }
 
 export const QueueAlerts: React.FC<Props> = ({ queue, history }) => {
-  const alerts: string[] = []
+
+  type AlertItem = {
+    variant: AlertVariant
+    title: string
+    icon: React.ReactNode
+  }
+
+  const alerts: AlertItem[] = []
 
   const lag = queue.size - queue.stats.inflight
 
   // Memory
-  if (queue.memory.percent > 80)
-    alerts.push(`High memory usage: ${queue.memory.percent}%`)
+  if (queue.memory.percent > 80) {
+    alerts.push({
+      variant: AlertVariant.danger,
+      title: `High memory usage: ${queue.memory.percent}%`,
+      icon: <ExclamationCircleIcon />
+    })
+  }
 
   // Consumers
-  if (queue.consumers === 0)
-    alerts.push(`No active consumers`)
+  if (queue.consumers === 0) {
+    alerts.push({
+      variant: AlertVariant.warning,
+      title: `No active consumers`,
+      icon: <ExclamationTriangleIcon />
+    })
+  }
 
   // Lag
-  if (lag > 10000)
-    alerts.push(`High consumer lag: ${lag} messages`)
+  if (lag > 10000) {
+    alerts.push({
+      variant: AlertVariant.danger,
+      title: `High consumer lag: ${lag} messages`,
+      icon: <ExclamationCircleIcon />
+    })
+  }
 
   // Inflight
-  if (queue.stats.inflight > 500)
-    alerts.push(`Too many inflight messages: ${queue.stats.inflight}`)
+  if (queue.stats.inflight > 500) {
+    alerts.push({
+      variant: AlertVariant.warning,
+      title: `Too many inflight messages: ${queue.stats.inflight}`,
+      icon: <ExclamationTriangleIcon />
+    })
+  }
 
   // Queue size
-  if (queue.size > 10000)
-    alerts.push(`Queue backlog growing: ${queue.size} messages`)
+  if (queue.size > 10000) {
+    alerts.push({
+      variant: AlertVariant.warning,
+      title: `Queue backlog growing: ${queue.size} messages`,
+      icon: <ExclamationTriangleIcon />
+    })
+  }
 
-  // Dispatch stall (domain model)
+  // Dispatch stall
   if (history.length > 2) {
     const latest = history.at(-1)
     const prev = history.at(-2)
@@ -48,8 +90,13 @@ export const QueueAlerts: React.FC<Props> = ({ queue, history }) => {
       const enqueueDelta = latest.stats.enqueue - prev.stats.enqueue
       const dispatchDelta = latest.stats.dequeue - prev.stats.dequeue
 
-      if (enqueueDelta > 0 && dispatchDelta === 0)
-        alerts.push(`Messages enqueued but not dispatched`)
+      if (enqueueDelta > 0 && dispatchDelta === 0) {
+        alerts.push({
+          variant: AlertVariant.danger,
+          title: `Messages enqueued but not dispatched`,
+          icon: <ExclamationCircleIcon />
+        })
+      }
     }
   }
 
@@ -60,9 +107,10 @@ export const QueueAlerts: React.FC<Props> = ({ queue, history }) => {
 
         {alerts.length === 0 && (
           <Alert
-            variant="success"
+            variant={AlertVariant.success}
             title="No alerts"
             isInline
+            customIcon={<CheckCircleIcon />}
           />
         )}
 
@@ -71,9 +119,15 @@ export const QueueAlerts: React.FC<Props> = ({ queue, history }) => {
             {alerts.map((a, i) => (
               <Alert
                 key={i}
-                variant="danger"
-                title={a}
+                variant={a.variant}
+                title={
+                  <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+                    <FlexItem>{a.icon}</FlexItem>
+                    <FlexItem>{a.title}</FlexItem>
+                  </Flex>
+                }
                 isInline
+                customIcon={a.icon}
               />
             ))}
           </AlertGroup>

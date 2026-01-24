@@ -1,75 +1,64 @@
 import React, { useState } from 'react'
 import {
   Card,
+  CardHeader,
+  CardTitle,
   CardBody,
-  Title,
+  Grid,
+  GridItem,
+  Flex,
+  FlexItem,
   Button,
-  ButtonVariant,
-  Modal,
-  Form,
-  FormGroup,
-  TextInput,
-  Toolbar,
-  ToolbarContent,
-  ToolbarGroup,
   Alert
 } from '@patternfly/react-core'
 
-import { activemq } from '../../services/activemq/ActiveMQClassicService'
-import { Queue } from '../../types/domain'
-import { getBrokerMBean } from '../../services/activemq/ActiveMQClassicService'
-import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+import {
+  ArrowRightIcon,
+  CopyIcon,
+  TrashIcon,
+  RedoIcon,
+  TimesIcon,
+  EnvelopeIcon
+} from '@patternfly/react-icons'
 
-interface QueueOperationsProps {
-  queue: Queue
-  onAction: () => Promise<void>
-}
+import { activemq, getBrokerMBean } from '../../services/activemq/ActiveMQClassicService'
+import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+import { Queue } from '../../types/domain'
+
+import {
+  MoveMessageModal,
+  CopyMessageModal,
+  RemoveMessageModal,
+  RetryMessageModal,
+  RemoveMessageGroupModal,
+  SendMessageModal
+} from './QueueOperationModals'
 
 type OperationName =
-  | 'retryMessage'
   | 'moveMessage'
   | 'copyMessage'
   | 'removeMessage'
-  | 'moveMatching'
-  | 'copyMatching'
-  | 'removeMatching'
+  | 'retryMessage'
   | 'removeMessageGroup'
   | 'sendMessage'
 
-export const QueueOperations: React.FC<QueueOperationsProps> = ({ queue, onAction }) => {
-  const mbean = queue.mbean
-  const brokerName = useSelectedBrokerName();
+export const QueueOperations: React.FC<{
+  queue: Queue
+  onAction: () => Promise<void>
+}> = ({ queue, onAction }) => {
 
-  if (!brokerName) {
-    return (
-      <Card isFlat isCompact>
-        <CardBody>
-          <Alert
-            variant="danger"
-            title="No broker selected"
-            isInline
-          />
-        </CardBody>
-      </Card>
-    )
-  }
+  const brokerName = useSelectedBrokerName()
+  const mbean = queue.mbean
 
   const [modal, setModal] = useState<OperationName | null>(null)
-  const [form, setForm] = useState<Record<string, string | number>>({})
-  const [confirm, setConfirm] = useState<{
-    message: string
-    action: () => Promise<void>
-  } | null>(null)
+  const [confirm, setConfirm] = useState<{ message: string, action: () => Promise<void> } | null>(null)
 
-  const open = (name: OperationName) => {
-    setForm({})
-    setModal(name)
+  if (!brokerName) {
+    return <Alert variant="danger" title="No broker selected" isInline />
   }
 
+  const open = (name: OperationName) => setModal(name)
   const close = () => setModal(null)
-
-  const update = (field: string, value: string | number) =>
-    setForm(prev => ({ ...prev, [field]: value }))
 
   const run = async (fn: () => Promise<any>) => {
     await fn()
@@ -82,68 +71,83 @@ export const QueueOperations: React.FC<QueueOperationsProps> = ({ queue, onActio
   }
 
   return (
-    <Card isFlat isCompact>
-      <CardBody>
-        <Title headingLevel="h4">Queue Control</Title>
+    <Grid hasGutter>
 
-        <Toolbar>
-          <ToolbarContent>
-            <ToolbarGroup>
-              <Button
-                variant={ButtonVariant.warning}
-                onClick={() =>
-                  confirmAction(
-                    `Are you sure you want to purge all messages from ${queue.name}?`,
-                    () => run(() => activemq.purgeQueue(mbean))
-                  )
-                }
-              >
-                Purge
-              </Button>
-
-              {queue.state.paused ? (
-                <Button onClick={() => run(() => activemq.resumeQueue(mbean))}>
-                  Resume
+      {/* Queue Control */}
+      <GridItem span={6}>
+        <Card isFlat className="pf-v5-u-mb-lg">
+          <CardHeader><CardTitle>Queue Control</CardTitle></CardHeader>
+          <CardBody>
+            <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+              <FlexItem>
+                <Button
+                  variant="warning"
+                  icon={<TrashIcon />}
+                  onClick={() =>
+                    confirmAction(
+                      `Purge all messages from ${queue.name}?`,
+                      () => run(() => activemq.purgeQueue(mbean))
+                    )
+                  }
+                >
+                  Purge
                 </Button>
-              ) : (
-                <Button onClick={() => run(() => activemq.pauseQueue(mbean))}>
-                  Pause
+              </FlexItem>
+
+              <FlexItem>
+                {queue.state.paused ? (
+                  <Button icon={<RedoIcon />} onClick={() => run(() => activemq.resumeQueue(mbean))}>
+                    Resume
+                  </Button>
+                ) : (
+                  <Button icon={<TimesIcon />} onClick={() => run(() => activemq.pauseQueue(mbean))}>
+                    Pause
+                  </Button>
+                )}
+              </FlexItem>
+
+              <FlexItem>
+                <Button icon={<RedoIcon />} onClick={() => run(() => activemq.resetStats(mbean))}>
+                  Reset Stats
                 </Button>
-              )}
+              </FlexItem>
 
-              <Button onClick={() => run(() => activemq.resetStats(mbean))}>
-                Reset Stats
-              </Button>
+              <FlexItem>
+                <Button
+                  variant="danger"
+                  icon={<TrashIcon />}
+                  onClick={() =>
+                    confirmAction(
+                      `Delete queue ${queue.name}? This cannot be undone.`,
+                      () =>
+                        run(() =>
+                          activemq.deleteQueue(
+                            getBrokerMBean(brokerName),
+                            queue.name
+                          )
+                        )
+                    )
+                  }
+                >
+                  Delete
+                </Button>
+              </FlexItem>
+            </Flex>
+          </CardBody>
+        </Card>
+      </GridItem>
 
-              <Button
-                variant={ButtonVariant.danger}
-                onClick={() =>
-                  confirmAction(
-                    `Delete queue ${queue.name}? This cannot be undone.`,
-                    () => run(() => 
-                      activemq.deleteQueue(
-                        getBrokerMBean(brokerName), 
-                        queue.name))
-                  )
-                }
-              >
-                Delete Queue
-              </Button>
-            </ToolbarGroup>
-          </ToolbarContent>
-        </Toolbar>
-
-        {queue.state.dlq && (
-          <>
-            <Title headingLevel="h4" style={{ marginTop: '1rem' }}>
-              DLQ Tools
-            </Title>
-
-            <Toolbar>
-              <ToolbarContent>
-                <ToolbarGroup>
+      {/* DLQ Tools */}
+      {queue.state.dlq && (
+        <GridItem span={6}>
+          <Card isFlat className="pf-v5-u-mb-lg">
+            <CardHeader><CardTitle>DLQ Tools</CardTitle></CardHeader>
+            <CardBody>
+              <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+                <FlexItem>
                   <Button
-                    variant={ButtonVariant.warning}
+                    variant="warning"
+                    icon={<RedoIcon />}
                     onClick={() =>
                       confirmAction(
                         `Retry ALL messages in DLQ ${queue.name}?`,
@@ -151,181 +155,172 @@ export const QueueOperations: React.FC<QueueOperationsProps> = ({ queue, onActio
                       )
                     }
                   >
-                    Retry All Messages
+                    Retry All
                   </Button>
+                </FlexItem>
 
-                  <Button onClick={() => open('retryMessage')}>
-                    Retry Single Message
+                <FlexItem>
+                  <Button icon={<RedoIcon />} onClick={() => open('retryMessage')}>
+                    Retry Single
                   </Button>
-                </ToolbarGroup>
-              </ToolbarContent>
-            </Toolbar>
-          </>
-        )}
+                </FlexItem>
+              </Flex>
+            </CardBody>
+          </Card>
+        </GridItem>
+      )}
 
-        <Title headingLevel="h4" style={{ marginTop: '1rem' }}>
-          Message Tools
-        </Title>
+      {/* Message Tools */}
+      <GridItem span={6}>
+        <Card isFlat className="pf-v5-u-mb-lg">
+          <CardHeader><CardTitle>Message Tools</CardTitle></CardHeader>
+          <CardBody>
+            <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+              <FlexItem>
+                <Button icon={<ArrowRightIcon />} onClick={() => open('moveMessage')}>
+                  Move
+                </Button>
+              </FlexItem>
 
-        <Toolbar>
-          <ToolbarContent>
-            <ToolbarGroup>
-              <Button onClick={() => open('moveMessage')}>Move Message</Button>
-              <Button onClick={() => open('copyMessage')}>Copy Message</Button>
-              <Button onClick={() => open('removeMessage')}>Remove Message</Button>
-            </ToolbarGroup>
-          </ToolbarContent>
-        </Toolbar>
+              <FlexItem>
+                <Button icon={<CopyIcon />} onClick={() => open('copyMessage')}>
+                  Copy
+                </Button>
+              </FlexItem>
 
-        <Title headingLevel="h4" style={{ marginTop: '1rem' }}>
-          Bulk Tools
-        </Title>
+              <FlexItem>
+                <Button icon={<TrashIcon />} onClick={() => open('removeMessage')}>
+                  Remove
+                </Button>
+              </FlexItem>
+            </Flex>
+          </CardBody>
+        </Card>
+      </GridItem>
 
-        <Toolbar>
-          <ToolbarContent>
-            <ToolbarGroup>
-              <Button onClick={() => open('moveMatching')}>
-                Move Matching Messages
-              </Button>
-              <Button onClick={() => open('copyMatching')}>
-                Copy Matching Messages
-              </Button>
-              <Button onClick={() => open('removeMatching')}>
-                Remove Matching Messages
-              </Button>
-            </ToolbarGroup>
-          </ToolbarContent>
-        </Toolbar>
+      {/* Message Groups */}
+      <GridItem span={6}>
+        <Card isFlat className="pf-v5-u-mb-lg">
+          <CardHeader><CardTitle>Message Groups</CardTitle></CardHeader>
+          <CardBody>
+            <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+              <FlexItem>
+                <Button
+                  variant="warning"
+                  icon={<TrashIcon />}
+                  onClick={() =>
+                    confirmAction(
+                      `Remove ALL message groups from ${queue.name}?`,
+                      () => run(() => activemq.removeAllMessageGroups(mbean))
+                    )
+                  }
+                >
+                  Remove All
+                </Button>
+              </FlexItem>
 
-        <Title headingLevel="h4" style={{ marginTop: '1rem' }}>
-          Message Groups
-        </Title>
+              <FlexItem>
+                <Button icon={<TimesIcon />} onClick={() => open('removeMessageGroup')}>
+                  Remove Group
+                </Button>
+              </FlexItem>
+            </Flex>
+          </CardBody>
+        </Card>
+      </GridItem>
 
-        <Toolbar>
-          <ToolbarContent>
-            <ToolbarGroup>
-              <Button
-                variant={ButtonVariant.warning}
-                onClick={() =>
-                  confirmAction(
-                    `Remove ALL message groups from ${queue.name}?`,
-                    () => run(() => activemq.removeAllMessageGroups(mbean))
-                  )
-                }
-              >
-                Remove All Message Groups
-              </Button>
+      {/* Send Message */}
+      <GridItem span={6}>
+        <Card isFlat className="pf-v5-u-mb-lg">
+          <CardHeader><CardTitle>Send Message</CardTitle></CardHeader>
+          <CardBody>
+            <Button icon={<EnvelopeIcon />} onClick={() => open('sendMessage')}>
+              Send Text Message
+            </Button>
+          </CardBody>
+        </Card>
+      </GridItem>
 
-              <Button onClick={() => open('removeMessageGroup')}>
-                Remove Message Group
-              </Button>
-            </ToolbarGroup>
-          </ToolbarContent>
-        </Toolbar>
+      {/* MODALS */}
+      {modal === 'moveMessage' && (
+        <MoveMessageModal
+          isOpen
+          onClose={close}
+          onConfirm={(id, dest) =>
+            confirmAction(
+              `Move message ${id} to ${dest}?`,
+              () => run(() => activemq.moveMessageTo(mbean, id, dest))
+            )
+          }
+        />
+      )}
 
-        <Title headingLevel="h4" style={{ marginTop: '1rem' }}>
-          Send Message
-        </Title>
+      {modal === 'copyMessage' && (
+        <CopyMessageModal
+          isOpen
+          onClose={close}
+          onConfirm={(id, dest) =>
+            confirmAction(
+              `Copy message ${id} to ${dest}?`,
+              () => run(() => activemq.copyMessageTo(mbean, id, dest))
+            )
+          }
+        />
+      )}
 
-        <Button onClick={() => open('sendMessage')}>Send Text Message</Button>
+      {modal === 'removeMessage' && (
+        <RemoveMessageModal
+          isOpen
+          onClose={close}
+          onConfirm={(id) =>
+            confirmAction(
+              `Remove message ${id}?`,
+              () => run(() => activemq.removeMessage(mbean, id))
+            )
+          }
+        />
+      )}
 
-        {/* Confirmation Modal */}
-        {confirm && (
-          <Modal
-            title="Confirm"
-            isOpen={true}
-            onClose={() => setConfirm(null)}
-            actions={[
-              <Button key="confirm" variant={ButtonVariant.danger} onClick={() => confirm.action()}>
-                Yes, proceed
-              </Button>,
-              <Button key="cancel" variant={ButtonVariant.secondary} onClick={() => setConfirm(null)}>
-                Cancel
-              </Button>
-            ]}
-          >
-            {confirm.message}
-          </Modal>
-        )}
+      {modal === 'retryMessage' && (
+        <RetryMessageModal
+          isOpen
+          onClose={close}
+          onConfirm={(id) =>
+            confirmAction(
+              `Retry message ${id}?`,
+              () => run(() => activemq.retryMessage(mbean, id))
+            )
+          }
+        />
+      )}
 
-        {/* Operation Modals */}
-        {modal && (
-          <Modal
-            title={modal}
-            isOpen={true}
-            onClose={close}
-            actions={[
-              <Button key="close" variant={ButtonVariant.secondary} onClick={close}>
-                Close
-              </Button>
-            ]}
-          >
-            <Form>
-              {modal === 'retryMessage' && (
-                <>
-                  <FormGroup label="Message ID" fieldId="retry-id">
-                    <TextInput
-                      id="retry-id"
-                      aria-label = "Message ID to retry"
-                      onChange={(event) => update('id', event.currentTarget.value)}
-                    />
-                  </FormGroup>
+      {modal === 'removeMessageGroup' && (
+        <RemoveMessageGroupModal
+          isOpen
+          onClose={close}
+          onConfirm={(group) =>
+            confirmAction(
+              `Remove message group ${group}?`,
+              () => run(() => activemq.removeMessageGroup(mbean, group))
+            )
+          }
+        />
+      )}
 
-                  <Button
-                    variant={ButtonVariant.primary}
-                    onClick={() =>
-                      run(() => activemq.retryMessage(mbean, form.id as string))
-                    }
-                  >
-                    Retry
-                  </Button>
-                </>
-              )}
+      {modal === 'sendMessage' && (
+        <SendMessageModal
+          isOpen
+          onClose={close}
+          onConfirm={(body) =>
+            confirmAction(
+              `Send message to ${queue.name}?`,
+              () => run(() => activemq.sendTextMessage(mbean, body))
+            )
+          }
+        />
+      )}
 
-              {modal === 'moveMessage' && (
-                <>
-                  <FormGroup label="Message ID" fieldId="move-id">
-                    <TextInput
-                      id="move-id"
-                      aria-label = "Message ID to move"
-                      onChange={(event) => update('id', event.currentTarget.value)}
-                    />
-                  </FormGroup>
-
-                  <FormGroup label="Destination" fieldId="move-dest">
-                    <TextInput
-                      id="move-dest"
-                      aria-label = "Message ID to move destination"
-                      onChange={(event) => update('dest', event.currentTarget.value)}
-                    />
-                  </FormGroup>
-
-                  <Button
-                    variant={ButtonVariant.primary}
-                    onClick={() =>
-                      confirmAction(
-                        `Move message ${form.id} to ${form.dest}?`,
-                        () =>
-                          run(() =>
-                            activemq.moveMessageTo(
-                              mbean,
-                              form.id as string,
-                              form.dest as string
-                            )
-                          )
-                      )
-                    }
-                  >
-                    Move
-                  </Button>
-                </>
-              )}
-
-              {/* TODO: migrate other modals similarly */}
-            </Form>
-          </Modal>
-        )}
-      </CardBody>
-    </Card>
+    </Grid>
   )
 }
+

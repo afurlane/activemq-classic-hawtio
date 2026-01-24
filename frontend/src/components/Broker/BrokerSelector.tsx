@@ -1,26 +1,46 @@
 import React from 'react'
-import { useBrokerContext } from '../../context/BrokerContext'
+import {
+  Select,
+  SelectList,
+  SelectOption,
+  MenuToggle,
+} from '@patternfly/react-core'
+import { useBroker } from '../../hooks/useBrokers'
 
-export const BrokerSelector: React.FC = () => {
-  const { brokers, selectedBroker, setSelectedBroker } = useBrokerContext()
 
-  if (brokers.length === 0) {
-    return <span>Nessun broker rilevato</span>
-  }
+export function BrokerSelector() {
+  const { brokers, broker, setBroker } = useBroker()
+  const [open, setOpen] = React.useState(false)
 
   return (
-    <select
-      value={selectedBroker?.name ?? ''}
-      onChange={e => {
-        const broker = brokers.find(b => b.name === e.target.value) ?? null
-        setSelectedBroker(broker)
-      }}
+    <Select
+      isOpen={open}
+      selected={broker?.name}
+      onOpenChange={setOpen}
+      toggle={toggleRef => (
+        <MenuToggle
+          ref={toggleRef}
+          onClick={() => setOpen(!open)}
+          isExpanded={open}
+        >
+          {broker?.name ?? 'Select broker'}
+        </MenuToggle>
+      )}
     >
-      {brokers.map(b => (
-        <option key={b.mbean} value={b.name}>
-          {b.name}
-        </option>
-      ))}
-    </select>
+      <SelectList>
+        {brokers.map(b => (
+          <SelectOption
+            key={b.name}
+            value={b.name}
+            onClick={() => {
+              setBroker(b)
+              setOpen(false)
+            }}
+          >
+            {b.name}
+          </SelectOption>
+        ))}
+      </SelectList>
+    </Select>
   )
 }

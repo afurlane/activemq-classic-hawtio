@@ -5,15 +5,20 @@ import {
   CardBody,
   Pagination,
   CodeBlock,
-  CodeBlockCode
+  CodeBlockCode,
+  Spinner,
+  EmptyState,
+  EmptyStateHeader,
+  EmptyStateBody
 } from '@patternfly/react-core'
+
 import {
   Table,
   Thead,
   Tbody,
   Tr,
   Th,
-  Td,
+  Td
 } from '@patternfly/react-table'
 
 import { Queue, Message } from '../../types/domain'
@@ -25,11 +30,17 @@ interface Props {
 export const QueueBrowser: React.FC<Props> = ({ queue }) => {
   const [page, setPage] = useState(0)
   const [messages, setMessages] = useState<Message[]>([])
+  const [loading, setLoading] = useState(false)
   const pageSize = 20
 
   const load = async () => {
-    const data = await activemq.browseQueue(queue.mbean, page, pageSize)
-    setMessages(data)
+    setLoading(true)
+    try {
+      const data = await activemq.browseQueue(queue.mbean, page, pageSize)
+      setMessages(data)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -43,40 +54,67 @@ export const QueueBrowser: React.FC<Props> = ({ queue }) => {
   return (
     <Card isFlat isCompact>
       <CardBody>
-        <Table variant="compact">
-          <Thead>
-            <Tr>
-              <Th>ID</Th>
-              <Th>Timestamp</Th>
-              <Th>Body</Th>
-            </Tr>
-          </Thead>
 
-          <Tbody>
-            {messages.map((m, i) => (
-              <Tr key={i}>
-                <Td>{m.id}</Td>
-                <Td>{new Date(m.timestamp).toLocaleString()}</Td>
-                <Td>
-                  <CodeBlock readOnly>
-                    <CodeBlockCode>
-                      {JSON.stringify(m.body, null, 2)}
-                    </CodeBlockCode>
-                  </CodeBlock>
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
+        {/* LOADING */}
+        {loading && (
+          <div style={{ padding: '2rem', textAlign: 'center' }}>
+            <Spinner size="xl" />
+          </div>
+        )}
 
-        <Pagination
-          itemCount={999999} // ActiveMQ non dà il totale, usiamo "infinite"
-          perPage={pageSize}
-          page={page + 1}
-          onSetPage={onSetPage}
-          isCompact
-          style={{ marginTop: '1rem' }}
-        />
+        {/* EMPTY STATE */}
+        {!loading && messages.length === 0 && (
+          <EmptyState>
+            <EmptyStateHeader
+              titleText="No messages in this page"
+              headingLevel="h4"
+            />
+            <EmptyStateBody>
+              Try navigating to another page or wait for new messages.
+            </EmptyStateBody>
+          </EmptyState>
+        )}
+
+        {/* TABLE */}
+        {!loading && messages.length > 0 && (
+          <>
+            <Table variant="compact">
+              <Thead>
+                <Tr>
+                  <Th>ID</Th>
+                  <Th>Timestamp</Th>
+                  <Th>Body</Th>
+                </Tr>
+              </Thead>
+
+              <Tbody>
+                {messages.map((m, i) => (
+                  <Tr key={i}>
+                    <Td>{m.id}</Td>
+                    <Td>{new Date(m.timestamp).toLocaleString()}</Td>
+                    <Td>
+                      <CodeBlock readOnly>
+                        <CodeBlockCode>
+                          {JSON.stringify(m.body, null, 2)}
+                        </CodeBlockCode>
+                      </CodeBlock>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+
+            <Pagination
+              itemCount={999999} // ActiveMQ non dà il totale
+              perPage={pageSize}
+              page={page + 1}
+              onSetPage={onSetPage}
+              isCompact
+              style={{ marginTop: '1rem' }}
+            />
+          </>
+        )}
+
       </CardBody>
     </Card>
   )

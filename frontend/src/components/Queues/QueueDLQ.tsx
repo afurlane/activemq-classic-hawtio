@@ -6,7 +6,8 @@ import {
   DescriptionList,
   DescriptionListGroup,
   DescriptionListTerm,
-  DescriptionListDescription
+  DescriptionListDescription,
+  Label
 } from '@patternfly/react-core'
 
 import { Queue } from '../../types/domain'
@@ -16,6 +17,12 @@ interface Props {
 }
 
 export const QueueDLQ: React.FC<Props> = ({ queue }) => {
+  const yesNo = (v: boolean) =>
+    v ? <Label color="green">Yes</Label> : <Label color="red">No</Label>
+
+  const valueOrNA = (v: any) =>
+    v === undefined || v === null ? '—' : String(v)
+
   return (
     <Card isFlat isCompact>
       <CardBody>
@@ -26,21 +33,21 @@ export const QueueDLQ: React.FC<Props> = ({ queue }) => {
           <DescriptionListGroup>
             <DescriptionListTerm>Is DLQ</DescriptionListTerm>
             <DescriptionListDescription>
-              {queue.state.dlq ? 'Yes' : 'No'}
+              {yesNo(queue.state.dlq)}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
             <DescriptionListTerm>Expired Messages</DescriptionListTerm>
             <DescriptionListDescription>
-              {queue.stats.expired}
+              {valueOrNA(queue.stats.expired)}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
             <DescriptionListTerm>Redelivered Messages</DescriptionListTerm>
             <DescriptionListDescription>
-              {queue.stats.redelivered ?? 'N/A'}
+              {valueOrNA(queue.stats.redelivered)}
             </DescriptionListDescription>
           </DescriptionListGroup>
 

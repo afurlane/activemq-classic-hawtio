@@ -6,7 +6,8 @@ import {
   DescriptionList,
   DescriptionListGroup,
   DescriptionListTerm,
-  DescriptionListDescription
+  DescriptionListDescription,
+  Label
 } from '@patternfly/react-core'
 
 import { Queue } from '../../types/domain'
@@ -17,14 +18,15 @@ interface Props {
 }
 
 export const QueueConsumers: React.FC<Props> = ({ queue, history }) => {
+
+  // Se non ci sono abbastanza dati storici, evitiamo errori
+  const prev = history.length >= 2 ? history[history.length - 2] : null
   const latest = queue
-  const prev = history[history.length - 2]
 
   // Dispatch rate (msg/sec)
-  let dispatchRate = 0
-  if (prev) {
-    dispatchRate = (latest.stats.dequeue - prev.stats.dequeue) / 2
-  }
+  const dispatchRate = prev
+    ? (latest.stats.dequeue - prev.stats.dequeue) / 2
+    : 0
 
   // Prefetch values from subscriptions
   const prefetchValues =

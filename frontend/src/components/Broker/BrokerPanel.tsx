@@ -6,7 +6,10 @@ import {
   Title,
   Tabs,
   Tab,
-  TabTitleText
+  TabTitleText,
+  Toolbar,
+  ToolbarContent,
+  ToolbarItem
 } from '@patternfly/react-core';
 
 import {
@@ -76,10 +79,17 @@ export const BrokerPanel: React.FC = () => {
   return (
     <Page>
       <PageSection variant={PageSectionVariants.light}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Title headingLevel="h1">ActiveMQ Classic</Title>
-          <BrokerSelector />
-        </div>
+        <Toolbar>
+          <ToolbarContent>
+            <ToolbarItem>
+              <Title headingLevel="h1">ActiveMQ Classic</Title>
+            </ToolbarItem>
+
+            <ToolbarItem align={{ default: 'alignRight' }}>
+              <BrokerSelector />
+            </ToolbarItem>
+          </ToolbarContent>
+        </Toolbar>
 
         <Tabs activeKey={activeKey} onSelect={onSelect} isBox>
           <Tab eventKey={0} title={<TabTitleText>Connectors</TabTitleText>} />

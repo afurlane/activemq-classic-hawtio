@@ -23,6 +23,9 @@ import {
   Td,
 } from '@patternfly/react-table'
 
+import { createPolling } from '../../services/polling'
+import { log } from '../../globals'
+
 export const ConnectorsView: React.FC = () => {
   const brokerName = useSelectedBrokerName()
 
@@ -43,20 +46,30 @@ export const ConnectorsView: React.FC = () => {
 
   const mounted = useRef(false)
 
-  const load = async () => {
+  const load = createPolling(async () => {
     if (!brokerName || !mounted.current) return
-    const data = await activemq.listConnectors(brokerName)
-    if (mounted.current) setConnectors(data)
-  }
 
-  const loadConnections = async (connector: any) => {
+    log.debug('[ConnectorsView] loading connectors for broker:', brokerName)
+
+    const data = await activemq.listConnectors(brokerName)
+    if (mounted.current) {
+      setConnectors(data)
+    }
+  })
+
+  const loadConnections = createPolling(async (connector: any) => {
+    if (!mounted.current) return
+
+    log.debug('[ConnectorsView] loading connections for connector:', connector.name)
+
     setSelected(connector)
+
     const list = await activemq.listConnections(connector.mbean)
     if (mounted.current) {
       setConnections(list)
       setDrawerExpanded(true)
     }
-  }
+  })
 
   const closeDrawer = () => {
     setDrawerExpanded(false)
@@ -66,6 +79,7 @@ export const ConnectorsView: React.FC = () => {
   useEffect(() => {
     mounted.current = true
     load()
+
     const id = setInterval(load, 5000)
     return () => {
       mounted.current = false
