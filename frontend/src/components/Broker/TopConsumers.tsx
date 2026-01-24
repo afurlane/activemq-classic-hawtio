@@ -3,18 +3,19 @@ import { activemq } from "../../services/activemq/ActiveMQClassicService"
 import { useSelectedBrokerName } from "../../hooks/useSelectedBroker"
 import {
   Card,
+  CardHeader,
+  CardTitle,
   CardBody,
-  Title,
   DescriptionList,
   DescriptionListGroup,
   DescriptionListTerm,
   DescriptionListDescription,
   Label,
-  Alert
+  Alert,
+  Flex,
+  FlexItem
 } from "@patternfly/react-core"
-import {
-  ExclamationCircleIcon
-} from '@patternfly/react-icons'
+import { ExclamationCircleIcon } from '@patternfly/react-icons'
 
 export const TopConsumers: React.FC = () => {
   const brokerName = useSelectedBrokerName()
@@ -23,11 +24,7 @@ export const TopConsumers: React.FC = () => {
     return (
       <Card isFlat isCompact>
         <CardBody>
-          <Alert
-            variant="danger"
-            title="No broker selected"
-            isInline
-          />
+          <Alert variant="danger" title="No broker selected" isInline />
         </CardBody>
       </Card>
     )
@@ -64,57 +61,63 @@ export const TopConsumers: React.FC = () => {
     return () => clearInterval(id)
   }, [brokerName])
 
-  if (!brokerName) return <p>No broker selected</p>
-
   return (
     <Card isFlat isCompact>
-      <CardBody>
-        <Title headingLevel="h4">Top Consumers</Title>
+      <CardHeader>
+        <CardTitle>Top Consumers</CardTitle>
+      </CardHeader>
 
-        {consumers.length === 0 && <p>No consumers found</p>}
+      <CardBody>
+
+        {consumers.length === 0 && (
+          <Alert variant="info" title="No consumers found" isInline />
+        )}
 
         {consumers.map((c, i) => (
-          <DescriptionList key={i} isHorizontal>
-            <DescriptionListGroup>
-              <DescriptionListTerm>Client</DescriptionListTerm>
-              <DescriptionListDescription>
-                <b>{c.clientId}</b>
-              </DescriptionListDescription>
-            </DescriptionListGroup>
+          <Card key={i} isCompact isFlat style={{ marginBottom: '0.75rem' }}>
+            <CardBody>
 
-            <DescriptionListGroup>
-              <DescriptionListTerm>Destination</DescriptionListTerm>
-              <DescriptionListDescription>
-                {c.destination}
-              </DescriptionListDescription>
-            </DescriptionListGroup>
+              <Flex justifyContent={{ default: 'justifyContentSpaceBetween' }}>
+                <FlexItem>
+                  <strong>{c.clientId}</strong>
+                </FlexItem>
 
-            <DescriptionListGroup>
-              <DescriptionListTerm>Dispatched</DescriptionListTerm>
-              <DescriptionListDescription>
-                {c.dispatched}
-              </DescriptionListDescription>
-            </DescriptionListGroup>
+                {c.slow && (
+                  <FlexItem>
+                    <Label color="red" icon={<ExclamationCircleIcon />}>
+                      Slow
+                    </Label>
+                  </FlexItem>
+                )}
+              </Flex>
 
-            <DescriptionListGroup>
-              <DescriptionListTerm>Pending</DescriptionListTerm>
-              <DescriptionListDescription>
-                {c.pending}
-              </DescriptionListDescription>
-            </DescriptionListGroup>
+              <DescriptionList isHorizontal style={{ marginTop: '0.5rem' }}>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Destination</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    {c.destination}
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
 
-            {c.slow && (
-              <DescriptionListGroup>
-                <DescriptionListTerm>Status</DescriptionListTerm>
-                <DescriptionListDescription>
-                  <Label color="red" icon={<ExclamationCircleIcon />}>
-                    Slow
-                  </Label>
-                </DescriptionListDescription>
-              </DescriptionListGroup>
-            )}
-          </DescriptionList>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Dispatched</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    {c.dispatched.toLocaleString()}
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Pending</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    {c.pending.toLocaleString()}
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+              </DescriptionList>
+
+            </CardBody>
+          </Card>
         ))}
+
       </CardBody>
     </Card>
   )

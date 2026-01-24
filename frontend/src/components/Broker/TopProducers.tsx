@@ -3,14 +3,17 @@ import { activemq } from "../../services/activemq/ActiveMQClassicService"
 import { useSelectedBrokerName } from "../../hooks/useSelectedBroker"
 import {
   Card,
+  CardHeader,
+  CardTitle,
   CardBody,
-  Title,
   DescriptionList,
   DescriptionListGroup,
   DescriptionListTerm,
   DescriptionListDescription,
   Label,
-  Alert
+  Alert,
+  Flex,
+  FlexItem
 } from "@patternfly/react-core"
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 
@@ -21,11 +24,7 @@ export const TopProducers: React.FC = () => {
     return (
       <Card isFlat isCompact>
         <CardBody>
-          <Alert
-            variant="danger"
-            title="No broker selected"
-            isInline
-          />
+          <Alert variant="danger" title="No broker selected" isInline />
         </CardBody>
       </Card>
     )
@@ -61,50 +60,56 @@ export const TopProducers: React.FC = () => {
     return () => clearInterval(id)
   }, [brokerName])
 
-  if (!brokerName) return <p>No broker selected</p>
-
   return (
     <Card isFlat isCompact>
-      <CardBody>
-        <Title headingLevel="h4">Top Producers</Title>
+      <CardHeader>
+        <CardTitle>Top Producers</CardTitle>
+      </CardHeader>
 
-        {producers.length === 0 && <p>No producers found</p>}
+      <CardBody>
+
+        {producers.length === 0 && (
+          <Alert variant="info" title="No producers found" isInline />
+        )}
 
         {producers.map((p, i) => (
-          <DescriptionList key={i} isHorizontal>
-            <DescriptionListGroup>
-              <DescriptionListTerm>Client</DescriptionListTerm>
-              <DescriptionListDescription>
-                <b>{p.clientId}</b>
-              </DescriptionListDescription>
-            </DescriptionListGroup>
+          <Card key={i} isCompact isFlat style={{ marginBottom: '0.75rem' }}>
+            <CardBody>
 
-            <DescriptionListGroup>
-              <DescriptionListTerm>Destination</DescriptionListTerm>
-              <DescriptionListDescription>
-                {p.destination}
-              </DescriptionListDescription>
-            </DescriptionListGroup>
+              <Flex justifyContent={{ default: 'justifyContentSpaceBetween' }}>
+                <FlexItem>
+                  <strong>{p.clientId}</strong>
+                </FlexItem>
 
-            <DescriptionListGroup>
-              <DescriptionListTerm>Sent</DescriptionListTerm>
-              <DescriptionListDescription>
-                {p.sent}
-              </DescriptionListDescription>
-            </DescriptionListGroup>
+                {p.blocked && (
+                  <FlexItem>
+                    <Label color="red" icon={<ExclamationCircleIcon />}>
+                      Blocked
+                    </Label>
+                  </FlexItem>
+                )}
+              </Flex>
 
-            {p.blocked && (
-              <DescriptionListGroup>
-                <DescriptionListTerm>Status</DescriptionListTerm>
-                <DescriptionListDescription>
-                  <Label color="red" icon={<ExclamationCircleIcon />}>
-                    Blocked
-                  </Label>
-                </DescriptionListDescription>
-              </DescriptionListGroup>
-            )}
-          </DescriptionList>
+              <DescriptionList isHorizontal style={{ marginTop: '0.5rem' }}>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Destination</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    {p.destination}
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Sent</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    {p.sent.toLocaleString()}
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+              </DescriptionList>
+
+            </CardBody>
+          </Card>
         ))}
+
       </CardBody>
     </Card>
   )

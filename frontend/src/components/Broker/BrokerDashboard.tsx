@@ -6,8 +6,13 @@ import {
   Grid,
   GridItem,
   Card,
+  CardHeader,
+  CardTitle,
   CardBody,
-  Alert
+  Alert,
+  Label,
+  Flex,
+  FlexItem
 } from '@patternfly/react-core'
 
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
@@ -27,11 +32,7 @@ export const BrokerDashboard: React.FC = () => {
       <PageSection>
         <Card isFlat isCompact>
           <CardBody>
-            <Alert
-              variant="danger"
-              title="No broker selected"
-              isInline
-            />
+            <Alert variant="danger" title="No broker selected" isInline />
           </CardBody>
         </Card>
       </PageSection>
@@ -40,18 +41,92 @@ export const BrokerDashboard: React.FC = () => {
 
   return (
     <>
+      {/* HEADER PF5 */}
       <PageSection variant={PageSectionVariants.light}>
-        <Title headingLevel="h2">Broker Dashboard</Title>
+        <Flex alignItems={{ default: 'alignItemsCenter' }} justifyContent={{ default: 'justifyContentSpaceBetween' }}>
+          <FlexItem>
+            <Title headingLevel="h2">Broker Dashboard</Title>
+            <div style={{ marginTop: '0.25rem', opacity: 0.7 }}>
+              Metrics and operational insights for broker <strong>{brokerName}</strong>
+            </div>
+          </FlexItem>
+
+          <FlexItem>
+            <Label color="green">Connected</Label>
+          </FlexItem>
+        </Flex>
       </PageSection>
 
+      {/* MAIN GRID */}
       <PageSection isFilled>
         <Grid hasGutter md={6} lg={4} xl={3}>
-          <GridItem><BrokerTrends /></GridItem>
-          <GridItem><BrokerThroughput /></GridItem>
-          <GridItem><BrokerStorage /></GridItem>
-          <GridItem><BrokerAlerts /></GridItem>
-          <GridItem><TopConsumers /></GridItem>
-          <GridItem><TopProducers /></GridItem>
+
+          <GridItem>
+            <Card isFlat>
+              <CardHeader>
+                <CardTitle>Trends</CardTitle>
+              </CardHeader>
+              <CardBody>
+                <BrokerTrends />
+              </CardBody>
+            </Card>
+          </GridItem>
+
+          <GridItem>
+            <Card isFlat>
+              <CardHeader>
+                <CardTitle>Throughput</CardTitle>
+              </CardHeader>
+              <CardBody>
+                <BrokerThroughput />
+              </CardBody>
+            </Card>
+          </GridItem>
+
+          <GridItem>
+            <Card isFlat>
+              <CardHeader>
+                <CardTitle>Storage</CardTitle>
+              </CardHeader>
+              <CardBody>
+                <BrokerStorage />
+              </CardBody>
+            </Card>
+          </GridItem>
+
+          <GridItem>
+            <Card isFlat>
+              <CardHeader>
+                <CardTitle>Alerts</CardTitle>
+              </CardHeader>
+              <CardBody>
+                <BrokerAlerts />
+              </CardBody>
+            </Card>
+          </GridItem>
+
+          <GridItem>
+            <Card isFlat>
+              <CardHeader>
+                <CardTitle>Top Consumers</CardTitle>
+              </CardHeader>
+              <CardBody>
+                <TopConsumers />
+              </CardBody>
+            </Card>
+          </GridItem>
+
+          <GridItem>
+            <Card isFlat>
+              <CardHeader>
+                <CardTitle>Top Producers</CardTitle>
+              </CardHeader>
+              <CardBody>
+                <TopProducers />
+              </CardBody>
+            </Card>
+          </GridItem>
+
         </Grid>
       </PageSection>
     </>

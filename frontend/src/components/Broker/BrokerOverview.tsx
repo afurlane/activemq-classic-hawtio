@@ -10,6 +10,8 @@ import {
   Checkbox,
   TextInput,
   Card,
+  CardHeader,
+  CardTitle,
   CardBody,
   Grid,
   GridItem,
@@ -18,7 +20,9 @@ import {
   DescriptionListTerm,
   DescriptionListDescription,
   Label,
-  Alert
+  Alert,
+  Flex,
+  FlexItem
 } from '@patternfly/react-core'
 
 import { activemq } from '../../services/activemq/ActiveMQClassicService'
@@ -31,6 +35,7 @@ import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon
 } from '@patternfly/react-icons'
+
 import { Queue } from 'src/types/domain'
 
 export const BrokerOverview: React.FC = () => {
@@ -38,15 +43,13 @@ export const BrokerOverview: React.FC = () => {
 
   if (!brokerName) {
     return (
-      <Card isFlat isCompact>
-        <CardBody>
-          <Alert
-            variant="danger"
-            title="No broker selected"
-            isInline
-          />
-        </CardBody>
-      </Card>
+      <PageSection>
+        <Card isFlat isCompact>
+          <CardBody>
+            <Alert variant="danger" title="No broker selected" isInline />
+          </CardBody>
+        </Card>
+      </PageSection>
     )
   }
 
@@ -98,8 +101,13 @@ export const BrokerOverview: React.FC = () => {
     return () => clearInterval(id)
   }, [brokerName])
 
-  if (!brokerName) return <p>No broker selected</p>
-  if (loading) return <p>Loading broker overview…</p>
+  if (loading) {
+    return (
+      <PageSection>
+        <Title headingLevel="h3">Loading broker overview…</Title>
+      </PageSection>
+    )
+  }
 
   // FILTRI
   const filtered = queues.filter(q => {
@@ -129,25 +137,48 @@ export const BrokerOverview: React.FC = () => {
 
   return (
     <>
+      {/* HEADER PF5 */}
       <PageSection variant={PageSectionVariants.light}>
-        <Title headingLevel="h2">Broker Overview</Title>
+        <Flex alignItems={{ default: 'alignItemsCenter' }} justifyContent={{ default: 'justifyContentSpaceBetween' }}>
+          <FlexItem>
+            <Title headingLevel="h2">Broker Overview</Title>
+            <div style={{ marginTop: '0.25rem', opacity: 0.7 }}>
+              Operational metrics and health indicators for <strong>{brokerName}</strong>
+            </div>
+          </FlexItem>
+
+          <FlexItem>
+            <Label color="green" icon={<CheckCircleIcon />}>
+              Connected
+            </Label>
+          </FlexItem>
+        </Flex>
       </PageSection>
 
+      {/* TRENDS */}
       <PageSection>
-        <BrokerTrends />
+        <Card isFlat>
+          <CardHeader>
+            <CardTitle>Broker Trends</CardTitle>
+          </CardHeader>
+          <CardBody>
+            <BrokerTrends />
+          </CardBody>
+        </Card>
       </PageSection>
 
-      {/* FILTRI */}
+      {/* FILTRI PF5 */}
       <PageSection>
         <Toolbar>
           <ToolbarContent>
             <ToolbarGroup>
+
               <ToolbarItem>
                 <Checkbox
                   id="filter-critical"
                   label="Critical only"
                   isChecked={filter.critical}
-                  onChange={(event, checked) => setFilter({ ...filter, critical: checked })}
+                  onChange={(_, checked) => setFilter({ ...filter, critical: checked })}
                 />
               </ToolbarItem>
 
@@ -156,20 +187,21 @@ export const BrokerOverview: React.FC = () => {
                   id="filter-backlog"
                   label="Backlog > 1000"
                   isChecked={filter.backlog}
-                  onChange={(event, checked) => setFilter({ ...filter, backlog: checked })}
+                  onChange={(_, checked) => setFilter({ ...filter, backlog: checked })}
                 />
               </ToolbarItem>
 
               <ToolbarItem>
                 <TextInput
                   id="broker-filter"
-                  aria-label = "Filter by name"
+                  aria-label="Filter by name"
                   value={filter.name}
                   type="text"
                   placeholder="Filter by name..."
-                  onChange={(event, value) => setFilter({ ...filter, name: value })}
+                  onChange={(_, value) => setFilter({ ...filter, name: value })}
                 />
               </ToolbarItem>
+
             </ToolbarGroup>
           </ToolbarContent>
         </Toolbar>
@@ -177,10 +209,12 @@ export const BrokerOverview: React.FC = () => {
 
       {/* TOP 5 SLOWEST */}
       <PageSection>
-        <Card isFlat isCompact>
+        <Card isFlat>
+          <CardHeader>
+            <CardTitle>Top 5 Slowest Queues</CardTitle>
+          </CardHeader>
           <CardBody>
-            <Title headingLevel="h4">Top 5 Slowest Queues</Title>
-            <ul>
+            <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
               {slowest.map(({ q }) => {
                 const inflight = q.stats.inflight ?? 0
                 const size = q.size ?? 0
@@ -188,7 +222,7 @@ export const BrokerOverview: React.FC = () => {
 
                 return (
                   <li key={q.name}>
-                    <b>{q.name}</b> — lag {lag}, inflight {inflight}
+                    <strong>{q.name}</strong> — lag {lag}, inflight {inflight}
                   </li>
                 )
               })}
@@ -197,7 +231,7 @@ export const BrokerOverview: React.FC = () => {
         </Card>
       </PageSection>
 
-      {/* GRID PRINCIPALE */}
+      {/* GRID PRINCIPALE PF5 */}
       <PageSection isFilled>
         <Grid hasGutter md={6} lg={4} xl={3}>
           {filtered.map(q => {
@@ -210,7 +244,7 @@ export const BrokerOverview: React.FC = () => {
               mem > 80 || lag > 10000
                 ? 'red'
                 : mem > 60 || lag > 1000
-                ? 'yellow'
+                ? 'orange'
                 : 'green'
 
             const h = history[q.name] ?? { queueSize: [], inflight: [], lag: [] }
@@ -218,9 +252,11 @@ export const BrokerOverview: React.FC = () => {
             return (
               <GridItem key={q.name}>
                 <Card isFlat isCompact>
-                  <CardBody>
-                    <Title headingLevel="h4">{q.name}</Title>
+                  <CardHeader>
+                    <CardTitle>{q.name}</CardTitle>
+                  </CardHeader>
 
+                  <CardBody>
                     <DescriptionList isHorizontal>
                       <DescriptionListGroup>
                         <DescriptionListTerm>Size</DescriptionListTerm>
@@ -245,26 +281,22 @@ export const BrokerOverview: React.FC = () => {
                     </DescriptionList>
                     <Sparkline data={h.lag} color="#dc3545" />
 
-                    <p><b>Consumers:</b> {q.consumers}</p>
-                    <p><b>Memory:</b> {mem}%</p>
+                    <p><strong>Consumers:</strong> {q.consumers}</p>
+                    <p><strong>Memory:</strong> {mem}%</p>
 
-                    {severity === 'red' && (
-                      <Label color="red" icon={<ExclamationCircleIcon />}>
-                        Critical
-                      </Label>
-                    )}
-
-                    {severity === 'yellow' && (
-                      <Label color="orange" icon={<ExclamationTriangleIcon />}>
-                        Warning
-                      </Label>
-                    )}
-
-                    {severity === 'green' && (
-                      <Label color="green" icon={<CheckCircleIcon />}>
-                        Healthy
-                      </Label>
-                    )}
+                    <Label color={severity} icon={
+                      severity === 'red'
+                        ? <ExclamationCircleIcon />
+                        : severity === 'orange'
+                        ? <ExclamationTriangleIcon />
+                        : <CheckCircleIcon />
+                    }>
+                      {severity === 'red'
+                        ? 'Critical'
+                        : severity === 'orange'
+                        ? 'Warning'
+                        : 'Healthy'}
+                    </Label>
                   </CardBody>
                 </Card>
               </GridItem>

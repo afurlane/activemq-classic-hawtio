@@ -3,14 +3,21 @@ import { activemq } from '../../services/activemq/ActiveMQClassicService'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
 import {
   Card,
+  CardHeader,
+  CardTitle,
   CardBody,
   DescriptionList,
   DescriptionListGroup,
   DescriptionListTerm,
   DescriptionListDescription,
-  Title,
-  Alert
+  Alert,
+  Label
 } from '@patternfly/react-core'
+import {
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  ExclamationCircleIcon
+} from '@patternfly/react-icons'
 
 export const BrokerThroughput: React.FC = () => {
   const brokerName = useSelectedBrokerName()
@@ -19,11 +26,7 @@ export const BrokerThroughput: React.FC = () => {
     return (
       <Card isFlat isCompact>
         <CardBody>
-          <Alert
-            variant="danger"
-            title="No broker selected"
-            isInline
-          />
+          <Alert variant="danger" title="No broker selected" isInline />
         </CardBody>
       </Card>
     )
@@ -79,14 +82,40 @@ export const BrokerThroughput: React.FC = () => {
     return () => clearInterval(id)
   }, [brokerName])
 
-  if (!brokerName) return <p>No broker selected</p>
+  // Severità basata sul throughput
+  const severity =
+    rates.enqueue > 5000 || rates.dispatch > 5000
+      ? 'green'
+      : rates.enqueue > 1000 || rates.dispatch > 1000
+      ? 'orange'
+      : 'red'
+
+  const severityLabel =
+    severity === 'green'
+      ? 'Healthy'
+      : severity === 'orange'
+      ? 'Warning'
+      : 'Low Throughput'
+
+  const severityIcon =
+    severity === 'green'
+      ? <CheckCircleIcon />
+      : severity === 'orange'
+      ? <ExclamationTriangleIcon />
+      : <ExclamationCircleIcon />
 
   return (
-    <Card isFlat isCompact className="broker-panel">
-      <CardBody>
-        <Title headingLevel="h4">Broker Throughput (msg/sec)</Title>
+    <Card isFlat isCompact>
+      <CardHeader>
+        <CardTitle>Broker Throughput (msg/sec)</CardTitle>
+        <Label color={severity} icon={severityIcon} style={{ marginLeft: 'auto' }}>
+          {severityLabel}
+        </Label>
+      </CardHeader>
 
+      <CardBody>
         <DescriptionList isHorizontal>
+
           <DescriptionListGroup>
             <DescriptionListTerm>Enqueue</DescriptionListTerm>
             <DescriptionListDescription>
@@ -107,6 +136,7 @@ export const BrokerThroughput: React.FC = () => {
               {rates.dispatch.toFixed(1)}
             </DescriptionListDescription>
           </DescriptionListGroup>
+
         </DescriptionList>
       </CardBody>
     </Card>

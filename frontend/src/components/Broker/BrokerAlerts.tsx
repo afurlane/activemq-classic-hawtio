@@ -3,11 +3,18 @@ import { activemq } from '../../services/activemq/ActiveMQClassicService'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
 import {
   Card,
+  CardHeader,
+  CardTitle,
   CardBody,
-  Title,
   Alert,
-  AlertGroup
+  AlertGroup,
+  Label
 } from '@patternfly/react-core'
+import {
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  ExclamationCircleIcon
+} from '@patternfly/react-icons'
 
 export const BrokerAlerts: React.FC = () => {
   const brokerName = useSelectedBrokerName()
@@ -16,11 +23,7 @@ export const BrokerAlerts: React.FC = () => {
     return (
       <Card isFlat isCompact>
         <CardBody>
-          <Alert
-            variant="danger"
-            title="No broker selected"
-            isInline
-          />
+          <Alert variant="danger" title="No broker selected" isInline />
         </CardBody>
       </Card>
     )
@@ -69,10 +72,37 @@ export const BrokerAlerts: React.FC = () => {
     return () => clearInterval(id)
   }, [brokerName])
 
+  const severity =
+    alerts.length === 0
+      ? 'green'
+      : alerts.length < 3
+      ? 'orange'
+      : 'red'
+
+  const severityLabel =
+    severity === 'green'
+      ? 'Healthy'
+      : severity === 'orange'
+      ? 'Warnings'
+      : 'Critical'
+
+  const severityIcon =
+    severity === 'green'
+      ? <CheckCircleIcon />
+      : severity === 'orange'
+      ? <ExclamationTriangleIcon />
+      : <ExclamationCircleIcon />
+
   return (
-    <Card isFlat isCompact className="broker-panel">
+    <Card isFlat isCompact>
+      <CardHeader>
+        <CardTitle>Broker Alerts</CardTitle>
+        <Label color={severity} icon={severityIcon} style={{ marginLeft: 'auto' }}>
+          {severityLabel}
+        </Label>
+      </CardHeader>
+
       <CardBody>
-        <Title headingLevel="h4">Broker Alerts</Title>
 
         {alerts.length === 0 && (
           <Alert variant="success" title="No global alerts" isInline />
@@ -85,6 +115,7 @@ export const BrokerAlerts: React.FC = () => {
             ))}
           </AlertGroup>
         )}
+
       </CardBody>
     </Card>
   )

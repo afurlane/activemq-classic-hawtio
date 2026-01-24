@@ -3,13 +3,15 @@ import { activemq } from '../../services/activemq/ActiveMQClassicService'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
 import {
   Card,
+  CardHeader,
+  CardTitle,
   CardBody,
-  Title,
   DescriptionList,
   DescriptionListGroup,
   DescriptionListTerm,
   DescriptionListDescription,
-  Alert
+  Alert,
+  Label
 } from '@patternfly/react-core'
 
 export const BrokerStorage: React.FC = () => {
@@ -19,16 +21,12 @@ export const BrokerStorage: React.FC = () => {
     return (
       <Card isFlat isCompact>
         <CardBody>
-          <Alert
-            variant="danger"
-            title="No broker selected"
-            isInline
-          />
+          <Alert variant="danger" title="No broker selected" isInline />
         </CardBody>
       </Card>
     )
   }
-  
+
   const [storage, setStorage] = useState({
     store: 0,
     temp: 0,
@@ -36,33 +34,32 @@ export const BrokerStorage: React.FC = () => {
     memory: 0,
   })
 
-const poll = async () => {
-  if (!brokerName) return
+  const poll = async () => {
+    if (!brokerName) return
 
-  const queues = await activemq.listQueuesWithRawAttributes(brokerName)
+    const queues = await activemq.listQueuesWithRawAttributes(brokerName)
 
-  let store = 0
-  let cursor = 0
-  let memory = 0
-  let tempSum = 0
-  let tempCount = 0
+    let store = 0
+    let cursor = 0
+    let memory = 0
+    let tempSum = 0
+    let tempCount = 0
 
-  queues.forEach(({ attrs }) => {
-    store += attrs.StoreMessageSize ?? 0
-    cursor += attrs.CursorMemoryUsage ?? 0
-    memory += attrs.MemoryUsageByteCount ?? 0
+    queues.forEach(({ attrs }) => {
+      store += attrs.StoreMessageSize ?? 0
+      cursor += attrs.CursorMemoryUsage ?? 0
+      memory += attrs.MemoryUsageByteCount ?? 0
 
-    // AMQ 5 only
-    if (attrs.TempUsagePercentUsage !== undefined) {
-      tempSum += attrs.TempUsagePercentUsage
-      tempCount++
-    }
-  })
+      if (attrs.TempUsagePercentUsage !== undefined) {
+        tempSum += attrs.TempUsagePercentUsage
+        tempCount++
+      }
+    })
 
-  const temp = tempCount > 0 ? tempSum / tempCount : 0
+    const temp = tempCount > 0 ? tempSum / tempCount : 0
 
-  setStorage({ store, temp, cursor, memory })
-}
+    setStorage({ store, temp, cursor, memory })
+  }
 
   useEffect(() => {
     poll()
@@ -70,18 +67,34 @@ const poll = async () => {
     return () => clearInterval(id)
   }, [brokerName])
 
-  if (!brokerName) return <p>No broker selected</p>
+  // Severità per evidenziare problemi
+  const severity =
+    storage.temp > 80 || storage.memory > 80_000_000
+      ? 'red'
+      : storage.temp > 60 || storage.memory > 40_000_000
+      ? 'orange'
+      : 'green'
 
   return (
     <Card isFlat isCompact>
-      <CardBody>
-        <Title headingLevel="h4">Broker Storage</Title>
+      <CardHeader>
+        <CardTitle>Broker Storage</CardTitle>
+        <Label color={severity} style={{ marginLeft: 'auto' }}>
+          {severity === 'red'
+            ? 'Critical'
+            : severity === 'orange'
+            ? 'Warning'
+            : 'Healthy'}
+        </Label>
+      </CardHeader>
 
+      <CardBody>
         <DescriptionList isHorizontal>
+
           <DescriptionListGroup>
             <DescriptionListTerm>Total Store Size</DescriptionListTerm>
             <DescriptionListDescription>
-              {storage.store} bytes
+              {storage.store.toLocaleString()} bytes
             </DescriptionListDescription>
           </DescriptionListGroup>
 
@@ -95,16 +108,17 @@ const poll = async () => {
           <DescriptionListGroup>
             <DescriptionListTerm>Total Cursor Memory</DescriptionListTerm>
             <DescriptionListDescription>
-              {storage.cursor} bytes
+              {storage.cursor.toLocaleString()} bytes
             </DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
             <DescriptionListTerm>Total Memory Usage</DescriptionListTerm>
             <DescriptionListDescription>
-              {storage.memory} bytes
+              {storage.memory.toLocaleString()} bytes
             </DescriptionListDescription>
           </DescriptionListGroup>
+
         </DescriptionList>
       </CardBody>
     </Card>

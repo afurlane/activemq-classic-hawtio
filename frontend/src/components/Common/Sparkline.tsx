@@ -13,21 +13,23 @@ interface Props {
 
 export const Sparkline: React.FC<Props> = ({ data, color = '#00bcd4' }) => {
   // Pre-elaborazione sicura
-  const chartData = useMemo(() => {
-    return data.map((v, i) => ({ x: i, y: v }))
-  }, [data])
+  const chartData = useMemo(
+    () => data.map((v, i) => ({ x: i, y: v })),
+    [data]
+  )
 
-  // Se non ci sono dati, mostriamo una linea piatta a zero
-  const safeData = data.length > 0 ? data : [0]
+  // Se non ci sono dati, linea piatta
+  const safe = chartData.length > 0 ? chartData : [{ x: 0, y: 0 }]
 
-  // Dominio Y dinamico e robusto
-  let yMin = Math.min(...safeData)
-  let yMax = Math.max(...safeData)
+  // Dominio Y dinamico
+  let yMin = Math.min(...safe.map(p => p.y))
+  let yMax = Math.max(...safe.map(p => p.y))
 
-  // Evita dominio piatto (yMin === yMax)
+  // Evita dominio piatto
   if (yMin === yMax) {
-    yMin -= 1
-    yMax += 1
+    const pad = Math.max(1, Math.abs(yMin) * 0.1)
+    yMin -= pad
+    yMax += pad
   }
 
   return (
@@ -36,15 +38,15 @@ export const Sparkline: React.FC<Props> = ({ data, color = '#00bcd4' }) => {
         height={40}
         padding={{ top: 0, bottom: 0, left: 0, right: 0 }}
         domain={{ y: [yMin, yMax] }}
-        animate={{ duration: 500, easing: 'cubicOut' as const }}
+        animate={{ duration: 300, easing: 'cubicOut' as const }}
       >
         <ChartGroup>
           <ChartLine
-            data={chartData}
+            data={safe}
             style={{
               data: {
                 stroke: color,
-                strokeWidth: 2
+                strokeWidth: 1.5
               }
             }}
           />

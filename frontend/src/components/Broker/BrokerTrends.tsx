@@ -4,14 +4,17 @@ import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
 import { Sparkline } from '../Common/Sparkline'
 import {
   Card,
+  CardHeader,
+  CardTitle,
   CardBody,
-  Title,
   DescriptionList,
   DescriptionListGroup,
   DescriptionListTerm,
   DescriptionListDescription,
   Label,
-  Alert
+  Alert,
+  Flex,
+  FlexItem
 } from '@patternfly/react-core'
 import {
   CheckCircleIcon,
@@ -32,11 +35,7 @@ export const BrokerTrends: React.FC = () => {
     return (
       <Card isFlat isCompact>
         <CardBody>
-          <Alert
-            variant="danger"
-            title="No broker selected"
-            isInline
-          />
+          <Alert variant="danger" title="No broker selected" isInline />
         </CardBody>
       </Card>
     )
@@ -106,65 +105,89 @@ export const BrokerTrends: React.FC = () => {
     return () => clearInterval(id)
   }, [brokerName])
 
-  if (!brokerName) return <p>No broker selected</p>
-  if (loading) return <p>Loading broker trends…</p>
+  if (loading) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>Loading broker trends…</CardBody>
+      </Card>
+    )
+  }
 
   const severity =
     latest.avgMemory > 80 || latest.totalLag > 50000
       ? 'red'
       : latest.avgMemory > 60 || latest.totalLag > 10000
-      ? 'yellow'
+      ? 'orange'
       : 'green'
 
-  return (
-    <Card isFlat isCompact className="broker-panel">
-      <CardBody>
-        <Title headingLevel="h4">Broker Trends</Title>
+  const severityLabel =
+    severity === 'red'
+      ? 'Critical'
+      : severity === 'orange'
+      ? 'Warning'
+      : 'Healthy'
 
+  const severityIcon =
+    severity === 'red'
+      ? <ExclamationCircleIcon />
+      : severity === 'orange'
+      ? <ExclamationTriangleIcon />
+      : <CheckCircleIcon />
+
+  return (
+    <Card isFlat isCompact>
+      <CardHeader>
+        <CardTitle>Broker Trends</CardTitle>
+        <Label color={severity} icon={severityIcon} style={{ marginLeft: 'auto' }}>
+          {severityLabel}
+        </Label>
+      </CardHeader>
+
+      <CardBody>
+
+        {/* TOTAL MESSAGES */}
         <DescriptionList isHorizontal>
           <DescriptionListGroup>
             <DescriptionListTerm>Total Messages</DescriptionListTerm>
-            <DescriptionListDescription>{latest.totalSize}</DescriptionListDescription>
+            <DescriptionListDescription>
+              {latest.totalSize.toLocaleString()}
+            </DescriptionListDescription>
           </DescriptionListGroup>
         </DescriptionList>
         <Sparkline data={history.totalSize} color="#007bff" />
 
+        {/* TOTAL INFLIGHT */}
         <DescriptionList isHorizontal>
           <DescriptionListGroup>
             <DescriptionListTerm>Total Inflight</DescriptionListTerm>
-            <DescriptionListDescription>{latest.totalInflight}</DescriptionListDescription>
+            <DescriptionListDescription>
+              {latest.totalInflight.toLocaleString()}
+            </DescriptionListDescription>
           </DescriptionListGroup>
         </DescriptionList>
         <Sparkline data={history.totalInflight} color="#ff8800" />
 
+        {/* TOTAL LAG */}
         <DescriptionList isHorizontal>
           <DescriptionListGroup>
             <DescriptionListTerm>Total Lag</DescriptionListTerm>
-            <DescriptionListDescription>{latest.totalLag}</DescriptionListDescription>
+            <DescriptionListDescription>
+              {latest.totalLag.toLocaleString()}
+            </DescriptionListDescription>
           </DescriptionListGroup>
         </DescriptionList>
         <Sparkline data={history.totalLag} color="#dc3545" />
 
-        <p><b>Active Consumers:</b> {latest.consumers}</p>
-        <p><b>Average Memory:</b> {latest.avgMemory.toFixed(1)}%</p>
+        {/* EXTRA METRICS */}
+        <Flex style={{ marginTop: '1rem' }}>
+          <FlexItem>
+            <strong>Active Consumers:</strong> {latest.consumers}
+          </FlexItem>
+          <FlexItem>
+            <strong>Average Memory:</strong> {latest.avgMemory.toFixed(1)}%
+          </FlexItem>
+        </Flex>
 
-        {severity === 'red' && (
-          <Label color="red" icon={<ExclamationCircleIcon />}>
-            Critical
-          </Label>
-        )}
-
-        {severity === 'yellow' && (
-          <Label color="orange" icon={<ExclamationTriangleIcon />}>
-            Warning
-          </Label>
-        )}
-
-        {severity === 'green' && (
-          <Label color="green" icon={<CheckCircleIcon />}>
-            Healthy
-          </Label>
-        )}
       </CardBody>
     </Card>
   )
