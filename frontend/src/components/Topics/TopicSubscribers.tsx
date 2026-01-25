@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import {
   Card,
   CardBody,
@@ -10,9 +10,9 @@ import {
   DataListItemCells,
   DataListCell,
   Label
-} from '@patternfly/react-core'
+} from '@patternfly/react-core';
 
-import { ActiveMQTopicAttributes } from '../../types/activemq'
+import { ActiveMQTopicAttributes } from '../../types/activemq';
 
 interface Props {
   attrs: ActiveMQTopicAttributes
@@ -51,12 +51,11 @@ export const TopicSubscribers: React.FC<Props> = ({ attrs }) => {
                             Dispatched: {s.DispatchedCounter}
                           </Label>
 
-                          <Label
-                            color={s.PendingQueueSize > 0 ? 'orange' : 'green'}
-                          >
+                          <Label color={s.PendingQueueSize > 0 ? 'orange' : 'green'}>
                             Pending: {s.PendingQueueSize}
                           </Label>
                         </div>
+
                       </DataListCell>
                     ]}
                   />

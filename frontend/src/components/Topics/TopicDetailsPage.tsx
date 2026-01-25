@@ -5,6 +5,9 @@ import {
   CardBody,
   PageSection,
   PageSectionVariants,
+  Tab,
+  Tabs,
+  TabTitleText,
   Title
 } from '@patternfly/react-core'
 
@@ -21,6 +24,7 @@ import { TopicSubscribers } from './TopicSubscribers'
 import { TopicProducers } from './TopicProducers'
 
 import { ActiveMQTopicAttributes } from '../../types/activemq'
+import { TopicBrowser } from './TopicBrowser'
 
 interface Props {
   topicName: string
@@ -33,6 +37,7 @@ export const TopicDetailsPage: React.FC<Props> = ({ topicName }) => {
   const [attrs, setAttrs] = useState<ActiveMQTopicAttributes | null>(null)
   const [history, setHistory] = useState<ActiveMQTopicAttributes[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState('info')
 
   const mounted = useRef(false)
 
@@ -102,14 +107,34 @@ export const TopicDetailsPage: React.FC<Props> = ({ topicName }) => {
         <Title headingLevel="h2">Topic: {topicName}</Title>
       </PageSection>
 
-      <PageSection><TopicInfo attrs={attrs} /></PageSection>
-      <PageSection><TopicCharts history={history} /></PageSection>
-      <PageSection><TopicAlerts attrs={attrs} /></PageSection>
-      <PageSection><TopicSubscribers attrs={attrs} /></PageSection>
-      <PageSection><TopicProducers attrs={attrs} /></PageSection>
-      <PageSection><TopicOperations /></PageSection>
-      <PageSection><TopicSendMessage /></PageSection>
-      <PageSection><TopicDelete mbean={mbean!} /></PageSection>
+      <PageSection>
+        <Tabs
+          activeKey={activeTab}
+          onSelect={(_, key) => setActiveTab(key as string)}
+        >
+          <Tab eventKey="info" title={<TabTitleText>Info</TabTitleText>} />
+          <Tab eventKey="messages" title={<TabTitleText>Messages</TabTitleText>} />
+          <Tab eventKey="charts" title={<TabTitleText>Charts</TabTitleText>} />
+          <Tab eventKey="alerts" title={<TabTitleText>Alerts</TabTitleText>} />
+          <Tab eventKey="subscribers" title={<TabTitleText>Subscribers</TabTitleText>} />
+          <Tab eventKey="producers" title={<TabTitleText>Producers</TabTitleText>} />
+          <Tab eventKey="operations" title={<TabTitleText>Operations</TabTitleText>} />
+          <Tab eventKey="send" title={<TabTitleText>Send</TabTitleText>} />
+          <Tab eventKey="delete" title={<TabTitleText>Delete</TabTitleText>} />
+        </Tabs>
+      </PageSection>
+
+      <PageSection>
+        {activeTab === 'info' && <TopicInfo attrs={attrs} />}
+        {activeTab === 'messages' && <TopicBrowser mbean={mbean!} />}
+        {activeTab === 'charts' && <TopicCharts history={history} />}
+        {activeTab === 'alerts' && <TopicAlerts attrs={attrs} />}
+        {activeTab === 'subscribers' && <TopicSubscribers attrs={attrs} />}
+        {activeTab === 'producers' && <TopicProducers attrs={attrs} />}
+        {activeTab === 'operations' && <TopicOperations />}
+        {activeTab === 'send' && <TopicSendMessage />}
+        {activeTab === 'delete' && <TopicDelete mbean={mbean!} />}
+      </PageSection>
     </>
-  )
+)
 }

@@ -8,7 +8,7 @@ export type View =
 export interface Route {
   view: View;
   queueName?: string;
-  topicName?: string;   // <-- aggiunto
+  topicName?: string;
 }
 
 export function parseHashRoute(hash: string): Route {
@@ -24,10 +24,13 @@ export function parseHashRoute(hash: string): Route {
   }
 
   if (parts[0] === 'topics') {
+    // /topics/<topic>
     if (parts[1]) {
-      return { view: 'topics', topicName: decodeURIComponent(parts[1]) };
+      return { view: 'topics', topicName: decodeURIComponent(parts[1]) }
     }
-    return { view: 'topics' };
+
+    // /topics
+    return { view: 'topics' }
   }
 
   if (parts[0] === 'broker') {

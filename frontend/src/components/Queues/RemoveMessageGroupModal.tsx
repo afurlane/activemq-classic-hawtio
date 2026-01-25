@@ -1,7 +1,7 @@
 import { TimesIcon } from "@patternfly/react-icons"
 import { BaseModal } from "./BaseModal"
 import { ButtonVariant } from "@patternfly/react-core"
-import { useState } from "react"
+import React, { useState } from "react"
 import { FormModal } from "./FormModal"
 
 interface RemoveMessageGroupModalProps {

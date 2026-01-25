@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import {  Button,} from '@patternfly/react-core'
-import { log } from '../../globals'
 import { Queue } from '../../types/domain'
 import { MoveMessageModal } from './MoveMessageModal'
 import { CopyMessageModal } from './CopyMessageModal'

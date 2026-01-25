@@ -28,6 +28,7 @@ export const FormModal: React.FC<FormModalProps> = ({ fields }) => (
           />
         ) : (
           <TextInput
+            id={f.name}
             value={f.value}
             onChange={(_, v) => f.onChange(v)}
           />

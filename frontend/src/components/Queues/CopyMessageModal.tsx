@@ -1,4 +1,4 @@
-import { useState } from "react"
+import React, { useState } from "react"
 import { BaseModal } from "./BaseModal"
 import { CopyIcon } from "@patternfly/react-icons"
 import { FormModal } from "./FormModal"

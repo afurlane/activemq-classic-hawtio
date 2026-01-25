@@ -377,6 +377,18 @@ export class ActiveMQClassicService {
       [name],
     )
   }
+
+  // Subscriptions
+
+  async browseSubscription(mbean: string): Promise<Message[]> {
+    const raw = await jolokiaService.execute(
+      mbean,
+      'browse()',
+    ) as ActiveMQMessageAttributes[];
+
+    return raw.map(mapMessage);
+  }
+
 }
 
 export const activemq = new ActiveMQClassicService()

@@ -124,6 +124,7 @@ export const QueuesView: React.FC = () => {
             {/* Filter by name */}
             <ToolbarItem>
               <TextInput
+                id="filter-text"
                 value={filterText}
                 onChange={(_, v) => setFilterText(v)}
                 placeholder="Filter by name"

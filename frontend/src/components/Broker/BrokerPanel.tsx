@@ -175,6 +175,7 @@ export const BrokerPanel: React.FC = () => {
 
         {route.view === 'broker' && <BrokerDashboard />}
         {route.view === 'overview' && <BrokerOverview />}
+        
       </PageSection>
     </>
   )

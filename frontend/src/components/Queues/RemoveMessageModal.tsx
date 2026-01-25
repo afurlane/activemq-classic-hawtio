@@ -1,4 +1,4 @@
-import { useState } from "react"
+import React, { useState } from "react"
 import { BaseModal } from "./BaseModal"
 import { TrashIcon } from "@patternfly/react-icons"
 import { ButtonVariant } from "@patternfly/react-core"
