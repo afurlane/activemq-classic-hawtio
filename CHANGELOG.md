@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 This project adheres to the Conventional Commits specification and uses
 automated release generation via GitHub Actions.
 
+## [1.0.7](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.0.6...v1.0.7) (2026-01-25)
+
+
+### Bug Fixes
+
+* missing id and missing import rework topic UI ([12f8c29](https://github.com/afurlane/activemq-classic-hawtio/commit/12f8c2947a26ad662afc3f78acc4ecbe5c107c67))
+
 ## [1.0.6](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.0.5...v1.0.6) (2026-01-25)
 
 
