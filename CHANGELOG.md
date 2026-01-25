@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 This project adheres to the Conventional Commits specification and uses
 automated release generation via GitHub Actions.
 
+## [1.0.6](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.0.5...v1.0.6) (2026-01-25)
+
+
+### Bug Fixes
+
+* full factory review, no custom cache, non custom polling. ([5d65267](https://github.com/afurlane/activemq-classic-hawtio/commit/5d65267c2a12450ab9a25e8cfd44628967b7d42b))
+* new cache, activemq service that works better remanaged UI to be more patternfly like ([69b6e0f](https://github.com/afurlane/activemq-classic-hawtio/commit/69b6e0fc0086850d205fa5627b6d86d638d55f88))
+* rework to skip double plugin init allow map files (for live debugging) and removed unused router, removed duplicated context that break plugin functionality ([d375205](https://github.com/afurlane/activemq-classic-hawtio/commit/d3752051b215df278952d0f24aec11526ad1865b))
+* ui layout for broker ([5fc395d](https://github.com/afurlane/activemq-classic-hawtio/commit/5fc395da3c981d2e110992332e7093d79c3cab75))
+
 ## [1.0.5](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.0.4...v1.0.5) (2026-01-23)
 
 
