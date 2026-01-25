@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import {
-  Page,
   PageSection,
   PageSectionVariants,
   Title,
@@ -37,6 +36,7 @@ import { TopicDetailsPage } from '../../components/Topics/TopicDetailsPage'
 import { BrokerDashboard } from '../../components/Broker/BrokerDashboard'
 import { BrokerOverview } from '../../components/Broker/BrokerOverview'
 import { BrokerSelector } from './BrokerSelector'
+
 import { useSelectedBroker } from '../../hooks/useSelectedBroker'
 import { useBrokers } from '../../hooks/useBrokers'
 
@@ -45,8 +45,8 @@ export const BrokerPanel: React.FC = () => {
     parseHashRoute(window.location.hash)
   )
 
-  const broker = useSelectedBroker()
   const { brokers, isLoading, error } = useBrokers()
+  const broker = useSelectedBroker()
 
   const brokerExists = broker && brokers.some(b => b.name === broker.name)
 
@@ -94,12 +94,9 @@ export const BrokerPanel: React.FC = () => {
   const [actionsOpen, setActionsOpen] = useState(false)
 
   return (
-    <Page>
-
-      {/* HEADER PF5 */}
+    <>
+      {/* HEADER */}
       <PageSection variant={PageSectionVariants.light} padding={{ default: 'noPadding' }}>
-
-        {/* BREADCRUMB */}
         <PageSection variant={PageSectionVariants.light}>
           <Breadcrumb>
             <BreadcrumbItem to="#">ActiveMQ</BreadcrumbItem>
@@ -109,7 +106,6 @@ export const BrokerPanel: React.FC = () => {
           </Breadcrumb>
         </PageSection>
 
-        {/* TOOLBAR */}
         <PageSection variant={PageSectionVariants.light}>
           <Toolbar>
             <ToolbarContent>
@@ -153,7 +149,6 @@ export const BrokerPanel: React.FC = () => {
             </ToolbarContent>
           </Toolbar>
 
-          {/* TABS */}
           <Tabs activeKey={activeKey} onSelect={onSelect} isBox>
             <Tab eventKey={0} title={<TabTitleText>Connectors</TabTitleText>} />
             <Tab eventKey={1} title={<TabTitleText>Queues</TabTitleText>} />
@@ -181,7 +176,6 @@ export const BrokerPanel: React.FC = () => {
         {route.view === 'broker' && <BrokerDashboard />}
         {route.view === 'overview' && <BrokerOverview />}
       </PageSection>
-
-    </Page>
+    </>
   )
 }

@@ -9,6 +9,9 @@ module.exports = {
   entry: './src/index.ts',
   mode: 'production',
 
+  // ⭐ NECESSARIO per generare i sourcemap
+  devtool: 'source-map',
+
   output: {
     path: path.resolve(__dirname, 'build'),
     publicPath: 'auto',
@@ -30,6 +33,8 @@ module.exports = {
         use: {
           loader: 'swc-loader',
           options: {
+            // ⭐ NECESSARIO per generare i sourcemap
+            sourceMaps: true,
             jsc: {
               parser: { syntax: 'typescript' },
             },
@@ -48,9 +53,9 @@ module.exports = {
         test: /\.(woff|woff2|eot|ttf|otf)$/i,
         type: 'asset/resource',
       },
-    {
-          test: /\.md$/i,
-          type: 'asset/source',
+      {
+        test: /\.md$/i,
+        type: 'asset/source',
       },
     ],
   },

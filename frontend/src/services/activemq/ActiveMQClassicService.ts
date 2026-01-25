@@ -21,7 +21,7 @@ import {
   ActiveMQMessageAttributes,
   ActiveMQDLQAttributes,
 } from '../../types/activemq'
-import { BrokerInfo } from 'src/hooks/useBrokers';
+import { BrokerInfo } from '../../hooks/useBrokers'
 
 function normalizeBulk<T>(r: any) {
   if (r.status !== 200 || r.error) {

@@ -70,10 +70,17 @@ public class ActiveMQClassicPluginServlet extends HttpServlet {
                 return;
             }
 
-            if (path.endsWith(".js")) resp.setContentType("application/javascript");
-            else if (path.endsWith(".css")) resp.setContentType("text/css");
-            else if (path.endsWith(".txt")) resp.setContentType("text/plain");
-            else if (path.endsWith(".ttf")) resp.setContentType("font/ttf");
+            if (path.endsWith(".map")) {
+                resp.setContentType("application/json");
+            } else if (path.endsWith(".js")) {
+                resp.setContentType("application/javascript");
+            } else if (path.endsWith(".css")) {
+                resp.setContentType("text/css");
+            } else if (path.endsWith(".txt")) {
+                resp.setContentType("text/plain");
+            } else if (path.endsWith(".ttf")) {
+                resp.setContentType("font/ttf");
+            }
 
             LOG.debug("Writing streamed resource");
             in.transferTo(resp.getOutputStream());
