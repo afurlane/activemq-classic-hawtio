@@ -5,17 +5,21 @@ import {
   SelectOption,
   MenuToggle,
 } from '@patternfly/react-core'
-import { useBroker } from '../../hooks/useBrokers'
 
+import { useBrokers } from '../../hooks/useBrokers'
+import { useSelectedBrokerName, useSetBrokerName } from '../../hooks/useSelectedBroker'
 
 export function BrokerSelector() {
-  const { brokers, broker, setBroker } = useBroker()
+  const { brokers } = useBrokers()
+  const brokerName = useSelectedBrokerName()
+  const setBrokerName = useSetBrokerName()
+
   const [open, setOpen] = React.useState(false)
 
   return (
     <Select
       isOpen={open}
-      selected={broker?.name}
+      selected={brokerName ?? undefined}
       onOpenChange={setOpen}
       toggle={toggleRef => (
         <MenuToggle
@@ -23,7 +27,7 @@ export function BrokerSelector() {
           onClick={() => setOpen(!open)}
           isExpanded={open}
         >
-          {broker?.name ?? 'Select broker'}
+          {brokerName ?? 'Select broker'}
         </MenuToggle>
       )}
     >
@@ -33,7 +37,7 @@ export function BrokerSelector() {
             key={b.name}
             value={b.name}
             onClick={() => {
-              setBroker(b)
+              setBrokerName(b.name)
               setOpen(false)
             }}
           >

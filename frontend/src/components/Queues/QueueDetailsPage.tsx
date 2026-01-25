@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import {
   PageSection,
   PageSectionVariants,
@@ -14,7 +14,6 @@ import {
   Alert,
 } from '@patternfly/react-core'
 
-import { activemq } from '../../services/activemq/ActiveMQClassicService'
 import { buildQueuesUrl } from '../../router/router'
 
 import { QueueBrowser } from './QueueBrowser'
@@ -29,9 +28,9 @@ import { QueueStorage } from './QueueStorage'
 import { QueueDLQ } from './QueueDLQ'
 import { QueueConsumers } from './QueueConsumers'
 
-import { Queue } from '../../types/domain'
 import { useQueueMetrics } from '../../hooks/useQueueMetrics'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+import { useQueue } from '../../hooks/useQueue'
 
 export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName }) => {
   const brokerName = useSelectedBrokerName()
@@ -46,33 +45,16 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
     )
   }
 
-  const [queue, setQueue] = useState<Queue | null>(null)
-  const [activeTab, setActiveTab] = useState<string>('overview')
-  const mounted = useRef(false)
+  // SWR: carica la queue
+  const { data: queue, isLoading: queueLoading } = useQueue(brokerName, queueName)
 
-  const loadInfo = async () => {
-    if (!brokerName || !mounted.current) return
-
-    const queues = await activemq.listQueues(brokerName)
-    const q = queues.find(q => q.name === queueName)
-
-    if (mounted.current) setQueue(q ?? null)
-  }
-
-  useEffect(() => {
-    mounted.current = true
-    loadInfo()
-    const id = setInterval(loadInfo, 5000)
-    return () => {
-      mounted.current = false
-      clearInterval(id)
-    }
-  }, [brokerName, queueName])
-
+  // SWR: carica metriche
   const { latest, history, loading: metricsLoading } =
     useQueueMetrics(queue?.mbean ?? '')
 
-  if (!queue || metricsLoading || !latest) {
+  const [activeTab, setActiveTab] = useState<string>('overview')
+
+  if (queueLoading || metricsLoading || !queue || !latest) {
     return (
       <PageSection>
         <Title headingLevel="h3">Loading queue {queueName}…</Title>
@@ -176,7 +158,7 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
         )}
 
         {activeTab === 'operations' && (
-          <QueueOperations queue={queue} onAction={loadInfo} />
+          <QueueOperations queue={queue} onAction={async () => {}} />
         )}
       </PageSection>
     </>

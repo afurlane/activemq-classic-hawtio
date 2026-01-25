@@ -8,7 +8,7 @@ import {
   Title
 } from '@patternfly/react-core'
 
-import { activemq } from '../../services/activemq/ActiveMQClassicService'
+import { activemq, getBrokerMBean } from '../../services/activemq/ActiveMQClassicService'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
 
 import { TopicInfo } from './TopicInfo'
@@ -20,38 +20,44 @@ import { TopicDelete } from './TopicDelete'
 import { TopicSubscribers } from './TopicSubscribers'
 import { TopicProducers } from './TopicProducers'
 
-export const TopicDetailsPage: React.FC<{ topicName: string }> = ({ topicName }) => {
+import { ActiveMQTopicAttributes } from '../../types/activemq'
+
+interface Props {
+  topicName: string
+}
+
+export const TopicDetailsPage: React.FC<Props> = ({ topicName }) => {
   const brokerName = useSelectedBrokerName()
 
-  if (!brokerName) {
-    return (
-      <Card isFlat isCompact>
-        <CardBody>
-          <Alert variant="danger" title="No broker selected" isInline />
-        </CardBody>
-      </Card>
-    )
-  }
-
   const [mbean, setMbean] = useState<string | null>(null)
-  const [attrs, setAttrs] = useState<any>(null)
-  const [history, setHistory] = useState<any[]>([])
+  const [attrs, setAttrs] = useState<ActiveMQTopicAttributes | null>(null)
+  const [history, setHistory] = useState<ActiveMQTopicAttributes[]>([])
+  const [error, setError] = useState<string | null>(null)
+
   const mounted = useRef(false)
 
   const load = async () => {
     if (!brokerName || !mounted.current) return
 
-    const list = await activemq.listTopics(brokerName)
-    const topic = list.find(t => t.name === topicName)
-    if (!topic) return
+    try {
+      const list = await activemq.listTopics(brokerName)
+      const topic = list.find(t => t.name === topicName)
+      if (!topic) {
+        setError(`Topic "${topicName}" not found`)
+        return
+      }
 
-    setMbean(topic.mbean)
+      setMbean(topic.mbean)
 
-    const a = await activemq.getTopicAttributes(topic.mbean)
-    if (!mounted.current) return
+      const a = await activemq.getTopicAttributes(topic.mbean)
+      if (!mounted.current) return
 
-    setAttrs(a)
-    setHistory(prev => [...prev, a].slice(-50))
+      setAttrs(a)
+      setHistory(prev => [...prev, a].slice(-50))
+      setError(null)
+    } catch (err: any) {
+      setError(err?.message ?? 'Failed to load topic data')
+    }
   }
 
   useEffect(() => {
@@ -64,6 +70,24 @@ export const TopicDetailsPage: React.FC<{ topicName: string }> = ({ topicName })
     }
   }, [brokerName, topicName])
 
+  if (!brokerName) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>
+          <Alert variant="danger" title="No broker selected" isInline />
+        </CardBody>
+      </Card>
+    )
+  }
+
+  if (error) {
+    return (
+      <PageSection>
+        <Alert variant="danger" title={error} isInline />
+      </PageSection>
+    )
+  }
+
   if (!attrs) {
     return (
       <PageSection>
@@ -74,50 +98,18 @@ export const TopicDetailsPage: React.FC<{ topicName: string }> = ({ topicName })
 
   return (
     <>
-      {/* Header */}
       <PageSection variant={PageSectionVariants.light}>
         <Title headingLevel="h2">Topic: {topicName}</Title>
       </PageSection>
 
-      {/* Info */}
-      <PageSection>
-        <TopicInfo attrs={attrs} />
-      </PageSection>
-
-      {/* Charts */}
-      <PageSection>
-        <TopicCharts history={history} />
-      </PageSection>
-
-      {/* Alerts */}
-      <PageSection>
-        <TopicAlerts attrs={attrs} />
-      </PageSection>
-
-      {/* Subscribers */}
-      <PageSection>
-        <TopicSubscribers attrs={attrs} />
-      </PageSection>
-
-      {/* Producers */}
-      <PageSection>
-        <TopicProducers attrs={attrs} />
-      </PageSection>
-
-      {/* Operations */}
-      <PageSection>
-        <TopicOperations />
-      </PageSection>
-
-      {/* Send Message */}
-      <PageSection>
-        <TopicSendMessage />
-      </PageSection>
-
-      {/* Delete */}
-      <PageSection>
-        <TopicDelete mbean={mbean!} />
-      </PageSection>
+      <PageSection><TopicInfo attrs={attrs} /></PageSection>
+      <PageSection><TopicCharts history={history} /></PageSection>
+      <PageSection><TopicAlerts attrs={attrs} /></PageSection>
+      <PageSection><TopicSubscribers attrs={attrs} /></PageSection>
+      <PageSection><TopicProducers attrs={attrs} /></PageSection>
+      <PageSection><TopicOperations /></PageSection>
+      <PageSection><TopicSendMessage /></PageSection>
+      <PageSection><TopicDelete mbean={mbean!} /></PageSection>
     </>
   )
 }

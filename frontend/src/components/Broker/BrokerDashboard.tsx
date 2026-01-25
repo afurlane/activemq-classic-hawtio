@@ -16,6 +16,7 @@ import {
 } from '@patternfly/react-core'
 
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+import { useBrokers } from '../../hooks/useBrokers'
 
 import { BrokerTrends } from './BrokerTrends'
 import { BrokerThroughput } from './BrokerThroughput'
@@ -26,6 +27,13 @@ import { TopProducers } from './TopProducers'
 
 export const BrokerDashboard: React.FC = () => {
   const brokerName = useSelectedBrokerName()
+
+  const { brokers, isLoading, error } = useBrokers()
+  const broker = brokers.find(b => b.name === brokerName)
+
+  let statusLabel = <Label color="green">Connected</Label>
+  if (isLoading) statusLabel = <Label color="blue">Connecting…</Label>
+  if (error || !broker) statusLabel = <Label color="red">Disconnected</Label>
 
   if (!brokerName) {
     return (
@@ -43,16 +51,17 @@ export const BrokerDashboard: React.FC = () => {
     <>
       {/* HEADER PF5 */}
       <PageSection variant={PageSectionVariants.light}>
-        <Flex alignItems={{ default: 'alignItemsCenter' }} justifyContent={{ default: 'justifyContentSpaceBetween' }}>
+        <Flex
+          alignItems={{ default: 'alignItemsCenter' }}
+          justifyContent={{ default: 'justifyContentSpaceBetween' }}
+        >
+          <FlexItem>{statusLabel}</FlexItem>
+
           <FlexItem>
             <Title headingLevel="h2">Broker Dashboard</Title>
             <div style={{ marginTop: '0.25rem', opacity: 0.7 }}>
               Metrics and operational insights for broker <strong>{brokerName}</strong>
             </div>
-          </FlexItem>
-
-          <FlexItem>
-            <Label color="green">Connected</Label>
           </FlexItem>
         </Flex>
       </PageSection>
@@ -63,67 +72,43 @@ export const BrokerDashboard: React.FC = () => {
 
           <GridItem>
             <Card isFlat>
-              <CardHeader>
-                <CardTitle>Trends</CardTitle>
-              </CardHeader>
-              <CardBody>
-                <BrokerTrends />
-              </CardBody>
+              <CardHeader><CardTitle>Trends</CardTitle></CardHeader>
+              <CardBody><BrokerTrends /></CardBody>
             </Card>
           </GridItem>
 
           <GridItem>
             <Card isFlat>
-              <CardHeader>
-                <CardTitle>Throughput</CardTitle>
-              </CardHeader>
-              <CardBody>
-                <BrokerThroughput />
-              </CardBody>
+              <CardHeader><CardTitle>Throughput</CardTitle></CardHeader>
+              <CardBody><BrokerThroughput /></CardBody>
             </Card>
           </GridItem>
 
           <GridItem>
             <Card isFlat>
-              <CardHeader>
-                <CardTitle>Storage</CardTitle>
-              </CardHeader>
-              <CardBody>
-                <BrokerStorage />
-              </CardBody>
+              <CardHeader><CardTitle>Storage</CardTitle></CardHeader>
+              <CardBody><BrokerStorage /></CardBody>
             </Card>
           </GridItem>
 
           <GridItem>
             <Card isFlat>
-              <CardHeader>
-                <CardTitle>Alerts</CardTitle>
-              </CardHeader>
-              <CardBody>
-                <BrokerAlerts />
-              </CardBody>
+              <CardHeader><CardTitle>Alerts</CardTitle></CardHeader>
+              <CardBody><BrokerAlerts /></CardBody>
             </Card>
           </GridItem>
 
           <GridItem>
             <Card isFlat>
-              <CardHeader>
-                <CardTitle>Top Consumers</CardTitle>
-              </CardHeader>
-              <CardBody>
-                <TopConsumers />
-              </CardBody>
+              <CardHeader><CardTitle>Top Consumers</CardTitle></CardHeader>
+              <CardBody><TopConsumers /></CardBody>
             </Card>
           </GridItem>
 
           <GridItem>
             <Card isFlat>
-              <CardHeader>
-                <CardTitle>Top Producers</CardTitle>
-              </CardHeader>
-              <CardBody>
-                <TopProducers />
-              </CardBody>
+              <CardHeader><CardTitle>Top Producers</CardTitle></CardHeader>
+              <CardBody><TopProducers /></CardBody>
             </Card>
           </GridItem>
 

@@ -23,7 +23,7 @@ interface Props {
 }
 
 const formatBytes = (bytes: number) => {
-  if (!bytes && bytes !== 0) return '—'
+  if (bytes === undefined || bytes === null) return '—'
   const units = ['B', 'KB', 'MB', 'GB', 'TB']
   let i = 0
   let value = bytes
@@ -34,64 +34,57 @@ const formatBytes = (bytes: number) => {
   return `${value.toFixed(1)} ${units[i]}`
 }
 
-const severityForPercent = (percent: number) => {
+type Severity = 'green' | 'orange' | 'red'
+
+const severityForPercent = (percent: number): Severity => {
   if (percent < 60) return 'green'
   if (percent < 80) return 'orange'
   return 'red'
 }
 
+const icons: Record<Severity, React.ReactNode> = {
+  green: <CheckCircleIcon />,
+  orange: <ExclamationTriangleIcon />,
+  red: <ExclamationCircleIcon />
+}
+
 const renderPercentLabel = (percent: number) => {
   const sev = severityForPercent(percent)
-  if (sev === 'green') {
-    return (
-      <Label color="green" icon={<CheckCircleIcon />}>
-        {percent}%
-      </Label>
-    )
-  }
-  if (sev === 'orange') {
-    return (
-      <Label color="orange" icon={<ExclamationTriangleIcon />}>
-        {percent}%
-      </Label>
-    )
-  }
   return (
-    <Label color="red" icon={<ExclamationCircleIcon />}>
+    <Label color={sev} icon={icons[sev]}>
       {percent}%
     </Label>
   )
 }
 
 export const QueueStorage: React.FC<Props> = ({ queue }) => {
+  const items = [
+    {
+      label: 'Memory Limit',
+      value: formatBytes(queue.memory.limit)
+    },
+    {
+      label: 'Memory Usage',
+      value: formatBytes(queue.memory.usageBytes)
+    },
+    {
+      label: 'Memory Usage (%)',
+      value: renderPercentLabel(queue.memory.percent)
+    }
+  ]
+
   return (
     <Card isFlat isCompact>
       <CardBody>
         <Title headingLevel="h4">Storage</Title>
 
         <DescriptionList isHorizontal>
-
-          <DescriptionListGroup>
-            <DescriptionListTerm>Memory Limit</DescriptionListTerm>
-            <DescriptionListDescription>
-              {formatBytes(queue.memory.limit)}
-            </DescriptionListDescription>
-          </DescriptionListGroup>
-
-          <DescriptionListGroup>
-            <DescriptionListTerm>Memory Usage</DescriptionListTerm>
-            <DescriptionListDescription>
-              {formatBytes(queue.memory.usageBytes)}
-            </DescriptionListDescription>
-          </DescriptionListGroup>
-
-          <DescriptionListGroup>
-            <DescriptionListTerm>Memory Usage (%)</DescriptionListTerm>
-            <DescriptionListDescription>
-              {renderPercentLabel(queue.memory.percent)}
-            </DescriptionListDescription>
-          </DescriptionListGroup>
-
+          {items.map((item, i) => (
+            <DescriptionListGroup key={i}>
+              <DescriptionListTerm>{item.label}</DescriptionListTerm>
+              <DescriptionListDescription>{item.value}</DescriptionListDescription>
+            </DescriptionListGroup>
+          ))}
         </DescriptionList>
       </CardBody>
     </Card>

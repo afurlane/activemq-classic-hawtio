@@ -13,6 +13,12 @@ import {
   Label
 } from '@patternfly/react-core'
 
+import {
+  CheckCircleIcon,
+  TimesCircleIcon,
+  ExclamationTriangleIcon
+} from '@patternfly/react-icons'
+
 import { Queue } from '../../types/domain'
 
 interface Props {
@@ -20,17 +26,59 @@ interface Props {
 }
 
 export const QueueAttributes: React.FC<Props> = ({ queue }) => {
-  const [expanded, setExpanded] = React.useState<string | null>(null)
+  const [expanded, setExpanded] = React.useState<string>('runtime')
 
   const onToggle = (id: string) => {
-    setExpanded(prev => (prev === id ? null : id))
+    setExpanded(prev => (prev === id ? '' : id))
   }
 
-  const Section: React.FC<{
+  const formatValue = (value: any, label: string) => {
+    if (value === undefined || value === null) return '—'
+
+    // Booleani con icone PF5
+    if (typeof value === 'boolean') {
+      return value ? (
+        <Label color="green" icon={<CheckCircleIcon />}>Yes</Label>
+      ) : (
+        <Label color="red" icon={<TimesCircleIcon />}>No</Label>
+      )
+    }
+
+    // Numeri con formattazione
+    if (typeof value === 'number') {
+      // Highlight dinamico per valori critici
+      if (label.toLowerCase().includes('percent') && value > 80) {
+        return (
+          <Label color="red" icon={<ExclamationTriangleIcon />}>
+            {value.toLocaleString()}%
+          </Label>
+        )
+      }
+
+      return value.toLocaleString()
+    }
+
+    return String(value)
+  }
+
+  const Row = ({ label, value }: { label: string; value: any }) => (
+    <DescriptionListGroup>
+      <DescriptionListTerm>{label}</DescriptionListTerm>
+      <DescriptionListDescription>
+        {formatValue(value, label)}
+      </DescriptionListDescription>
+    </DescriptionListGroup>
+  )
+
+  const Section = ({
+    id,
+    title,
+    rows
+  }: {
     id: string
     title: string
-    children: React.ReactNode
-  }> = ({ id, title, children }) => (
+    rows: { label: string; value: any }[]
+  }) => (
     <AccordionItem>
       <AccordionToggle
         onClick={() => onToggle(id)}
@@ -41,63 +89,65 @@ export const QueueAttributes: React.FC<Props> = ({ queue }) => {
       </AccordionToggle>
 
       <AccordionContent isHidden={expanded !== id}>
-        <DescriptionList isHorizontal>{children}</DescriptionList>
+        <DescriptionList isHorizontal>
+          {rows.map((r, i) => (
+            <Row key={i} label={r.label} value={r.value} />
+          ))}
+        </DescriptionList>
       </AccordionContent>
     </AccordionItem>
   )
 
-  const Row: React.FC<{ label: string; value: any }> = ({ label, value }) => (
-    <DescriptionListGroup>
-      <DescriptionListTerm>{label}</DescriptionListTerm>
-      <DescriptionListDescription>
-        {value === undefined
-          ? '—'
-          : typeof value === 'boolean'
-          ? value
-            ? <Label color="green">Yes</Label>
-            : <Label color="red">No</Label>
-          : String(value)}
-      </DescriptionListDescription>
-    </DescriptionListGroup>
-  )
+  const sections = [
+    {
+      id: 'runtime',
+      title: 'Runtime',
+      rows: [
+        { label: 'Queue size', value: queue.size },
+        { label: 'Enqueue count', value: queue.stats.enqueue },
+        { label: 'Dequeue count', value: queue.stats.dequeue },
+        { label: 'Expired', value: queue.stats.expired },
+        { label: 'In flight', value: queue.stats.inflight },
+        { label: 'Consumers', value: queue.consumers },
+        { label: 'Producers', value: queue.producers },
+        { label: 'Paused', value: queue.state.paused },
+        { label: 'Stopped', value: queue.state.stopped },
+        { label: 'DLQ', value: queue.state.dlq }
+      ]
+    },
+    {
+      id: 'memory',
+      title: 'Memory',
+      rows: [
+        { label: 'Memory limit', value: queue.memory.limit },
+        { label: 'Memory usage bytes', value: queue.memory.usageBytes },
+        { label: 'Memory percent usage', value: queue.memory.percent }
+      ]
+    },
+    {
+      id: 'dlq',
+      title: 'DLQ',
+      rows: [
+        { label: 'DLQ enabled', value: queue.state.dlq }
+      ]
+    },
+    {
+      id: 'misc',
+      title: 'Misc',
+      rows: [
+        { label: 'MBean', value: queue.mbean },
+        { label: 'Name', value: queue.name }
+      ]
+    }
+  ]
 
   return (
     <Card isFlat isCompact>
       <CardBody>
         <Accordion asDefinitionList>
-
-          {/* RUNTIME */}
-          <Section id="runtime" title="Runtime">
-            <Row label="Queue size" value={queue.size} />
-            <Row label="Enqueue count" value={queue.stats.enqueue} />
-            <Row label="Dequeue count" value={queue.stats.dequeue} />
-            <Row label="Expired" value={queue.stats.expired} />
-            <Row label="In flight" value={queue.stats.inflight} />
-            <Row label="Consumers" value={queue.consumers} />
-            <Row label="Producers" value={queue.producers} />
-            <Row label="Paused" value={queue.state.paused} />
-            <Row label="Stopped" value={queue.state.stopped} />
-            <Row label="DLQ" value={queue.state.dlq} />
-          </Section>
-
-          {/* MEMORY */}
-          <Section id="memory" title="Memory">
-            <Row label="Memory limit" value={queue.memory.limit} />
-            <Row label="Memory usage bytes" value={queue.memory.usageBytes} />
-            <Row label="Memory percent usage" value={queue.memory.percent} />
-          </Section>
-
-          {/* DLQ */}
-          <Section id="dlq" title="DLQ">
-            <Row label="DLQ enabled" value={queue.state.dlq} />
-          </Section>
-
-          {/* MISC */}
-          <Section id="misc" title="Misc">
-            <Row label="MBean" value={queue.mbean} />
-            <Row label="Name" value={queue.name} />
-          </Section>
-
+          {sections.map(s => (
+            <Section key={s.id} id={s.id} title={s.title} rows={s.rows} />
+          ))}
         </Accordion>
       </CardBody>
     </Card>

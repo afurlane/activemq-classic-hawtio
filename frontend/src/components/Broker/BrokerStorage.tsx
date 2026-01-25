@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from 'react'
-import { activemq } from '../../services/activemq/ActiveMQClassicService'
-import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+import React from 'react'
 import {
   Card,
   CardHeader,
@@ -13,6 +11,9 @@ import {
   Alert,
   Label
 } from '@patternfly/react-core'
+
+import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+import { useBrokerStorage } from '../../hooks/useBrokerStorage'
 
 export const BrokerStorage: React.FC = () => {
   const brokerName = useSelectedBrokerName()
@@ -27,47 +28,28 @@ export const BrokerStorage: React.FC = () => {
     )
   }
 
-  const [storage, setStorage] = useState({
-    store: 0,
-    temp: 0,
-    cursor: 0,
-    memory: 0,
-  })
+  const { data: storage, isLoading, error } = useBrokerStorage(brokerName)
 
-  const poll = async () => {
-    if (!brokerName) return
-
-    const queues = await activemq.listQueuesWithRawAttributes(brokerName)
-
-    let store = 0
-    let cursor = 0
-    let memory = 0
-    let tempSum = 0
-    let tempCount = 0
-
-    queues.forEach(({ attrs }) => {
-      store += attrs.StoreMessageSize ?? 0
-      cursor += attrs.CursorMemoryUsage ?? 0
-      memory += attrs.MemoryUsageByteCount ?? 0
-
-      if (attrs.TempUsagePercentUsage !== undefined) {
-        tempSum += attrs.TempUsagePercentUsage
-        tempCount++
-      }
-    })
-
-    const temp = tempCount > 0 ? tempSum / tempCount : 0
-
-    setStorage({ store, temp, cursor, memory })
+  if (isLoading) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>
+          <Alert variant="info" title="Loading storage metrics…" isInline />
+        </CardBody>
+      </Card>
+    )
   }
 
-  useEffect(() => {
-    poll()
-    const id = setInterval(poll, 5000)
-    return () => clearInterval(id)
-  }, [brokerName])
+  if (error || !storage) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>
+          <Alert variant="danger" title="Failed to load storage metrics" isInline />
+        </CardBody>
+      </Card>
+    )
+  }
 
-  // Severità per evidenziare problemi
   const severity =
     storage.temp > 80 || storage.memory > 80_000_000
       ? 'red'

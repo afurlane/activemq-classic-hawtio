@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import {
   Card,
   CardBody,
@@ -13,7 +13,6 @@ import {
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
-  InfoCircleIcon,
   CheckCircleIcon
 } from '@patternfly/react-icons'
 
@@ -24,81 +23,16 @@ interface Props {
   history: Queue[]
 }
 
+type AlertItem = {
+  variant: AlertVariant
+  title: string
+  icon: React.ReactNode
+  severity: number   // 0 = critical, 1 = warning, 2 = info, 3 = success
+}
+
 export const QueueAlerts: React.FC<Props> = ({ queue, history }) => {
 
-  type AlertItem = {
-    variant: AlertVariant
-    title: string
-    icon: React.ReactNode
-  }
-
-  const alerts: AlertItem[] = []
-
-  const lag = queue.size - queue.stats.inflight
-
-  // Memory
-  if (queue.memory.percent > 80) {
-    alerts.push({
-      variant: AlertVariant.danger,
-      title: `High memory usage: ${queue.memory.percent}%`,
-      icon: <ExclamationCircleIcon />
-    })
-  }
-
-  // Consumers
-  if (queue.consumers === 0) {
-    alerts.push({
-      variant: AlertVariant.warning,
-      title: `No active consumers`,
-      icon: <ExclamationTriangleIcon />
-    })
-  }
-
-  // Lag
-  if (lag > 10000) {
-    alerts.push({
-      variant: AlertVariant.danger,
-      title: `High consumer lag: ${lag} messages`,
-      icon: <ExclamationCircleIcon />
-    })
-  }
-
-  // Inflight
-  if (queue.stats.inflight > 500) {
-    alerts.push({
-      variant: AlertVariant.warning,
-      title: `Too many inflight messages: ${queue.stats.inflight}`,
-      icon: <ExclamationTriangleIcon />
-    })
-  }
-
-  // Queue size
-  if (queue.size > 10000) {
-    alerts.push({
-      variant: AlertVariant.warning,
-      title: `Queue backlog growing: ${queue.size} messages`,
-      icon: <ExclamationTriangleIcon />
-    })
-  }
-
-  // Dispatch stall
-  if (history.length > 2) {
-    const latest = history.at(-1)
-    const prev = history.at(-2)
-
-    if (latest && prev) {
-      const enqueueDelta = latest.stats.enqueue - prev.stats.enqueue
-      const dispatchDelta = latest.stats.dequeue - prev.stats.dequeue
-
-      if (enqueueDelta > 0 && dispatchDelta === 0) {
-        alerts.push({
-          variant: AlertVariant.danger,
-          title: `Messages enqueued but not dispatched`,
-          icon: <ExclamationCircleIcon />
-        })
-      }
-    }
-  }
+  const alerts = useMemo(() => computeQueueAlerts(queue, history), [queue, history])
 
   return (
     <Card isFlat isCompact>
@@ -107,7 +41,7 @@ export const QueueAlerts: React.FC<Props> = ({ queue, history }) => {
 
         {alerts.length === 0 && (
           <Alert
-            variant={AlertVariant.success}
+            variant="success"
             title="No alerts"
             isInline
             customIcon={<CheckCircleIcon />}
@@ -120,14 +54,14 @@ export const QueueAlerts: React.FC<Props> = ({ queue, history }) => {
               <Alert
                 key={i}
                 variant={a.variant}
+                isInline
+                customIcon={a.icon}
                 title={
                   <Flex spaceItems={{ default: 'spaceItemsSm' }}>
                     <FlexItem>{a.icon}</FlexItem>
                     <FlexItem>{a.title}</FlexItem>
                   </Flex>
                 }
-                isInline
-                customIcon={a.icon}
               />
             ))}
           </AlertGroup>
@@ -135,4 +69,91 @@ export const QueueAlerts: React.FC<Props> = ({ queue, history }) => {
       </CardBody>
     </Card>
   )
+}
+
+function computeQueueAlerts(queue: Queue, history: Queue[]): AlertItem[] {
+  const alerts: AlertItem[] = []
+  const lag = queue.size - queue.stats.inflight
+
+  const push = (
+    variant: AlertVariant,
+    title: string,
+    icon: React.ReactNode,
+    severity: number
+  ) => alerts.push({ variant, title, icon, severity })
+
+  /* MEMORY */
+  if (queue.memory.percent > 80) {
+    push(
+      AlertVariant.danger,
+      `High memory usage: ${queue.memory.percent}%`,
+      <ExclamationCircleIcon />,
+      0
+    )
+  }
+
+  /* NO CONSUMERS */
+  if (queue.consumers === 0) {
+    push(
+      AlertVariant.warning,
+      `No active consumers`,
+      <ExclamationTriangleIcon />,
+      1
+    )
+  }
+
+  /* LAG */
+  if (lag > 10000) {
+    push(
+      AlertVariant.danger,
+      `High consumer lag: ${lag.toLocaleString()} messages`,
+      <ExclamationCircleIcon />,
+      0
+    )
+  }
+
+  /* INFLIGHT */
+  if (queue.stats.inflight > 500) {
+    push(
+      AlertVariant.warning,
+      `Too many inflight messages: ${queue.stats.inflight.toLocaleString()}`,
+      <ExclamationTriangleIcon />,
+      1
+    )
+  }
+
+  /* QUEUE SIZE */
+  if (queue.size > 10000) {
+    push(
+      AlertVariant.warning,
+      `Queue backlog growing: ${queue.size.toLocaleString()} messages`,
+      <ExclamationTriangleIcon />,
+      1
+    )
+  }
+
+  /* DISPATCH STALL */
+  if (history.length > 2) {
+    const latest = history.at(-1)
+    const prev = history.at(-2)
+
+    if (latest && prev) {
+      const enqueueDelta = latest.stats.enqueue - prev.stats.enqueue
+      const dispatchDelta = latest.stats.dequeue - prev.stats.dequeue
+
+      if (enqueueDelta > 0 && dispatchDelta === 0) {
+        push(
+          AlertVariant.danger,
+          `Messages enqueued but not dispatched`,
+          <ExclamationCircleIcon />,
+          0
+        )
+      }
+    }
+  }
+
+  /* ORDER BY SEVERITY */
+  alerts.sort((a, b) => a.severity - b.severity)
+
+  return alerts
 }

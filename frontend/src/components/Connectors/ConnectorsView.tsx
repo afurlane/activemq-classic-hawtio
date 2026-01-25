@@ -1,6 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { activemq } from '../../services/activemq/ActiveMQClassicService'
+import React, { useState } from 'react'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+import { useConnectors } from '../../hooks/useConnectors'
+import { useConnections } from '../../hooks/useConnections'
+
 import {
   PageSection,
   Title,
@@ -12,8 +14,9 @@ import {
   Card,
   CardBody,
   Label,
-  Alert
+  Alert,
 } from '@patternfly/react-core'
+
 import {
   Table,
   Thead,
@@ -23,8 +26,7 @@ import {
   Td,
 } from '@patternfly/react-table'
 
-import { createPolling } from '../../services/polling'
-import { log } from '../../globals'
+import { activemq } from '../../services/activemq/ActiveMQClassicService'
 
 export const ConnectorsView: React.FC = () => {
   const brokerName = useSelectedBrokerName()
@@ -39,53 +41,23 @@ export const ConnectorsView: React.FC = () => {
     )
   }
 
-  const [connectors, setConnectors] = useState<any[]>([])
+  // SWR: lista connectors
+  const { data: connectors = [], error: connectorsError, isLoading } = useConnectors(brokerName)
+
+  // Drawer state
   const [selected, setSelected] = useState<any | null>(null)
-  const [connections, setConnections] = useState<any[]>([])
-  const [isDrawerExpanded, setDrawerExpanded] = useState(false)
+  const isDrawerExpanded = !!selected
 
-  const mounted = useRef(false)
+  // SWR: connections del connector selezionato
+  const { data: connections = [] } = useConnections(selected?.mbean ?? null)
 
-  const load = createPolling(async () => {
-    if (!brokerName || !mounted.current) return
-
-    log.debug('[ConnectorsView] loading connectors for broker:', brokerName)
-
-    const data = await activemq.listConnectors(brokerName)
-    if (mounted.current) {
-      setConnectors(data)
-    }
-  })
-
-  const loadConnections = createPolling(async (connector: any) => {
-    if (!mounted.current) return
-
-    log.debug('[ConnectorsView] loading connections for connector:', connector.name)
-
+  const openDrawer = (connector: any) => {
     setSelected(connector)
-
-    const list = await activemq.listConnections(connector.mbean)
-    if (mounted.current) {
-      setConnections(list)
-      setDrawerExpanded(true)
-    }
-  })
-
-  const closeDrawer = () => {
-    setDrawerExpanded(false)
-    setSelected(null)
   }
 
-  useEffect(() => {
-    mounted.current = true
-    load()
-
-    const id = setInterval(load, 5000)
-    return () => {
-      mounted.current = false
-      clearInterval(id)
-    }
-  }, [brokerName])
+  const closeDrawer = () => {
+    setSelected(null)
+  }
 
   const panel = selected && (
     <DrawerPanelContent widths={{ default: 'width_50' }}>
@@ -143,6 +115,10 @@ export const ConnectorsView: React.FC = () => {
       <Drawer isExpanded={isDrawerExpanded}>
         <DrawerContent panelContent={panel}>
           <DrawerContentBody>
+            {connectorsError && (
+              <Alert variant="danger" title="Failed to load connectors" isInline />
+            )}
+
             <Table variant="compact">
               <Thead>
                 <Tr>
@@ -152,7 +128,7 @@ export const ConnectorsView: React.FC = () => {
                   <Th>Connections</Th>
                   <Th>Inbound</Th>
                   <Th>Outbound</Th>
-                  <Th modifier="fitContent" screenReaderText="Actions"></Th>
+                  <Th modifier="fitContent"></Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -166,13 +142,13 @@ export const ConnectorsView: React.FC = () => {
                       </Label>
                     </Td>
                     <Td>{c.connectionCount}</Td>
-                    <Td>{c.inbound}</Td>
-                    <Td>{c.outbound}</Td>
+                    <Td>{c.traffic.inbound}</Td>
+                    <Td>{c.traffic.outbound}</Td>
                     <Td>
                       <Button
                         variant="primary"
                         size="sm"
-                        onClick={() => loadConnections(c)}
+                        onClick={() => openDrawer(c)}
                       >
                         Details
                       </Button>

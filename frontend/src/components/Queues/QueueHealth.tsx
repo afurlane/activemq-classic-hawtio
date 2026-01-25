@@ -24,41 +24,56 @@ interface Props {
 
 type Severity = 'green' | 'yellow' | 'red'
 
-const status = (value: number, green: number, yellow: number): Severity => {
+const getSeverity = (value: number, green: number, yellow: number): Severity => {
   if (value < green) return 'green'
   if (value < yellow) return 'yellow'
   return 'red'
 }
 
 const renderStatus = (value: React.ReactNode, severity: Severity) => {
-  switch (severity) {
-    case 'green':
-      return (
-        <Label color="green" icon={<CheckCircleIcon />}>
-          {value}
-        </Label>
-      )
-    case 'yellow':
-      return (
-        <Label color="orange" icon={<ExclamationTriangleIcon />}>
-          {value}
-        </Label>
-      )
-    case 'red':
-    default:
-      return (
-        <Label color="red" icon={<ExclamationCircleIcon />}>
-          {value}
-        </Label>
-      )
+  const icons: Record<Severity, React.ReactNode> = {
+    green: <CheckCircleIcon />,
+    yellow: <ExclamationTriangleIcon />,
+    red: <ExclamationCircleIcon />
   }
+
+  const colors: Record<Severity, "green" | "red" | "orange"> = { green: "green", yellow: "orange", red: "red" }
+
+  return (
+    <Label color={colors[severity]} icon={icons[severity]}>
+      {value}
+    </Label>
+  )
 }
 
 export const QueueHealth: React.FC<Props> = ({ queue }) => {
-  const memory = status(queue.memory.percent, 60, 80)
-  const inflight = status(queue.stats.inflight, 100, 500)
+  const memory = getSeverity(queue.memory.percent, 60, 80)
+  const inflight = getSeverity(queue.stats.inflight, 100, 500)
   const consumers: Severity = queue.consumers > 0 ? 'green' : 'red'
-  const size = status(queue.size, 1000, 10000)
+  const size = getSeverity(queue.size, 1000, 10000)
+
+  const metrics = [
+    {
+      label: 'Memory',
+      value: `${queue.memory.percent}%`,
+      severity: memory
+    },
+    {
+      label: 'Inflight',
+      value: queue.stats.inflight.toLocaleString(),
+      severity: inflight
+    },
+    {
+      label: 'Consumers',
+      value: queue.consumers.toLocaleString(),
+      severity: consumers
+    },
+    {
+      label: 'Queue Size',
+      value: queue.size.toLocaleString(),
+      severity: size
+    }
+  ]
 
   return (
     <Card isFlat isCompact>
@@ -66,35 +81,14 @@ export const QueueHealth: React.FC<Props> = ({ queue }) => {
         <Title headingLevel="h4">Health Overview</Title>
 
         <DescriptionList isHorizontal>
-
-          <DescriptionListGroup>
-            <DescriptionListTerm>Memory</DescriptionListTerm>
-            <DescriptionListDescription>
-              {renderStatus(`${queue.memory.percent}%`, memory)}
-            </DescriptionListDescription>
-          </DescriptionListGroup>
-
-          <DescriptionListGroup>
-            <DescriptionListTerm>Inflight</DescriptionListTerm>
-            <DescriptionListDescription>
-              {renderStatus(queue.stats.inflight, inflight)}
-            </DescriptionListDescription>
-          </DescriptionListGroup>
-
-          <DescriptionListGroup>
-            <DescriptionListTerm>Consumers</DescriptionListTerm>
-            <DescriptionListDescription>
-              {renderStatus(queue.consumers, consumers)}
-            </DescriptionListDescription>
-          </DescriptionListGroup>
-
-          <DescriptionListGroup>
-            <DescriptionListTerm>Queue Size</DescriptionListTerm>
-            <DescriptionListDescription>
-              {renderStatus(queue.size, size)}
-            </DescriptionListDescription>
-          </DescriptionListGroup>
-
+          {metrics.map((m, i) => (
+            <DescriptionListGroup key={i}>
+              <DescriptionListTerm>{m.label}</DescriptionListTerm>
+              <DescriptionListDescription>
+                {renderStatus(m.value, m.severity)}
+              </DescriptionListDescription>
+            </DescriptionListGroup>
+          ))}
         </DescriptionList>
       </CardBody>
     </Card>

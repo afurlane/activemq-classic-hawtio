@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import {
   PageSection,
   PageSectionVariants,
@@ -38,12 +38,10 @@ import {
   SyncIcon
 } from '@patternfly/react-icons'
 
-import { activemq } from '../../services/activemq/ActiveMQClassicService'
 import { buildQueueUrl } from '../../router/router'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+import { useQueues } from '../../hooks/useQueues'
 import { Queue } from '../../types/domain'
-import { createPolling } from '../../services/polling'
-import { log } from '../../globals'
 
 export const QueuesView: React.FC = () => {
   const brokerName = useSelectedBrokerName()
@@ -58,52 +56,22 @@ export const QueuesView: React.FC = () => {
     )
   }
 
-  const [queues, setQueues] = useState<Queue[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // SWR: carica le queue automaticamente
+  const {
+    data: queues = [],
+    error,
+    isLoading,
+    mutate
+  } = useQueues(brokerName)
 
+  // FILTER UI STATE
   const [filterText, setFilterText] = useState('')
   const [stateFilter, setStateFilter] = useState<string | null>(null)
   const [isStateOpen, setIsStateOpen] = useState(false)
 
+  // SORT UI STATE
   const [sortIndex, setSortIndex] = useState<number>(0)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
-
-  const mounted = useRef(false)
-
-  const load = createPolling(async () => {
-    if (!brokerName || !mounted.current) return
-
-    log.debug('[QueuesView] loading queues for broker:', brokerName)
-
-    setLoading(true)
-    setError(null)
-
-    try {
-      const data = await activemq.listQueues(brokerName)
-      if (mounted.current) {
-        setQueues(data)
-      }
-    } catch (err) {
-      log.debug('[QueuesView] error loading queues:', err)
-      setError('Failed to load queues')
-    } finally {
-      if (mounted.current) {
-        setLoading(false)
-      }
-    }
-  })
-
-  useEffect(() => {
-    mounted.current = true
-    load()
-
-    const id = setInterval(load, 5000)
-    return () => {
-      mounted.current = false
-      clearInterval(id)
-    }
-  }, [brokerName])
 
   // FILTERING
   const filtered = queues.filter(q => {
@@ -128,9 +96,7 @@ export const QueuesView: React.FC = () => {
       a.consumers - b.consumers
     ]
 
-    const index = sortIndex ?? 0
-    const value = fields[index] ?? 0
-
+    const value = fields[sortIndex] ?? 0
     return sortDirection === 'asc' ? value : -value
   })
 
@@ -193,7 +159,7 @@ export const QueuesView: React.FC = () => {
 
             {/* Refresh */}
             <ToolbarItem>
-              <Button variant="plain" onClick={load}>
+              <Button variant="plain" onClick={() => mutate()}>
                 <SyncIcon />
               </Button>
             </ToolbarItem>
@@ -215,11 +181,11 @@ export const QueuesView: React.FC = () => {
 
           {/* ERROR */}
           {error && (
-            <Alert variant="danger" title={error} isInline />
+            <Alert variant="danger" title="Failed to load queues" isInline />
           )}
 
           {/* LOADING */}
-          {loading && (
+          {isLoading && (
             <>
               {[...Array(5)].map((_, i) => (
                 <Skeleton key={i} width="100%" height="2rem" />
@@ -228,7 +194,7 @@ export const QueuesView: React.FC = () => {
           )}
 
           {/* EMPTY STATE */}
-          {!loading && sorted.length === 0 && (
+          {!isLoading && sorted.length === 0 && (
             <EmptyState>
               <EmptyStateHeader
                 titleText="No queues found"
@@ -241,7 +207,7 @@ export const QueuesView: React.FC = () => {
           )}
 
           {/* TABLE */}
-          {!loading && sorted.length > 0 && (
+          {!isLoading && sorted.length > 0 && (
             <Table variant="compact">
               <Thead>
                 <Tr>

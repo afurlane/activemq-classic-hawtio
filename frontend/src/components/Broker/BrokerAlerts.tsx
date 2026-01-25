@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react'
-import { activemq } from '../../services/activemq/ActiveMQClassicService'
+import React from 'react'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+import { useQueues } from '../../hooks/useQueues'
+
 import {
   Card,
   CardHeader,
@@ -10,6 +11,7 @@ import {
   AlertGroup,
   Label
 } from '@patternfly/react-core'
+
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
@@ -29,15 +31,12 @@ export const BrokerAlerts: React.FC = () => {
     )
   }
 
-  const [alerts, setAlerts] = useState<string[]>([])
+  // SWR: carica tutte le queue
+  const { data: queues = [], error, isLoading } = useQueues(brokerName)
 
-  const poll = async () => {
-    if (!brokerName) {
-      setAlerts([`No broker selected`])
-      return
-    }
-
-    const queues = await activemq.listQueues(brokerName)
+  // Calcolo alert (funzione pura)
+  const computeAlerts = () => {
+    if (!queues || queues.length === 0) return []
 
     let totalLag = 0
     let totalInflight = 0
@@ -54,23 +53,19 @@ export const BrokerAlerts: React.FC = () => {
       memorySum += q.memory.percent
     })
 
-    const avgMemory = queues.length > 0 ? memorySum / queues.length : 0
+    const avgMemory = memorySum / queues.length
 
-    const newAlerts: string[] = []
+    const alerts: string[] = []
 
-    if (avgMemory > 80) newAlerts.push(`High average memory: ${avgMemory.toFixed(1)}%`)
-    if (totalLag > 50000) newAlerts.push(`High global lag: ${totalLag}`)
-    if (totalInflight > 10000) newAlerts.push(`Too many inflight messages: ${totalInflight}`)
-    if (consumers === 0) newAlerts.push(`No active consumers in the broker`)
+    if (avgMemory > 80) alerts.push(`High average memory: ${avgMemory.toFixed(1)}%`)
+    if (totalLag > 50000) alerts.push(`High global lag: ${totalLag}`)
+    if (totalInflight > 10000) alerts.push(`Too many inflight messages: ${totalInflight}`)
+    if (consumers === 0) alerts.push(`No active consumers in the broker`)
 
-    setAlerts(newAlerts)
+    return alerts
   }
 
-  useEffect(() => {
-    poll()
-    const id = setInterval(poll, 5000)
-    return () => clearInterval(id)
-  }, [brokerName])
+  const alerts = computeAlerts()
 
   const severity =
     alerts.length === 0
@@ -104,11 +99,19 @@ export const BrokerAlerts: React.FC = () => {
 
       <CardBody>
 
-        {alerts.length === 0 && (
+        {isLoading && (
+          <Alert variant="info" title="Loading alerts…" isInline />
+        )}
+
+        {error && (
+          <Alert variant="danger" title="Failed to load broker data" isInline />
+        )}
+
+        {!isLoading && !error && alerts.length === 0 && (
           <Alert variant="success" title="No global alerts" isInline />
         )}
 
-        {alerts.length > 0 && (
+        {!isLoading && !error && alerts.length > 0 && (
           <AlertGroup isLiveRegion>
             {alerts.map((a, i) => (
               <Alert key={i} variant="danger" title={a} isInline />

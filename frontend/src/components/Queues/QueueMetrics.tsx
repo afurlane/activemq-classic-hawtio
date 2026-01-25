@@ -14,10 +14,14 @@ import {
 import {
   Chart,
   ChartLine,
-  ChartAxis,
-  ChartGroup,
   ChartVoronoiContainer
 } from '@patternfly/react-charts'
+
+import {
+  ArrowUpIcon,
+  ArrowDownIcon,
+  MinusIcon
+} from '@patternfly/react-icons'
 
 import { Queue } from '../../types/domain'
 
@@ -38,7 +42,6 @@ export const QueueMetricsOverview: React.FC<Props> = ({ history }) => {
     }))
   }, [history])
 
-    // Se non ci sono almeno 2 punti dati, non posso calcolare trend
   if (data.length < 2) {
     return (
       <Card isFlat className="pf-v5-u-mb-lg">
@@ -52,20 +55,63 @@ export const QueueMetricsOverview: React.FC<Props> = ({ history }) => {
     )
   }
 
-  const last = data[data.length - 1]!
-  const prev = data[data.length - 2]!
+  const last = data.at(-1)!
+  const prev = data.at(-2)!
 
-  const trend = (current: number, previous: number) => {
-    if (current > previous) return <Label color="green">↑</Label>
-    if (current < previous) return <Label color="red">↓</Label>
-    return <Label color="grey">→</Label>
+  const trendIcon = (current: number, previous: number) => {
+    if (current > previous) {
+      return <ArrowUpIcon color="var(--pf-v5-global--success-color--100)" />
+    }
+    if (current < previous) {
+      return <ArrowDownIcon color="var(--pf-v5-global--danger-color--100)" />
+    }
+    return <MinusIcon color="var(--pf-v5-global--palette--black-500)" />
   }
 
-  const sparkProps = {
-    height: 60,
-    padding: { top: 5, bottom: 5, left: 30, right: 10 },
-    containerComponent: <ChartVoronoiContainer labels={() => ''} />,
-  }
+  const spark = (values: number[], color: string, domain?: any) => (
+    <Chart
+      height={60}
+      padding={{ top: 5, bottom: 5, left: 30, right: 10 }}
+      containerComponent={<ChartVoronoiContainer labels={() => ''} />}
+      domain={domain}
+    >
+      <ChartLine
+        data={values.map((y, i) => ({ x: i, y }))}
+        style={{ data: { stroke: color } }}
+      />
+    </Chart>
+  )
+
+  const metrics = [
+    {
+      label: 'Queue Size',
+      value: last.size.toLocaleString(),
+      trend: trendIcon(last.size, prev.size),
+      spark: spark(data.map(d => d.size), 'var(--pf-v5-global--primary-color--100)')
+    },
+    {
+      label: 'Enqueue',
+      value: last.enqueue.toLocaleString(),
+      trend: trendIcon(last.enqueue, prev.enqueue),
+      spark: spark(data.map(d => d.enqueue), 'var(--pf-v5-global--success-color--100)')
+    },
+    {
+      label: 'Dequeue',
+      value: last.dequeue.toLocaleString(),
+      trend: trendIcon(last.dequeue, prev.dequeue),
+      spark: spark(data.map(d => d.dequeue), 'var(--pf-v5-global--danger-color--100)')
+    },
+    {
+      label: 'Memory %',
+      value: `${last.memory}%`,
+      trend: trendIcon(last.memory, prev.memory),
+      spark: spark(
+        data.map(d => d.memory),
+        'var(--pf-v5-global--palette--purple-500)',
+        { y: [0, 100] }
+      )
+    }
+  ]
 
   return (
     <Card isFlat className="pf-v5-u-mb-lg">
@@ -75,79 +121,17 @@ export const QueueMetricsOverview: React.FC<Props> = ({ history }) => {
 
       <CardBody>
         <Grid hasGutter>
-
-          {/* Queue Size */}
-          <GridItem span={3}>
-            <Flex direction={{ default: 'column' }}>
-              <FlexItem>
-                <b>Queue Size</b> {trend(last.size, prev.size)}
-              </FlexItem>
-              <FlexItem className="pf-v5-u-font-size-lg">{last.size}</FlexItem>
-              <FlexItem>
-                <Chart {...sparkProps}>
-                  <ChartLine
-                    data={data.map(d => ({ x: d.time, y: d.size }))}
-                    style={{ data: { stroke: 'var(--pf-v5-global--primary-color--100)' } }}
-                  />
-                </Chart>
-              </FlexItem>
-            </Flex>
-          </GridItem>
-
-          {/* Enqueue Rate */}
-          <GridItem span={3}>
-            <Flex direction={{ default: 'column' }}>
-              <FlexItem>
-                <b>Enqueue</b> {trend(last.enqueue, prev.enqueue)}
-              </FlexItem>
-              <FlexItem className="pf-v5-u-font-size-lg">{last.enqueue}</FlexItem>
-              <FlexItem>
-                <Chart {...sparkProps}>
-                  <ChartLine
-                    data={data.map(d => ({ x: d.time, y: d.enqueue }))}
-                    style={{ data: { stroke: 'var(--pf-v5-global--success-color--100)' } }}
-                  />
-                </Chart>
-              </FlexItem>
-            </Flex>
-          </GridItem>
-
-          {/* Dequeue Rate */}
-          <GridItem span={3}>
-            <Flex direction={{ default: 'column' }}>
-              <FlexItem>
-                <b>Dequeue</b> {trend(last.dequeue, prev.dequeue)}
-              </FlexItem>
-              <FlexItem className="pf-v5-u-font-size-lg">{last.dequeue}</FlexItem>
-              <FlexItem>
-                <Chart {...sparkProps}>
-                  <ChartLine
-                    data={data.map(d => ({ x: d.time, y: d.dequeue }))}
-                    style={{ data: { stroke: 'var(--pf-v5-global--danger-color--100)' } }}
-                  />
-                </Chart>
-              </FlexItem>
-            </Flex>
-          </GridItem>
-
-          {/* Memory Usage */}
-          <GridItem span={3}>
-            <Flex direction={{ default: 'column' }}>
-              <FlexItem>
-                <b>Memory %</b> {trend(last.memory, prev.memory)}
-              </FlexItem>
-              <FlexItem className="pf-v5-u-font-size-lg">{last.memory}%</FlexItem>
-              <FlexItem>
-                <Chart {...sparkProps} domain={{ y: [0, 100] }}>
-                  <ChartLine
-                    data={data.map(d => ({ x: d.time, y: d.memory }))}
-                    style={{ data: { stroke: 'var(--pf-v5-global--palette--purple-500)' } }}
-                  />
-                </Chart>
-              </FlexItem>
-            </Flex>
-          </GridItem>
-
+          {metrics.map((m, i) => (
+            <GridItem key={i} span={3}>
+              <Flex direction={{ default: 'column' }}>
+                <FlexItem>
+                  <b>{m.label}</b> {m.trend}
+                </FlexItem>
+                <FlexItem className="pf-v5-u-font-size-lg">{m.value}</FlexItem>
+                <FlexItem>{m.spark}</FlexItem>
+              </Flex>
+            </GridItem>
+          ))}
         </Grid>
       </CardBody>
     </Card>

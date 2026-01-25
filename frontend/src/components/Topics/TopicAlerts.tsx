@@ -9,12 +9,37 @@ import {
 
 import { ActiveMQTopicAttributes } from '../../types/activemq'
 
-export const TopicAlerts: React.FC<{ attrs: ActiveMQTopicAttributes }> = ({ attrs }) => {
-  const alerts: string[] = []
+interface Props {
+  attrs: ActiveMQTopicAttributes
+}
 
-  if (attrs.MemoryPercentUsage > 80) alerts.push('High memory usage')
-  if (attrs.ProducerCount === 0) alerts.push('No producers')
-  if (attrs.ConsumerCount === 0) alerts.push('No subscribers')
+type Severity = 'success' | 'warning' | 'danger'
+
+export const TopicAlerts: React.FC<Props> = ({ attrs }) => {
+
+  const rules: Array<{
+    when: boolean
+    message: string
+    severity: Severity
+  }> = [
+    {
+      when: attrs.MemoryPercentUsage > 80,
+      message: 'High memory usage',
+      severity: 'danger'
+    },
+    {
+      when: attrs.ProducerCount === 0,
+      message: 'No producers',
+      severity: 'warning'
+    },
+    {
+      when: attrs.ConsumerCount === 0,
+      message: 'No subscribers',
+      severity: 'warning'
+    }
+  ]
+
+  const alerts = rules.filter(r => r.when)
 
   return (
     <Card isFlat isCompact>
@@ -34,8 +59,8 @@ export const TopicAlerts: React.FC<{ attrs: ActiveMQTopicAttributes }> = ({ attr
             {alerts.map((a, i) => (
               <Alert
                 key={i}
-                variant="danger"
-                title={a}
+                variant={a.severity}
+                title={a.message}
                 isInline
               />
             ))}

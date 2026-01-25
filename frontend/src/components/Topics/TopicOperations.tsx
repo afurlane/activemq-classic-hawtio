@@ -2,7 +2,8 @@ import React from 'react'
 import {
   Card,
   CardBody,
-  Title
+  Title,
+  Alert
 } from '@patternfly/react-core'
 
 export const TopicOperations: React.FC = () => {
@@ -10,7 +11,14 @@ export const TopicOperations: React.FC = () => {
     <Card isFlat isCompact>
       <CardBody>
         <Title headingLevel="h4">Operations</Title>
-        <p>No operations available for topics.</p>
+
+        <Alert
+          variant="info"
+          isInline
+          title="No operations available for this topic"
+        >
+          This topic does not support administrative operations.
+        </Alert>
       </CardBody>
     </Card>
   )

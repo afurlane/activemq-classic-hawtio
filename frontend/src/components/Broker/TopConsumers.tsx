@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from "react"
-import { activemq } from "../../services/activemq/ActiveMQClassicService"
-import { useSelectedBrokerName } from "../../hooks/useSelectedBroker"
+import React from "react"
 import {
   Card,
   CardHeader,
@@ -15,7 +13,10 @@ import {
   Flex,
   FlexItem
 } from "@patternfly/react-core"
+
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
+import { useSelectedBrokerName } from "../../hooks/useSelectedBroker"
+import { useTopConsumers } from "../../hooks/useTopConsumers"
 
 export const TopConsumers: React.FC = () => {
   const brokerName = useSelectedBrokerName()
@@ -30,36 +31,7 @@ export const TopConsumers: React.FC = () => {
     )
   }
 
-  const [consumers, setConsumers] = useState<any[]>([])
-
-  const load = async () => {
-    if (!brokerName) return
-
-    const mbeans = await activemq.listConsumers(brokerName)
-    const attrs = await Promise.all(
-      mbeans.map(m => activemq.getConsumerAttributes(m))
-    )
-
-    const sorted = attrs
-      .map(a => ({
-        clientId: a.ClientId ?? "unknown",
-        destination: a.DestinationName ?? "unknown",
-        dispatched: a.DispatchedCounter ?? 0,
-        dequeue: a.DequeueCounter ?? 0,
-        pending: a.PendingQueueSize ?? 0,
-        slow: a.SlowConsumer ?? false
-      }))
-      .sort((a, b) => b.dispatched - a.dispatched)
-      .slice(0, 10)
-
-    setConsumers(sorted)
-  }
-
-  useEffect(() => {
-    load()
-    const id = setInterval(load, 5000)
-    return () => clearInterval(id)
-  }, [brokerName])
+  const { data: consumers = [], isLoading, error } = useTopConsumers(brokerName)
 
   return (
     <Card isFlat isCompact>
@@ -69,7 +41,15 @@ export const TopConsumers: React.FC = () => {
 
       <CardBody>
 
-        {consumers.length === 0 && (
+        {isLoading && (
+          <Alert variant="info" title="Loading consumers…" isInline />
+        )}
+
+        {error && (
+          <Alert variant="danger" title="Failed to load consumers" isInline />
+        )}
+
+        {!isLoading && !error && consumers.length === 0 && (
           <Alert variant="info" title="No consumers found" isInline />
         )}
 

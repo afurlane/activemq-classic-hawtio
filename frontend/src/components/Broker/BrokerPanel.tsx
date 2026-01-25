@@ -38,6 +38,7 @@ import { BrokerDashboard } from '../../components/Broker/BrokerDashboard'
 import { BrokerOverview } from '../../components/Broker/BrokerOverview'
 import { BrokerSelector } from './BrokerSelector'
 import { useSelectedBroker } from '../../hooks/useSelectedBroker'
+import { useBrokers } from '../../hooks/useBrokers'
 
 export const BrokerPanel: React.FC = () => {
   const [route, setRoute] = useState<Route>(() =>
@@ -45,6 +46,13 @@ export const BrokerPanel: React.FC = () => {
   )
 
   const broker = useSelectedBroker()
+  const { brokers, isLoading, error } = useBrokers()
+
+  const brokerExists = broker && brokers.some(b => b.name === broker.name)
+
+  let statusLabel = <Label color="green">Connected</Label>
+  if (isLoading) statusLabel = <Label color="blue">Connecting…</Label>
+  if (error || !brokerExists) statusLabel = <Label color="red">Disconnected</Label>
 
   useEffect(() => {
     const onHashChange = () => {
@@ -83,7 +91,6 @@ export const BrokerPanel: React.FC = () => {
     window.location.hash = viewToUrl[view]()
   }
 
-  // Global actions menu
   const [actionsOpen, setActionsOpen] = useState(false)
 
   return (
@@ -91,38 +98,32 @@ export const BrokerPanel: React.FC = () => {
 
       {/* HEADER PF5 */}
       <PageSection variant={PageSectionVariants.light} padding={{ default: 'noPadding' }}>
-        
-        {/* BREADCRUMB PF5 */}
+
+        {/* BREADCRUMB */}
         <PageSection variant={PageSectionVariants.light}>
           <Breadcrumb>
             <BreadcrumbItem to="#">ActiveMQ</BreadcrumbItem>
-            <BreadcrumbItem isActive>{broker?.name ?? 'No broker selected'}</BreadcrumbItem>
+            <BreadcrumbItem isActive>
+              {broker?.name ?? 'No broker selected'}
+            </BreadcrumbItem>
           </Breadcrumb>
         </PageSection>
 
-        {/* TOOLBAR PF5 */}
+        {/* TOOLBAR */}
         <PageSection variant={PageSectionVariants.light}>
           <Toolbar>
             <ToolbarContent>
 
-              {/* Title */}
               <ToolbarItem>
                 <Title headingLevel="h1">ActiveMQ Classic</Title>
               </ToolbarItem>
 
-              {/* Broker status chip */}
-              {broker && (
-                <ToolbarItem>
-                  <Label color="green">Connected</Label>
-                </ToolbarItem>
-              )}
+              <ToolbarItem>{statusLabel}</ToolbarItem>
 
-              {/* Right side */}
               <ToolbarItem align={{ default: 'alignRight' }}>
                 <BrokerSelector />
               </ToolbarItem>
 
-              {/* Global actions */}
               <ToolbarItem>
                 <Dropdown
                   isOpen={actionsOpen}
@@ -152,7 +153,7 @@ export const BrokerPanel: React.FC = () => {
             </ToolbarContent>
           </Toolbar>
 
-          {/* TABS PF5 */}
+          {/* TABS */}
           <Tabs activeKey={activeKey} onSelect={onSelect} isBox>
             <Tab eventKey={0} title={<TabTitleText>Connectors</TabTitleText>} />
             <Tab eventKey={1} title={<TabTitleText>Queues</TabTitleText>} />

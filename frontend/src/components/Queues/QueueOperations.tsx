@@ -1,38 +1,13 @@
 import React, { useState } from 'react'
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardBody,
-  Grid,
-  GridItem,
-  Flex,
-  FlexItem,
-  Button,
-  Alert
-} from '@patternfly/react-core'
-
-import {
-  ArrowRightIcon,
-  CopyIcon,
-  TrashIcon,
-  RedoIcon,
-  TimesIcon,
-  EnvelopeIcon
-} from '@patternfly/react-icons'
-
-import { activemq, getBrokerMBean } from '../../services/activemq/ActiveMQClassicService'
-import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+import {  Button,} from '@patternfly/react-core'
+import { log } from '../../globals'
 import { Queue } from '../../types/domain'
-
-import {
-  MoveMessageModal,
-  CopyMessageModal,
-  RemoveMessageModal,
-  RetryMessageModal,
-  RemoveMessageGroupModal,
-  SendMessageModal
-} from './QueueOperationModals'
+import { MoveMessageModal } from './MoveMessageModal'
+import { CopyMessageModal } from './CopyMessageModal'
+import { RemoveMessageModal } from './RemoveMessageModal'
+import { RetryMessageModal } from './RetryMessageModal'
+import { RemoveMessageGroupModal } from './RemoveMessageGroupModal'
+import { SendMessageModal } from './SendMessageModal'
 
 type OperationName =
   | 'moveMessage'
@@ -41,286 +16,79 @@ type OperationName =
   | 'retryMessage'
   | 'removeMessageGroup'
   | 'sendMessage'
+export const QueueOperations: React.FC<{ queue: Queue, onAction: () => Promise<void> }> = ({ queue, onAction }) => {
+  const [isMoveOpen, setMoveOpen] = useState(false)
+  const [isCopyOpen, setCopyOpen] = useState(false)
+  const [isRemoveOpen, setRemoveOpen] = useState(false)
+  const [isRetryOpen, setRetryOpen] = useState(false)
+  const [isRemoveGroupOpen, setRemoveGroupOpen] = useState(false)
+  const [isSendOpen, setSendOpen] = useState(false)
 
-export const QueueOperations: React.FC<{
-  queue: Queue
-  onAction: () => Promise<void>
-}> = ({ queue, onAction }) => {
-
-  const brokerName = useSelectedBrokerName()
-  const mbean = queue.mbean
-
-  const [modal, setModal] = useState<OperationName | null>(null)
-  const [confirm, setConfirm] = useState<{ message: string, action: () => Promise<void> } | null>(null)
-
-  if (!brokerName) {
-    return <Alert variant="danger" title="No broker selected" isInline />
-  }
-
-  const open = (name: OperationName) => setModal(name)
-  const close = () => setModal(null)
-
-  const run = async (fn: () => Promise<any>) => {
-    await fn()
-    await onAction()
-    close()
-  }
-
-  const confirmAction = (message: string, action: () => Promise<void>) => {
-    setConfirm({ message, action })
-  }
+  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null)
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null)
 
   return (
-    <Grid hasGutter>
+    <>
+      <Button onClick={() => setMoveOpen(true)}>Move Message</Button>
+      <Button onClick={() => setCopyOpen(true)}>Copy Message</Button>
+      <Button onClick={() => setRemoveOpen(true)}>Remove Message</Button>
+      <Button onClick={() => setRetryOpen(true)}>Retry Message</Button>
+      <Button onClick={() => setRemoveGroupOpen(true)}>Remove Group</Button>
+      <Button onClick={() => setSendOpen(true)}>Send Message</Button>
 
-      {/* Queue Control */}
-      <GridItem span={6}>
-        <Card isFlat className="pf-v5-u-mb-lg">
-          <CardHeader><CardTitle>Queue Control</CardTitle></CardHeader>
-          <CardBody>
-            <Flex spaceItems={{ default: 'spaceItemsSm' }}>
-              <FlexItem>
-                <Button
-                  variant="warning"
-                  icon={<TrashIcon />}
-                  onClick={() =>
-                    confirmAction(
-                      `Purge all messages from ${queue.name}?`,
-                      () => run(() => activemq.purgeQueue(mbean))
-                    )
-                  }
-                >
-                  Purge
-                </Button>
-              </FlexItem>
+      <MoveMessageModal
+        isOpen={isMoveOpen}
+        onClose={() => setMoveOpen(false)}
+        onConfirm={(id, dest) => {
+          console.log("MOVE", id, dest)
+          setMoveOpen(false)
+        }}
+      />
 
-              <FlexItem>
-                {queue.state.paused ? (
-                  <Button icon={<RedoIcon />} onClick={() => run(() => activemq.resumeQueue(mbean))}>
-                    Resume
-                  </Button>
-                ) : (
-                  <Button icon={<TimesIcon />} onClick={() => run(() => activemq.pauseQueue(mbean))}>
-                    Pause
-                  </Button>
-                )}
-              </FlexItem>
+      <CopyMessageModal
+        isOpen={isCopyOpen}
+        onClose={() => setCopyOpen(false)}
+        onConfirm={(id, dest) => {
+          console.log("COPY", id, dest)
+          setCopyOpen(false)
+        }}
+      />
 
-              <FlexItem>
-                <Button icon={<RedoIcon />} onClick={() => run(() => activemq.resetStats(mbean))}>
-                  Reset Stats
-                </Button>
-              </FlexItem>
+      <RemoveMessageModal
+        isOpen={isRemoveOpen}
+        onClose={() => setRemoveOpen(false)}
+        onConfirm={(id) => {
+          console.log("REMOVE", id)
+          setRemoveOpen(false)
+        }}
+      />
 
-              <FlexItem>
-                <Button
-                  variant="danger"
-                  icon={<TrashIcon />}
-                  onClick={() =>
-                    confirmAction(
-                      `Delete queue ${queue.name}? This cannot be undone.`,
-                      () =>
-                        run(() =>
-                          activemq.deleteQueue(
-                            getBrokerMBean(brokerName),
-                            queue.name
-                          )
-                        )
-                    )
-                  }
-                >
-                  Delete
-                </Button>
-              </FlexItem>
-            </Flex>
-          </CardBody>
-        </Card>
-      </GridItem>
+      <RetryMessageModal
+        isOpen={isRetryOpen}
+        onClose={() => setRetryOpen(false)}
+        onConfirm={(id) => {
+          console.log("RETRY", id)
+          setRetryOpen(false)
+        }}
+      />
 
-      {/* DLQ Tools */}
-      {queue.state.dlq && (
-        <GridItem span={6}>
-          <Card isFlat className="pf-v5-u-mb-lg">
-            <CardHeader><CardTitle>DLQ Tools</CardTitle></CardHeader>
-            <CardBody>
-              <Flex spaceItems={{ default: 'spaceItemsSm' }}>
-                <FlexItem>
-                  <Button
-                    variant="warning"
-                    icon={<RedoIcon />}
-                    onClick={() =>
-                      confirmAction(
-                        `Retry ALL messages in DLQ ${queue.name}?`,
-                        () => run(() => activemq.retryMessages(mbean))
-                      )
-                    }
-                  >
-                    Retry All
-                  </Button>
-                </FlexItem>
+      <RemoveMessageGroupModal
+        isOpen={isRemoveGroupOpen}
+        onClose={() => setRemoveGroupOpen(false)}
+        onConfirm={(group) => {
+          console.log("REMOVE GROUP", group)
+          setRemoveGroupOpen(false)
+        }}
+      />
 
-                <FlexItem>
-                  <Button icon={<RedoIcon />} onClick={() => open('retryMessage')}>
-                    Retry Single
-                  </Button>
-                </FlexItem>
-              </Flex>
-            </CardBody>
-          </Card>
-        </GridItem>
-      )}
-
-      {/* Message Tools */}
-      <GridItem span={6}>
-        <Card isFlat className="pf-v5-u-mb-lg">
-          <CardHeader><CardTitle>Message Tools</CardTitle></CardHeader>
-          <CardBody>
-            <Flex spaceItems={{ default: 'spaceItemsSm' }}>
-              <FlexItem>
-                <Button icon={<ArrowRightIcon />} onClick={() => open('moveMessage')}>
-                  Move
-                </Button>
-              </FlexItem>
-
-              <FlexItem>
-                <Button icon={<CopyIcon />} onClick={() => open('copyMessage')}>
-                  Copy
-                </Button>
-              </FlexItem>
-
-              <FlexItem>
-                <Button icon={<TrashIcon />} onClick={() => open('removeMessage')}>
-                  Remove
-                </Button>
-              </FlexItem>
-            </Flex>
-          </CardBody>
-        </Card>
-      </GridItem>
-
-      {/* Message Groups */}
-      <GridItem span={6}>
-        <Card isFlat className="pf-v5-u-mb-lg">
-          <CardHeader><CardTitle>Message Groups</CardTitle></CardHeader>
-          <CardBody>
-            <Flex spaceItems={{ default: 'spaceItemsSm' }}>
-              <FlexItem>
-                <Button
-                  variant="warning"
-                  icon={<TrashIcon />}
-                  onClick={() =>
-                    confirmAction(
-                      `Remove ALL message groups from ${queue.name}?`,
-                      () => run(() => activemq.removeAllMessageGroups(mbean))
-                    )
-                  }
-                >
-                  Remove All
-                </Button>
-              </FlexItem>
-
-              <FlexItem>
-                <Button icon={<TimesIcon />} onClick={() => open('removeMessageGroup')}>
-                  Remove Group
-                </Button>
-              </FlexItem>
-            </Flex>
-          </CardBody>
-        </Card>
-      </GridItem>
-
-      {/* Send Message */}
-      <GridItem span={6}>
-        <Card isFlat className="pf-v5-u-mb-lg">
-          <CardHeader><CardTitle>Send Message</CardTitle></CardHeader>
-          <CardBody>
-            <Button icon={<EnvelopeIcon />} onClick={() => open('sendMessage')}>
-              Send Text Message
-            </Button>
-          </CardBody>
-        </Card>
-      </GridItem>
-
-      {/* MODALS */}
-      {modal === 'moveMessage' && (
-        <MoveMessageModal
-          isOpen
-          onClose={close}
-          onConfirm={(id, dest) =>
-            confirmAction(
-              `Move message ${id} to ${dest}?`,
-              () => run(() => activemq.moveMessageTo(mbean, id, dest))
-            )
-          }
-        />
-      )}
-
-      {modal === 'copyMessage' && (
-        <CopyMessageModal
-          isOpen
-          onClose={close}
-          onConfirm={(id, dest) =>
-            confirmAction(
-              `Copy message ${id} to ${dest}?`,
-              () => run(() => activemq.copyMessageTo(mbean, id, dest))
-            )
-          }
-        />
-      )}
-
-      {modal === 'removeMessage' && (
-        <RemoveMessageModal
-          isOpen
-          onClose={close}
-          onConfirm={(id) =>
-            confirmAction(
-              `Remove message ${id}?`,
-              () => run(() => activemq.removeMessage(mbean, id))
-            )
-          }
-        />
-      )}
-
-      {modal === 'retryMessage' && (
-        <RetryMessageModal
-          isOpen
-          onClose={close}
-          onConfirm={(id) =>
-            confirmAction(
-              `Retry message ${id}?`,
-              () => run(() => activemq.retryMessage(mbean, id))
-            )
-          }
-        />
-      )}
-
-      {modal === 'removeMessageGroup' && (
-        <RemoveMessageGroupModal
-          isOpen
-          onClose={close}
-          onConfirm={(group) =>
-            confirmAction(
-              `Remove message group ${group}?`,
-              () => run(() => activemq.removeMessageGroup(mbean, group))
-            )
-          }
-        />
-      )}
-
-      {modal === 'sendMessage' && (
-        <SendMessageModal
-          isOpen
-          onClose={close}
-          onConfirm={(body) =>
-            confirmAction(
-              `Send message to ${queue.name}?`,
-              () => run(() => activemq.sendTextMessage(mbean, body))
-            )
-          }
-        />
-      )}
-
-    </Grid>
+      <SendMessageModal
+        isOpen={isSendOpen}
+        onClose={() => setSendOpen(false)}
+        onConfirm={(body) => {
+          console.log("SEND", body)
+          setSendOpen(false)
+        }}
+      />
+    </>
   )
 }
-

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import {
   PageSection,
   PageSectionVariants,
@@ -25,18 +25,17 @@ import {
   FlexItem
 } from '@patternfly/react-core'
 
-import { activemq } from '../../services/activemq/ActiveMQClassicService'
 import { Sparkline } from '../Common/Sparkline'
 import { BrokerTrends } from './BrokerTrends'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+import { useQueues } from '../../hooks/useQueues'
+import { useQueueHistoryAccumulated } from '../../hooks/useQueueHistory'
 
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   ExclamationCircleIcon
 } from '@patternfly/react-icons'
-
-import { Queue } from 'src/types/domain'
 
 export const BrokerOverview: React.FC = () => {
   const brokerName = useSelectedBrokerName()
@@ -53,11 +52,11 @@ export const BrokerOverview: React.FC = () => {
     )
   }
 
-  const [queues, setQueues] = useState<Queue[]>([])
-  const [history, setHistory] = useState<Record<
-    string,
-    { queueSize: number[]; inflight: number[]; lag: number[] }
-  >>({})
+  // SWR: queues
+  const { data: queues = [], isLoading, error } = useQueues(brokerName)
+
+  // SWR: history accumulata
+  const history = useQueueHistoryAccumulated(brokerName)
 
   const [filter, setFilter] = useState({
     critical: false,
@@ -65,46 +64,18 @@ export const BrokerOverview: React.FC = () => {
     name: '',
   })
 
-  const [loading, setLoading] = useState(true)
-
-  const load = async () => {
-    if (!brokerName) return
-
-    setLoading(true)
-    const data = await activemq.listQueues(brokerName)
-
-    const newHistory = { ...history }
-
-    data.forEach(q => {
-      const key = q.name
-      const inflight = q.stats.inflight ?? 0
-      const size = q.size ?? 0
-      const lag = size - inflight
-
-      if (!newHistory[key]) {
-        newHistory[key] = { queueSize: [], inflight: [], lag: [] }
-      }
-
-      newHistory[key].queueSize = [...newHistory[key].queueSize, size].slice(-30)
-      newHistory[key].inflight = [...newHistory[key].inflight, inflight].slice(-30)
-      newHistory[key].lag = [...newHistory[key].lag, lag].slice(-30)
-    })
-
-    setHistory(newHistory)
-    setQueues(data)
-    setLoading(false)
-  }
-
-  useEffect(() => {
-    load()
-    const id = setInterval(load, 5000)
-    return () => clearInterval(id)
-  }, [brokerName])
-
-  if (loading) {
+  if (isLoading) {
     return (
       <PageSection>
         <Title headingLevel="h3">Loading broker overview…</Title>
+      </PageSection>
+    )
+  }
+
+  if (error) {
+    return (
+      <PageSection>
+        <Alert variant="danger" title="Failed to load broker data" isInline />
       </PageSection>
     )
   }

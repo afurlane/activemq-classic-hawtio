@@ -11,12 +11,13 @@ export const TopicSendMessage: React.FC = () => {
     <Card isFlat isCompact>
       <CardBody>
         <Title headingLevel="h4">Send Message</Title>
+
         <Alert
           variant="info"
           isInline
-          title="Sending messages to a topic is not supported via JMX."
+          title="Message publishing is not available via JMX"
         >
-          Use a JMS client or AMQP/MQTT/STOMP producer to publish messages.
+          Use a JMS client or an AMQP/MQTT/STOMP producer to send messages to this topic.
         </Alert>
       </CardBody>
     </Card>

@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react'
-import { activemq } from '../../services/activemq/ActiveMQClassicService'
+import React, { useState } from 'react'
 import {
   Card,
   CardBody,
@@ -21,7 +20,8 @@ import {
   Td
 } from '@patternfly/react-table'
 
-import { Queue, Message } from '../../types/domain'
+import { Queue } from '../../types/domain'
+import { useQueueMessages } from '../../hooks/useQueueMessages'
 
 interface Props {
   queue: Queue
@@ -29,23 +29,13 @@ interface Props {
 
 export const QueueBrowser: React.FC<Props> = ({ queue }) => {
   const [page, setPage] = useState(0)
-  const [messages, setMessages] = useState<Message[]>([])
-  const [loading, setLoading] = useState(false)
   const pageSize = 20
 
-  const load = async () => {
-    setLoading(true)
-    try {
-      const data = await activemq.browseQueue(queue.mbean, page, pageSize)
-      setMessages(data)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    load()
-  }, [page, queue.mbean])
+  const {
+    data: messages = [],
+    isLoading,
+    error,
+  } = useQueueMessages(queue.mbean, page, pageSize)
 
   const onSetPage = (_evt: any, newPage: number) => {
     setPage(newPage - 1) // PatternFly pages are 1-based
@@ -56,14 +46,27 @@ export const QueueBrowser: React.FC<Props> = ({ queue }) => {
       <CardBody>
 
         {/* LOADING */}
-        {loading && (
+        {isLoading && (
           <div style={{ padding: '2rem', textAlign: 'center' }}>
             <Spinner size="xl" />
           </div>
         )}
 
+        {/* ERROR */}
+        {error && (
+          <EmptyState>
+            <EmptyStateHeader
+              titleText="Failed to load messages"
+              headingLevel="h4"
+            />
+            <EmptyStateBody>
+              Try refreshing or navigating to another page.
+            </EmptyStateBody>
+          </EmptyState>
+        )}
+
         {/* EMPTY STATE */}
-        {!loading && messages.length === 0 && (
+        {!isLoading && !error && messages.length === 0 && (
           <EmptyState>
             <EmptyStateHeader
               titleText="No messages in this page"
@@ -76,7 +79,7 @@ export const QueueBrowser: React.FC<Props> = ({ queue }) => {
         )}
 
         {/* TABLE */}
-        {!loading && messages.length > 0 && (
+        {!isLoading && !error && messages.length > 0 && (
           <>
             <Table variant="compact">
               <Thead>

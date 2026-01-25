@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from "react"
-import { activemq } from "../../services/activemq/ActiveMQClassicService"
-import { useSelectedBrokerName } from "../../hooks/useSelectedBroker"
+import React from "react"
 import {
   Card,
   CardHeader,
@@ -15,7 +13,10 @@ import {
   Flex,
   FlexItem
 } from "@patternfly/react-core"
+
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
+import { useSelectedBrokerName } from "../../hooks/useSelectedBroker"
+import { useTopProducers } from "../../hooks/useTopProducers"
 
 export const TopProducers: React.FC = () => {
   const brokerName = useSelectedBrokerName()
@@ -30,35 +31,7 @@ export const TopProducers: React.FC = () => {
     )
   }
 
-  const [producers, setProducers] = useState<any[]>([])
-
-  const load = async () => {
-    if (!brokerName) return
-
-    const mbeans = await activemq.listProducers(brokerName)
-    const attrs = await Promise.all(
-      mbeans.map(m => activemq.getProducerAttributes(m))
-    )
-
-    const sorted = attrs
-      .map(a => ({
-        clientId: a.ClientId ?? "unknown",
-        destination: a.DestinationName ?? "unknown",
-        sent: a.SentCount ?? 0,
-        blocked: a.ProducerBlocked ?? false,
-        pctBlocked: a.PercentageBlocked ?? 0
-      }))
-      .sort((a, b) => b.sent - a.sent)
-      .slice(0, 10)
-
-    setProducers(sorted)
-  }
-
-  useEffect(() => {
-    load()
-    const id = setInterval(load, 5000)
-    return () => clearInterval(id)
-  }, [brokerName])
+  const { data: producers = [], isLoading, error } = useTopProducers(brokerName)
 
   return (
     <Card isFlat isCompact>
@@ -68,7 +41,15 @@ export const TopProducers: React.FC = () => {
 
       <CardBody>
 
-        {producers.length === 0 && (
+        {isLoading && (
+          <Alert variant="info" title="Loading producers…" isInline />
+        )}
+
+        {error && (
+          <Alert variant="danger" title="Failed to load producers" isInline />
+        )}
+
+        {!isLoading && !error && producers.length === 0 && (
           <Alert variant="info" title="No producers found" isInline />
         )}
 

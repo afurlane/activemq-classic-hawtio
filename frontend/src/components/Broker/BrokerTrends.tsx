@@ -1,7 +1,4 @@
-import React, { useEffect, useState } from 'react'
-import { activemq } from '../../services/activemq/ActiveMQClassicService'
-import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
-import { Sparkline } from '../Common/Sparkline'
+import React from 'react'
 import {
   Card,
   CardHeader,
@@ -16,17 +13,16 @@ import {
   Flex,
   FlexItem
 } from '@patternfly/react-core'
+
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   ExclamationCircleIcon
 } from '@patternfly/react-icons'
 
-interface TrendHistory {
-  totalSize: number[]
-  totalInflight: number[]
-  totalLag: number[]
-}
+import { Sparkline } from '../Common/Sparkline'
+import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+import { useBrokerTrendsHistory } from '../../hooks/useBrokerTrendsHistory'
 
 export const BrokerTrends: React.FC = () => {
   const brokerName = useSelectedBrokerName()
@@ -41,71 +37,9 @@ export const BrokerTrends: React.FC = () => {
     )
   }
 
-  const [history, setHistory] = useState<TrendHistory>({
-    totalSize: [],
-    totalInflight: [],
-    totalLag: [],
-  })
+  const { history, latest } = useBrokerTrendsHistory(brokerName)
 
-  const [latest, setLatest] = useState({
-    totalSize: 0,
-    totalInflight: 0,
-    totalLag: 0,
-    consumers: 0,
-    avgMemory: 0,
-  })
-
-  const [loading, setLoading] = useState(true)
-
-  const poll = async () => {
-    if (!brokerName) return
-
-    const queues = await activemq.listQueues(brokerName)
-
-    let totalSize = 0
-    let totalInflight = 0
-    let totalLag = 0
-    let consumers = 0
-    let memorySum = 0
-
-    queues.forEach(q => {
-      const size = q.size ?? 0
-      const inflight = q.stats.inflight ?? 0
-      const mem = q.memory.percent ?? 0
-
-      totalSize += size
-      totalInflight += inflight
-      totalLag += size - inflight
-      consumers += q.consumers
-      memorySum += mem
-    })
-
-    const avgMemory = queues.length > 0 ? memorySum / queues.length : 0
-
-    setLatest({
-      totalSize,
-      totalInflight,
-      totalLag,
-      consumers,
-      avgMemory,
-    })
-
-    setHistory(prev => ({
-      totalSize: [...prev.totalSize, totalSize].slice(-50),
-      totalInflight: [...prev.totalInflight, totalInflight].slice(-50),
-      totalLag: [...prev.totalLag, totalLag].slice(-50),
-    }))
-
-    setLoading(false)
-  }
-
-  useEffect(() => {
-    poll()
-    const id = setInterval(poll, 5000)
-    return () => clearInterval(id)
-  }, [brokerName])
-
-  if (loading) {
+  if (!latest) {
     return (
       <Card isFlat isCompact>
         <CardBody>Loading broker trends…</CardBody>

@@ -32,29 +32,23 @@ export const QueueLag: React.FC<Props> = ({ queue }) => {
     lag > 1000  ? 'yellow' :
                   'green'
 
-  const renderLabel = (value: number, sev: Severity) => {
-    switch (sev) {
-      case 'green':
-        return (
-          <Label color="green" icon={<CheckCircleIcon />}>
-            {value}
-          </Label>
-        )
-      case 'yellow':
-        return (
-          <Label color="orange" icon={<ExclamationTriangleIcon />}>
-            {value}
-          </Label>
-        )
-      case 'red':
-      default:
-        return (
-          <Label color="red" icon={<ExclamationCircleIcon />}>
-            {value}
-          </Label>
-        )
-    }
+  const icons: Record<Severity, React.ReactNode> = {
+    green: <CheckCircleIcon />,
+    yellow: <ExclamationTriangleIcon />,
+    red: <ExclamationCircleIcon />
   }
+
+  const colors: Record<Severity, "green" | "orange" | "red"> = {
+    green: "green",
+    yellow: "orange",
+    red: "red"
+  }
+
+  const renderStatus = (value: number, sev: Severity) => (
+    <Label color={colors[sev]} icon={icons[sev]}>
+      {value.toLocaleString()}
+    </Label>
+  )
 
   return (
     <Card isFlat isCompact>
@@ -65,7 +59,7 @@ export const QueueLag: React.FC<Props> = ({ queue }) => {
           <DescriptionListGroup>
             <DescriptionListTerm>Lag</DescriptionListTerm>
             <DescriptionListDescription>
-              {renderLabel(lag, severity)}
+              {renderStatus(lag, severity)}
             </DescriptionListDescription>
           </DescriptionListGroup>
         </DescriptionList>
