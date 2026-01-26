@@ -10,6 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      - name: Cache Yarn Classic
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cache/yarn
+            frontend/node_modules
+          key: yarn-classic-${{ hashFiles('frontend/yarn.lock') }}
+          restore-keys: |
+            yarn-classic-
+
+      - name: Cache Yarn Berry
+        uses: actions/cache@v5
+        with:
+          path: |
+            frontend/.yarn/cache
+            frontend/.pnp.cjs
+          key: yarn-berry-${{ hashFiles('frontend/yarn.lock') }}
+          restore-keys: |
+            yarn-berry-
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -24,7 +45,7 @@ jobs:
       - name: Switch to frontend directory
         run: |
          cd frontend
-         npm ci
+         yarn install --frozen-lockfile --immutable --immutable-cache
         env: 
           PLUGIN_ID: activemq-classic 
           PLUGIN_SCOPE: activemqClassic 

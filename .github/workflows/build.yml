@@ -15,6 +15,33 @@ jobs:
     steps:
 #      - name: Debug env
 #        run: 'printf "KEY LENGTH: %s\n" "${#NVD_API_KEY}"'
+      - name: Cache Yarn Classic
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cache/yarn
+            frontend/node_modules
+          key: yarn-classic-${{ hashFiles('frontend/yarn.lock') }}
+          restore-keys: |
+            yarn-classic-
+
+      - name: Cache Yarn Berry
+        uses: actions/cache@v5
+        with:
+          path: |
+            frontend/.yarn/cache
+            frontend/.pnp.cjs
+          key: yarn-berry-${{ hashFiles('frontend/yarn.lock') }}
+          restore-keys: |
+            yarn-berry-
+
+      - name: Cache Maven
+        uses: actions/cache@v5
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-
 
       - name: Checkout
         uses: actions/checkout@v6
@@ -64,7 +91,7 @@ jobs:
 
       - name: Install dependencies (npm audit)
         run: |
-          yarn install
+          yarn install --frozen-lockfile --immutable --immutable-cache
           yarn audit --groups dependencies || true
 
       - name: Build plugin (Maven)

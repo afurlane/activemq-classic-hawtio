@@ -108,6 +108,9 @@
             </goals>
             <configuration>
               <arguments>install</arguments>
+              <arguments>--frozen-lockfile</arguments>
+              <arguments>--immutable</arguments>
+              <arguments>--immutable-cache</arguments>
             </configuration>
           </execution>
 
