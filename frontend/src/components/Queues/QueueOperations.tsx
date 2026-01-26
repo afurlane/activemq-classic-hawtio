@@ -7,6 +7,7 @@ import { RemoveMessageModal } from './RemoveMessageModal'
 import { RetryMessageModal } from './RetryMessageModal'
 import { RemoveMessageGroupModal } from './RemoveMessageGroupModal'
 import { SendMessageModal } from './SendMessageModal'
+import { log } from '../../globals'
 
 type OperationName =
   | 'moveMessage'
@@ -39,7 +40,7 @@ export const QueueOperations: React.FC<{ queue: Queue, onAction: () => Promise<v
         isOpen={isMoveOpen}
         onClose={() => setMoveOpen(false)}
         onConfirm={(id, dest) => {
-          console.log("MOVE", id, dest)
+          log.debug("MOVE", id, dest)
           setMoveOpen(false)
         }}
       />
@@ -48,7 +49,7 @@ export const QueueOperations: React.FC<{ queue: Queue, onAction: () => Promise<v
         isOpen={isCopyOpen}
         onClose={() => setCopyOpen(false)}
         onConfirm={(id, dest) => {
-          console.log("COPY", id, dest)
+          log.debug("COPY", id, dest)
           setCopyOpen(false)
         }}
       />
@@ -57,7 +58,7 @@ export const QueueOperations: React.FC<{ queue: Queue, onAction: () => Promise<v
         isOpen={isRemoveOpen}
         onClose={() => setRemoveOpen(false)}
         onConfirm={(id) => {
-          console.log("REMOVE", id)
+          log.debug("REMOVE", id)
           setRemoveOpen(false)
         }}
       />
@@ -66,7 +67,7 @@ export const QueueOperations: React.FC<{ queue: Queue, onAction: () => Promise<v
         isOpen={isRetryOpen}
         onClose={() => setRetryOpen(false)}
         onConfirm={(id) => {
-          console.log("RETRY", id)
+          log.debug("RETRY", id)
           setRetryOpen(false)
         }}
       />
@@ -75,7 +76,7 @@ export const QueueOperations: React.FC<{ queue: Queue, onAction: () => Promise<v
         isOpen={isRemoveGroupOpen}
         onClose={() => setRemoveGroupOpen(false)}
         onConfirm={(group) => {
-          console.log("REMOVE GROUP", group)
+          log.debug("REMOVE GROUP", group)
           setRemoveGroupOpen(false)
         }}
       />
@@ -84,7 +85,7 @@ export const QueueOperations: React.FC<{ queue: Queue, onAction: () => Promise<v
         isOpen={isSendOpen}
         onClose={() => setSendOpen(false)}
         onConfirm={(body) => {
-          console.log("SEND", body)
+          log.debug("SEND", body)
           setSendOpen(false)
         }}
       />

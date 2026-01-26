@@ -4,8 +4,6 @@ import { SWRConfig } from 'swr'
 import { BrokerProvider } from './context/BrokerProvider'
 
 export const ActiveMQClassicPlugin: React.FC = () => {
-  console.log('Rendering ActiveMQClassicPlugin')
-
   return (
     <SWRConfig value={{
       revalidateOnFocus: true,

@@ -4,6 +4,17 @@ import tsparser from "@typescript-eslint/parser";
 
 export default [
 
+  // Ignore global build folders
+  { 
+    ignores: [
+       "dist/", 
+       "build/", 
+       "node/",
+       "node_modules/", 
+       "**/*.chunk.js", 
+       "remoteEntry.js" 
+      ]
+  },
   // ============================
   // 1. Creedengo preset ufficiale
   // ============================
@@ -14,12 +25,6 @@ export default [
   // ============================
   {
     files: ["**/*.js", "**/*.ts", "**/*.tsx"],
-
-    ignores: [
-      "dist/",
-      "build/",
-      "node_modules/"
-    ],
 
     languageOptions: {
       parser: tsparser,
