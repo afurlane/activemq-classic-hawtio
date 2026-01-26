@@ -29,8 +29,11 @@ jobs:
         run: ./mvnw -B clean install
 
       # 2. SCI via Impact Framework
+      - name: Install Impact Framework
+        run: npm install @grnsft/if @grnsft/if-plugins @grnsft/if-unofficial-plugins
+
       - name: Run SCI (Impact Framework)
-        run: npx @grnsft/if run --config sci.config.json --output sci-report.json
+        run: node .github/scripts/run-sci.js
 
       # 3. ECOCode
       - name: Install ECOCode CLI

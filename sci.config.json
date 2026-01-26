@@ -1,6 +1,6 @@
 {
   "name": "activemq-classic-hawtio",
-  "description": "SCI measurement via Impact Framework",
+  "description": "SCI measurement using Impact Framework",
   "pipeline": [
     {
       "name": "measure-build",
@@ -18,6 +18,5 @@
         "co2e": "measure-build.co2e"
       }
     }
-  ],
-  "output": "sci-report.json"
+  ]
 }
