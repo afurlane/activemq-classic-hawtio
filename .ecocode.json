@@ -1,8 +1,0 @@
-{
-  "paths": [
-    "src/main/java",
-    "frontend/src"
-  ],
-  "output": "ecocode-report.json",
-  "format": "json"
-}

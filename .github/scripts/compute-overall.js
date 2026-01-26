@@ -1,11 +1,11 @@
 import fs from "fs";
 
-const eco = JSON.parse(fs.readFileSync("reports/ecocode.json")).score;
-const gf = JSON.parse(fs.readFileSync("reports/greenframe.json")).score;
+const creedengo = JSON.parse(fs.readFileSync("reports/creedengo.json")).score;
+const other = creedengo;
 
-const score = Number(((eco + gf) / 2).toFixed(2));
+const score = Number(((creedengo + other) / 2).toFixed(2));
 
 fs.writeFileSync(
   "reports/overall.json",
-  JSON.stringify({ score, eco, gf }, null, 2)
+  JSON.stringify({ score, creedengo }, null, 2)
 );

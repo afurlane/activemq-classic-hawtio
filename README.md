@@ -14,9 +14,7 @@ self‑contained Hawtio 4 plugin running on Jetty 11 / Jakarta EE.
 ![Latest Release](https://img.shields.io/github/v/release/afurlane/activemq-classic-hawtio?label=latest-release&color=blue)
 
 ## 🌿 Green Metrics
-![SCI](https://img.shields.io/endpoint?url=https://<USERNAME>.github.io/<REPO>/sci.json)
 ![EcoCode](https://img.shields.io/endpoint?url=https://<USERNAME>.github.io/<REPO>/ecocode.json)
-![GreenFrame](https://img.shields.io/endpoint?url=https://<USERNAME>.github.io/<REPO>/greenframe.json)
 ![Overall](https://img.shields.io/endpoint?url=https://<USERNAME>.github.io/<REPO>/overall.json)
 
 ---

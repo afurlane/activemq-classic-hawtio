@@ -18,10 +18,8 @@ function badge(score, label) {
 </svg>`;
 }
 
-const eco = JSON.parse(fs.readFileSync("reports/ecocode.json")).score;
-const gf = JSON.parse(fs.readFileSync("reports/greenframe.json")).score;
+const creedengo = JSON.parse(fs.readFileSync("reports/creedengo.json")).score;
 const overall = JSON.parse(fs.readFileSync("reports/overall.json")).score;
 
-fs.writeFileSync("badges/ecocode.svg", badge(eco, "ECOCode"));
-fs.writeFileSync("badges/greenframe.svg", badge(gf, "GreenFrame"));
+fs.writeFileSync("badges/creedengo.svg", badge(creedengo, "Creedengo"));
 fs.writeFileSync("badges/overall.svg", badge(overall, "Overall"));

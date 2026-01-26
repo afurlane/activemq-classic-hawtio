@@ -21,37 +21,24 @@ jobs:
       # -----------------------------
       # ECOCODE
       # -----------------------------
-      - name: Install ECOCode CLI
-        run: npm install -g @ecocode/cli
-
-      - name: Run ECOCode (backend)
-        run: ecocode scan --path backend --output reports/ecocode-backend.json
-
-      - name: Run ECOCode (frontend)
-        run: ecocode scan --path frontend --output reports/ecocode-frontend.json
-
-      - name: Merge ECOCode reports
-        run: node .github/scripts/extract-ecocode.js
-
-      # -----------------------------
-      # GREENFRAME
-      # -----------------------------
-      - name: Install GreenFrame
-        run: npm install -g @greenframe/cli
-
-      - name: Build frontend
+      - name: Switch to frontend directory
         run: |
-          cd frontend
-          npm ci
-          npm run build
+         cd frontend
+         npm ci
+        env: 
+          PLUGIN_ID: activemq-classic 
+          PLUGIN_SCOPE: activemqClassic 
+          PLUGIN_MODULE: plugin
 
-      - name: Serve frontend
+      - name: Execute creedengo scan
         run: |
-          npx http-server frontend/dist -p 8080 &
-          sleep 5
-
-      - name: Run GreenFrame
-        run: greenframe run --config greenframe.config.js --output reports/greenframe.json
+         cd frontend
+         npx eslint . -f json -o ../reports/creedengo.json
+         cd ..
+        env: 
+          PLUGIN_ID: activemq-classic 
+          PLUGIN_SCOPE: activemqClassic 
+          PLUGIN_MODULE: plugin
 
       # -----------------------------
       # OVERALL SCORE
@@ -75,8 +62,7 @@ jobs:
           recreate: true
           message: |
             ## 🌱 Green Checks Report
-            **ECOCode:** $(cat reports/ecocode.json | jq -r '.score')
-            **GreenFrame:** $(cat reports/greenframe.json | jq -r '.score')
+            **Creedengo:** $(cat reports/creedengo.json | jq -r '.score')
             **Overall:** $(cat reports/overall.json | jq -r '.score')
 
       # -----------------------------
