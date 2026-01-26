@@ -1,0 +1,12 @@
+{
+  "name": "activemq-classic-hawtio",
+  "description": "SCI measurement for ActiveMQ Classic Hawtio plugin",
+  "output": "sci-report.json",
+  "modules": [
+    {
+      "name": "build",
+      "path": ".",
+      "type": "process"
+    }
+  ]
+}

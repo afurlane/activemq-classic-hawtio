@@ -1,0 +1,78 @@
+name: Green Checks
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  green:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install SCI CLI
+        run: npm install -g @grnsft/cli
+
+      - name: Install ECOCode CLI
+        run: npm install -g @ecocode/cli
+
+      - name: Install GreenFrame CLI
+        run: npm install -g @greenframe/cli
+
+      - name: Build plugin (Maven)
+        run: ./mvnw -B clean install
+
+      - name: Run SCI
+        run: sci measure --config sci.config.json --output sci-report.json
+
+      - name: Run ECOCode
+        run: ecocode scan --config .ecocode.json
+
+      - name: Run GreenFrame
+        run: greenframe run --config greenframe.config.js
+
+      - name: Upload reports as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: green-reports
+          path: |
+            sci-report.json
+            ecocode-report.json
+            greenframe-report.json
+
+      - name: Generate badge JSON files
+        run: |
+          node .github/scripts/extract-badges.js
+
+      - name: Publish badge JSON to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          publish_branch: gh-pages
+          keep_files: true
+
+      - name: Comment PR with summary
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: |
+            ### 🌱 Green Report Summary
+            **SCI CO₂:** see artifact  
+            **EcoCode Issues:** see artifact  
+            **GreenFrame CO₂:** see artifact  
+            Badge JSON updated on `gh-pages`.

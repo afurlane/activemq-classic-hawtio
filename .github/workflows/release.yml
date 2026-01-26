@@ -1,9 +1,10 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - master
+  workflow_run:
+    workflows: ["Green Checks"]
+    types:
+      - completed
 
 permissions:
   contents: write
@@ -12,6 +13,8 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout
@@ -62,3 +65,20 @@ jobs:
           git add README.md
           git commit -m "docs: update release badge to ${TAG}" || echo "No changes"
           git push
+
+      - name: Download green reports artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: green-reports
+          path: green-reports
+
+      - name: Upload green reports to Release
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ steps.release.outputs.tag_name }}" \
+            green-reports/sci-report.json \
+            green-reports/ecocode-report.json \
+            green-reports/greenframe-report.json \
+            --clobber
