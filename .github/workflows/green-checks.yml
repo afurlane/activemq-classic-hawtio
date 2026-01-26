@@ -1,90 +1,91 @@
 name: Green Checks
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
+  push:
+    branches: [ main ]
 
 jobs:
-  green:
+  green-checks:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # 1. Build plugin (backend + frontend)
-      - name: Build plugin (Maven)
-        run: ./mvnw -B clean install
-
-      # 2. SCI via Impact Framework
-      - name: Install Impact Framework
-        run: npm install @grnsft/if @grnsft/if-plugins @grnsft/if-unofficial-plugins
-
-      - name: Run SCI (Impact Framework)
-        run: node .github/scripts/run-sci.js
-
-      # 3. ECOCode
+      # -----------------------------
+      # ECOCODE
+      # -----------------------------
       - name: Install ECOCode CLI
         run: npm install -g @ecocode/cli
 
-      - name: Run ECOCode
-        run: ecocode scan --config .ecocode.json
+      - name: Run ECOCode (backend)
+        run: ecocode scan --path backend --output reports/ecocode-backend.json
 
-      # 4. GreenFrame
-      - name: Install GreenFrame CLI
+      - name: Run ECOCode (frontend)
+        run: ecocode scan --path frontend --output reports/ecocode-frontend.json
+
+      - name: Merge ECOCode reports
+        run: node .github/scripts/extract-ecocode.js
+
+      # -----------------------------
+      # GREENFRAME
+      # -----------------------------
+      - name: Install GreenFrame
         run: npm install -g @greenframe/cli
 
-      - name: Start static server
+      - name: Build frontend
         run: |
-          npx http-server frontend/build -p 8080 &
-          sleep 3
+          cd frontend
+          npm ci
+          npm run build
+
+      - name: Serve frontend
+        run: |
+          npx http-server frontend/dist -p 8080 &
+          sleep 5
 
       - name: Run GreenFrame
-        run: greenframe run --config greenframe.config.js
+        run: greenframe run --config greenframe.config.js --output reports/greenframe.json
 
-      # 5. Upload reports
-      - name: Upload reports as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: green-reports
-          path: |
-            sci-report.json
-            ecocode-report.json
-            greenframe-report.json
+      # -----------------------------
+      # OVERALL SCORE
+      # -----------------------------
+      - name: Compute overall score
+        run: node .github/scripts/compute-overall.js
 
-      # 6. Generate badge JSON
-      - name: Generate badge JSON files
-        run: node .github/scripts/extract-badges.js
+      # -----------------------------
+      # BADGES
+      # -----------------------------
+      - name: Generate badges
+        run: node .github/scripts/generate-badge.js
 
-      # 7. Publish badge JSON to gh-pages
-      - name: Publish badge JSON to gh-pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: badges
-          publish_branch: gh-pages
-          keep_files: true
-
-      # 8. Comment PR
-      - name: Comment PR with summary
+      # -----------------------------
+      # COMMENTO PR
+      # -----------------------------
+      - name: Comment PR
         if: github.event_name == 'pull_request'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
+          recreate: true
           message: |
-            ### 🌱 Green Report Summary
-            **SCI CO₂:** see artifact  
-            **EcoCode Issues:** see artifact  
-            **GreenFrame CO₂:** see artifact  
-            Badge JSON updated on `gh-pages`.
+            ## 🌱 Green Checks Report
+            **ECOCode:** $(cat reports/ecocode.json | jq -r '.score')
+            **GreenFrame:** $(cat reports/greenframe.json | jq -r '.score')
+            **Overall:** $(cat reports/overall.json | jq -r '.score')
+
+      # -----------------------------
+      # RELEASE
+      # -----------------------------
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: green-checks
+          path: |
+            reports/
+            badges/
