@@ -65,13 +65,13 @@ jobs:
       # OVERALL SCORE
       # -----------------------------
       - name: Compute overall score
-        run: node .github/scripts/compute-overall.js
+        run: node .github/scripts/compute-overall.mjs
 
       # -----------------------------
       # BADGES
       # -----------------------------
       - name: Generate badges
-        run: node .github/scripts/generate-badge.js
+        run: node .github/scripts/generate-badge.mjs
 
       # -----------------------------
       # COMMENTO PR

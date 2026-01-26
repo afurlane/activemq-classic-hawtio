@@ -1,6 +1,7 @@
 import creedengo from "@creedengo/eslint-plugin";
 import tseslint from "@typescript-eslint/eslint-plugin";
 import tsparser from "@typescript-eslint/parser";
+import globals from "globals";
 
 export default [
 
@@ -19,6 +20,14 @@ export default [
   // 1. Creedengo preset ufficiale
   // ============================
   creedengo.configs["flat/recommended"],
+  {
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+    },
+  },
 
   // ============================
   // 2. Override per JS/TS + regole custom

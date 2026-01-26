@@ -69,7 +69,7 @@ jobs:
       - name: Download green reports artifact
         uses: actions/download-artifact@v4
         with:
-          name: green-reports
+          name: green-checks
           path: green-reports
 
       - name: Upload green reports to Release
