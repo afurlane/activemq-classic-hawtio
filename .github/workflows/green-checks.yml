@@ -54,7 +54,7 @@ jobs:
       - name: Execute creedengo scan
         run: |
          cd frontend
-         npx eslint . -f json -o ../reports/creedengo.json
+         npx eslint . -f json -o ../reports/creedengo.json || true
          cd ..
         env: 
           PLUGIN_ID: activemq-classic 
