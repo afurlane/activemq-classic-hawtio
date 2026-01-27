@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 This project adheres to the Conventional Commits specification and uses
 automated release generation via GitHub Actions.
 
+## [1.0.8](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.0.7...v1.0.8) (2026-01-27)
+
+
+### Bug Fixes
+
+* updated documentation for ActiveMQ setup ([92bdd1c](https://github.com/afurlane/activemq-classic-hawtio/commit/92bdd1c7736f21560b32998a85aab957b75df6a7))
+
 ## [1.0.7](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.0.6...v1.0.7) (2026-01-25)
 
 
