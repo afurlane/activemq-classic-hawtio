@@ -48,11 +48,15 @@ Copy the generated JAR:
 target/activemq-classic-hawtio-plugin.jar
 ```
 
+or download it from the releases page.
+
 into:
 
 ```sh
 $ACTIVEMQ_HOME/webapps/hawtio/WEB-INF/lib/
 ```
+
+**NB** now you need to place hawtio-local-jvm-mbean-4.6.2.jar into WEB-INF/lib of Hawtio webapp. You can download it from a [maven repository](https://mvnrepository.com/artifact/io.hawt/hawtio-local-jvm-mbean).
 
 Hawtio will automatically load the plugin at startup.
 
