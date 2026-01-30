@@ -1,7 +1,14 @@
 {
   "name": "activemq-classic-hawtio",
   "version": "1.0.0",
-  "private": true,
+  "private": false,
+  "main": "build/remoteEntry.js",
+  "files": [
+    "build", "README.md"
+  ],
+  "publishConfig": { 
+    "access": "public" 
+  },
   "scripts": {
     "build": "webpack --config webpack.config.js --mode production",
     "lint": "eslint src --ext .ts,.tsx"
