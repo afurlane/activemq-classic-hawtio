@@ -36,7 +36,17 @@ module.exports = {
             // ⭐ NECESSARIO per generare i sourcemap
             sourceMaps: true,
             jsc: {
-              parser: { syntax: 'typescript' },
+              parser: {
+                 syntax: 'typescript',
+                 tsx: true,
+                },
+              transform: {
+                 react: {
+                   runtime: "automatic", // ⭐ NEW JSX TRANSFORM 
+                   importSource: "react", // default
+                   development: false 
+                 },
+              }
             },
           },
         },
