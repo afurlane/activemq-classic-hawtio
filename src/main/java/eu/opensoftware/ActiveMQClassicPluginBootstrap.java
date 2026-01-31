@@ -14,6 +14,8 @@ import io.hawt.web.plugin.HawtioPlugin;
 
 public class ActiveMQClassicPluginBootstrap implements ServletContextListener {
 
+    private static final String PLUGINS = "/plugins/";
+
     private static final Logger LOG = LoggerFactory.getLogger(ActiveMQClassicPluginBootstrap.class);
 
     private String pluginId;
@@ -47,7 +49,7 @@ public class ActiveMQClassicPluginBootstrap implements ServletContextListener {
 
         String contextPath = sce.getServletContext().getContextPath();
         HawtioPlugin plugin = new HawtioPlugin();
-        plugin.url(contextPath + "/plugins/" + pluginId)
+        plugin.url(contextPath + PLUGINS + pluginId)
             .scope(pluginScope)
             .module("./"+pluginModule)
             .remoteEntryFileName("remoteEntry.js")
@@ -60,7 +62,7 @@ public class ActiveMQClassicPluginBootstrap implements ServletContextListener {
         ServletRegistration.Dynamic servlet = sce.getServletContext()        
             .addServlet(pluginId + "-plugin", new ActiveMQClassicPluginServlet());
 
-        servlet.addMapping("/plugins/" + pluginId + "/*");
+        servlet.addMapping(PLUGINS + pluginId + "/*");
         servlet.setLoadOnStartup(1);
     }
 }

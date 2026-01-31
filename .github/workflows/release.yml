@@ -52,6 +52,27 @@ jobs:
           gh release upload "${{ steps.release.outputs.tag_name }}" \
             "target/activemq-classic-hawtio-*.jar" \
             --clobber
+      - name: Build NPM package
+        if: ${{ steps.release.outputs.release_created }}
+        working-directory: frontend
+        run: npm pack
+
+      - name: Validate NPM package
+        if: ${{ steps.release.outputs.release_created }}
+        working-directory: frontend
+        run: |
+          tar -tf *.tgz
+
+      - name: Upload NPM package to Release
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: frontend
+        run: |
+          PKG=$(ls *.tgz)
+          gh release upload "${{ steps.release.outputs.tag_name }}" \
+            "$PKG" \
+            --clobber
 
       - name: Update README badge
         if: ${{ steps.release.outputs.release_created }}

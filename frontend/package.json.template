@@ -1,0 +1,9 @@
+{
+  "name": "@opensoftware/activemq-classic-hawtio",
+  "version": "1.0.0",
+  "main": "build/remoteEntry.js",
+  "files": ["build", "README.md"],
+  "publishConfig": {
+    "access": "public"
+  }
+}

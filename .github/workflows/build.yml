@@ -13,28 +13,6 @@ jobs:
       NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
 
     steps:
-#      - name: Debug env
-#        run: 'printf "KEY LENGTH: %s\n" "${#NVD_API_KEY}"'
-      - name: Cache Yarn Classic
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.cache/yarn
-            frontend/node_modules
-          key: yarn-classic-${{ hashFiles('frontend/yarn.lock') }}
-          restore-keys: |
-            yarn-classic-
-
-      - name: Cache Yarn Berry
-        uses: actions/cache@v5
-        with:
-          path: |
-            frontend/.yarn/cache
-            frontend/.pnp.cjs
-          key: yarn-berry-${{ hashFiles('frontend/yarn.lock') }}
-          restore-keys: |
-            yarn-berry-
-
       - name: Cache Maven
         uses: actions/cache@v5
         with:
@@ -61,33 +39,11 @@ jobs:
           key: dc-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             dc-${{ runner.os }}-
-          
-#      - name: Debug Maven env
-#        run: ./mvnw -q help:evaluate -Dexpression=nvd.api-key -DforceStdout
 
-#      - name: Debug Maven property length
-#        run: |
-#          VAL=$(./mvnw -q help:evaluate -Dexpression=nvd.api-key -DforceStdout)
-#          echo "LEN=${#VAL}"
-        
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version: 20
-
-      - name: Cache Maven
-        uses: actions/cache@v5
-        with:
-          path: ~/.m2/repository
-          key: maven-${{ hashFiles('**/pom.xml') }}
-
-      - name: Cache Yarn
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.cache/yarn
-            node_modules
-          key: yarn-${{ hashFiles('**/yarn.lock', '**/package.json') }}
 
       - name: Install dependencies (npm audit)
         run: |

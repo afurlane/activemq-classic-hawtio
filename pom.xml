@@ -16,6 +16,7 @@
     <plugin.module>plugin</plugin.module>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.build.resourcesEncoding>UTF-8 </project.build.resourcesEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <encoding>UTF-8</encoding>
     <maven.compiler.source>17</maven.compiler.source>
@@ -63,7 +64,7 @@
           <include>plugin.properties</include>
         </includes>
         <filtering>true</filtering>
-      </resource>
+      </resource> 
       <resource>
         <directory>src/main/resources</directory>
         <includes>
@@ -133,6 +134,8 @@
         <artifactId>maven-resources-plugin</artifactId>
         <version>3.4.0</version>
         <executions>
+
+          <!-- Copia plugin FE nel WAR -->
           <execution>
             <id>copy-frontend</id>
             <phase>process-resources</phase>
@@ -155,6 +158,29 @@
               </resources>
             </configuration>
           </execution>
+
+          <!-- Filtra package.json.template -->
+          <execution>
+            <id>filter-package-json</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.basedir}/frontend</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.basedir}/frontend</directory>
+                  <includes>
+                    <include>package.json.template</include>
+                  </includes>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+              <overwrite>true</overwrite>
+            </configuration>
+          </execution>
+
         </executions>
       </plugin>
 

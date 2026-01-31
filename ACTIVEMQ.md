@@ -1,6 +1,6 @@
 # Installing Hawtio 4 and the ActiveMQ Classic Plugin (ActiveMQ 6 Classic)
 
-This guide explains how to install Hawtio 4 inside ActiveMQ 6 Classic and how to integrate the ActiveMQ Classic Hawtio plugin.
+This guide explains how to install Hawtio 4 inside **ActiveMQ 6 Classic** and how to integrate the **ActiveMQ Classic Hawtio Plugin**.
 
 ---
 
@@ -14,7 +14,6 @@ This guide explains how to install Hawtio 4 inside ActiveMQ 6 Classic and how to
 ```sh
 $ACTIVEMQ_HOME/
 ```
-
 
 ---
 
@@ -48,7 +47,7 @@ Copy the generated JAR:
 target/activemq-classic-hawtio-plugin.jar
 ```
 
-or download it from the releases page.
+(or download it from the GitHub Releases page)
 
 into:
 
@@ -56,9 +55,10 @@ into:
 $ACTIVEMQ_HOME/webapps/hawtio/WEB-INF/lib/
 ```
 
-**NB** now you need to place hawtio-local-jvm-mbean-4.6.2.jar into WEB-INF/lib of Hawtio webapp. You can download it from a [maven repository](https://mvnrepository.com/artifact/io.hawt/hawtio-local-jvm-mbean).
+**Important** You must also add hawtio-local-jvm-mbean-4.6.2.jar to the same WEB-INF/lib directory.
+It can be downloaded from a Maven repository such as: [maven repository](https://mvnrepository.com/artifact/io.hawt/hawtio-local-jvm-mbean).
 
-Hawtio will automatically load the plugin at startup.
+Hawtio will automatically detect and load the plugin at startup.
 
 ---
 
@@ -68,14 +68,13 @@ Edit:
 
 $ACTIVEMQ_HOME/conf/jetty.xml
 
-
-and add the following snippets.
+and add the following changes.
 
 ---
 
-### Enable authentication for Hawtio and map the application
+### Enable authentication and map the Hawtio application
 
-Add this configuration in bean HttpConfiguration
+Add this configuration inside the HttpConfiguration bean
 
 ```xml
 <property name="customizers">
@@ -85,7 +84,7 @@ Add this configuration in bean HttpConfiguration
 </property>
 ```
 
-Comment this ConstraintMapping
+Comment out the default ConstraintMapping
 
 ```xml
     <bean id="securityConstraintMapping" class="org.eclipse.jetty.security.ConstraintMapping">
@@ -94,7 +93,7 @@ Comment this ConstraintMapping
     </bean>
 ```
 
-right below the previous, now commented out, bean add the following
+Then add the following mappings:
 
 ```xml
 <bean id="securityConstraintMappingAdmin" class="org.eclipse.jetty.security.ConstraintMapping">
@@ -108,7 +107,7 @@ right below the previous, now commented out, bean add the following
 </bean>
 ```
 
-in bean id "secHandlerCollection" of type "org.eclipse.jetty.server.handler.HandlerCollection", in the list of property "handlers" add the following
+Inside the secHandlerCollection bean (org.eclipse.jetty.server.handler.HandlerCollection), add:
 
 ```xml
 <bean class="org.eclipse.jetty.webapp.WebAppContext">
@@ -118,33 +117,35 @@ in bean id "secHandlerCollection" of type "org.eclipse.jetty.server.handler.Hand
 </bean>
 ```
 
-in bean with id "securityHandler" of type "org.eclipse.jetty.security.ConstraintSecurityHandler" in property "constraintMappings" in the list comment out this:
+Inside the securityHandler bean (ConstraintSecurityHandler), update the constraintMappings list:
 
+Comment out:
 ```xml
-<ref bean="securityConstraintMapping" />
+<!-- <ref bean="securityConstraintMapping" /> -->
 ```
 
-and add:
+Add:
 
 ```xml
 <ref bean="securityConstraintMappingAdmin" />
 <ref bean="securityConstraintMappingApi" />
 ```
 
-Hawtio will be available at:
+Hawtio will then be available at:
 
 http://localhost:<port>/hawtio
 
 
-### Configure KeyCloak for hawtio and ActiveMQ broker with Direct Access
-If you whish to use KeyCloak for both hawtio login (and admin console) you should read the following instructions.
+## 5. Keycloak Integration (Optional)
 
-#### Prerequisites
-- A running KeyCloak instance
-- A configured KeyCloak realm with realm roles for ActiveMQ (admins, amq and users at least) 
-- A client with direct access for authenticating the broker
-- A client with standard flow for hawtio access
-- KeyCloak jetty adapter or the followin libs to put in "<broker path>/lib"
+If you want to use Keycloak for both Hawtio authentication and ActiveMQ broker authentication, follow the steps below.
+
+### 5.1  Prerequisites
+- A running Keycloak instance
+- A Keycloak realm configured with roles for ActiveMQ (admins, amq, users)
+- A client with Direct Access Grants for broker authentication
+- A client with Standard Flow for Hawtio
+- The Keycloak Jetty adapter or the following libraries placed in: "<broker path>/lib"
 
 ```sh
 bcpkix-jdk18on-1.74.jar
@@ -167,8 +168,8 @@ keycloak-server-spi-22.0.0.jar
 keycloak-server-spi-private-22.0.0.jar
 ```
 
-#### Configuration
-Configure login.config with these entries
+### 5.2 JAAS configuration
+Edit login.config and add:
 
 ```json
 activemq-queues {
@@ -198,7 +199,7 @@ hawtio-client {
 };
 ```
 
-File keycloak-bearer.json should be like:
+Example keycloak-bearer.json:
 
 ```json
 {
@@ -210,7 +211,7 @@ File keycloak-bearer.json should be like:
   "principal-attribute": "preferred_username"
 }
 ```
-File keycloak-jaas-directaccess.json should be like:
+Example keycloak-jaas-directaccess.json:
 
 ```json
 {
@@ -226,9 +227,8 @@ File keycloak-jaas-directaccess.json should be like:
 }
 ```
 
-Configure the batch file created for custom broker <brokerdir>/bin/<brokerbatch> (you should read ActiveMQ documentation for initial broker creation).
-
-Add the following lines:
+### 5.3 Broker Startup Configuration
+Edit your custom broker startup script ('brokerdir'/bin/'brokerbatch') and add:
 
 ```sh
 ACTIVEMQ_OPTS="$ACTIVEMQ_OPTS -Dhawtio.authenticationEnabled=true"
@@ -243,7 +243,8 @@ ACTIVEMQ_OPTS="$ACTIVEMQ_OPTS -Djava.security.auth.login.config=${ACTIVEMQ_BASE}
 ACTIVEMQ_OPTS="$ACTIVEMQ_OPTS -Dorg.apache.activemq.audit=true"
 ```
 
-Now is time to set up the broker changing conf/activemq.xml, in section "<broker>" under "<plugins>" add:
+### 5.4 Broker Authorization Configuration
+Edit conf/activemq.xml and under <broker> → <plugins> add:
 
 ```xml
 <jaasAuthenticationPlugin configuration="activemq-queues"/>
@@ -270,13 +271,18 @@ Now is time to set up the broker changing conf/activemq.xml, in section "<broker
 </authorizationPlugin>
 ```xml
 
-If you donwload hawtio-default or hawtio-war remember, after uncompressing it in webapps to delete jolokia libs that are in conflict with ActiveMQ shipped version.
+### 5.5 Remove Jolokia Conflicts
 
-That should be all.
+If you extracted hawtio-default or hawtio-war, remove the Jolokia libraries bundled inside the WAR, as they conflict with the version shipped by ActiveMQ.
 
-### Ensure Hawtio is included in the SecurityHandler
+### 6. Ensure Hawtio Is Mounted Correctly
 
-Jetty will automatically mount Hawtio once:
+Jetty will automatically mount Hawtio when:
+- The hawtio/ directory exists under webapps/
+- The plugin JAR is present in WEB-INF/lib/ of the Hawtio webapp
 
-    the hawtio/ directory exists in webapps/
-    the plugin JAR is in WEB-INF/lib/ of hawtio webapps
+That’s all. Hawtio should now be fully integrated with ActiveMQ Classic 6 and ready to load the plugin.
+
+Note:
+  <brokerdir> refers to the root directory of your ActiveMQ Classic broker
+  <brokerbatch> is the startup script generated during broker creation
