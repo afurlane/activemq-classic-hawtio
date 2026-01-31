@@ -34,6 +34,15 @@ export function getBrokerMBean(brokerName: string) {
   return `org.apache.activemq:type=Broker,brokerName=${brokerName}`;
 }
 
+function getBrokerMBeanFromQueueMBean(queueMBean: string): string {
+  const match = queueMBean.match(/brokerName=([^,]+)/)
+  if (!match) {
+    throw new Error(`Cannot extract brokerName from MBean: ${queueMBean}`)
+  }
+  const brokerName = match[1]
+  return `org.apache.activemq:type=Broker,brokerName=${brokerName}`
+}
+
 export class ActiveMQClassicService {
 
   private async resolveBroker(name?: string): Promise<BrokerInfo | null> {
@@ -185,26 +194,21 @@ export class ActiveMQClassicService {
   // BROWSE / MESSAGES / DLQ / SUBSCRIPTIONS
   // ────────────────────────────────────────────────────────────────
 
-  async browseQueue(mbean: string, page: number, pageSize: number): Promise<Message[]> {
-    const start = page * pageSize;
+  async browseQueue(mbean: string): Promise<Message[]> {
     const raw = await jolokiaService.execute(
       mbean,
       'browse()',
     ) as ActiveMQMessageAttributes[];
-
-    const slice = raw.slice(start, start + pageSize);
-    return slice.map(mapMessage);
+    return raw.map(mapMessage);
   }
 
-  async browseTopic(mbean: string, page: number, pageSize: number): Promise<Message[]> {
-    const start = page * pageSize;
+  async browseTopic(mbean: string): Promise<Message[]> {
     const raw = await jolokiaService.execute(
       mbean,
       'browse()',
     ) as ActiveMQMessageAttributes[];
 
-    const slice = raw.slice(start, start + pageSize);
-    return slice.map(mapMessage);
+    return raw.map(mapMessage);
   }
 
   async getDLQInfo(mbean: string): Promise<DLQ> {
@@ -266,13 +270,16 @@ export class ActiveMQClassicService {
     return await jolokiaService.execute(mbean, 'resetStatistics()', []);
   }
 
-  async deleteQueue(brokerMBean: string, name: string) {
+  async deleteQueue(queueMBean: string, name: string) {
+    const brokerMBean = getBrokerMBeanFromQueueMBean(queueMBean)
+
     return await jolokiaService.execute(
       brokerMBean,
       'removeQueue(java.lang.String)',
       [name],
-    );
+    )
   }
+
 
   async retryMessages(mbean: string) {
     return await jolokiaService.execute(mbean, 'retryMessages()', []);

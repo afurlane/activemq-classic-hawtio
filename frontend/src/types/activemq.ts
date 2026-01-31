@@ -145,36 +145,16 @@ export interface ActiveMQTopicAttributes {
 }
 
 export interface ActiveMQConnectorAttributes {
-  // Identità
-  Name: string
-  ObjectName?: string
-  Protocol: string
-  State: string
+  Started: boolean
+  StatisticsEnabled: boolean
+  MaxConnectionExceededCount: number
 
-  // Connessioni
-  ConnectionCount: number
-  ActiveConnections?: number
-  MaxConnections?: number
-  DroppedConnections?: number
+  RebalanceClusterClients?: boolean
+  UpdateClusterClientsOnRemove?: boolean
+  UpdateClusterFilter?: string | null
+  AllowLinkStealingEnabled?: boolean
+  UpdateClusterClients?: boolean
 
-  // Traffico
-  InboundTraffic: number
-  OutboundTraffic: number
-
-  // Info di rete
-  Host?: string
-  Port?: number
-  TransportType?: string
-  Uri?: string
-
-  // AMQ6: metriche aggiuntive
-  TotalConnectionsCreated?: number
-  TotalConnectionsClosed?: number
-  TotalConnectionsFailed?: number
-
-  Connections?: any[]
-  
-  // Fallback
   [key: string]: any
 }
 

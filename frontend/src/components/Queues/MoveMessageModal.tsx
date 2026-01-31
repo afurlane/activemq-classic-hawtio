@@ -1,7 +1,7 @@
+import React, { useState } from "react"
 import { ArrowRightIcon } from "@patternfly/react-icons"
 import { BaseModal } from "./BaseModal"
 import { FormModal } from "./FormModal"
-import { useState } from "react"
 
 interface MoveMessageModalProps {
   isOpen: boolean

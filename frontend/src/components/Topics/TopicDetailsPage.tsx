@@ -11,7 +11,7 @@ import {
   Title
 } from '@patternfly/react-core'
 
-import { activemq, getBrokerMBean } from '../../services/activemq/ActiveMQClassicService'
+import { activemq } from '../../services/activemq/ActiveMQClassicService'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
 
 import { TopicInfo } from './TopicInfo'
@@ -110,7 +110,7 @@ export const TopicDetailsPage: React.FC<Props> = ({ topicName }) => {
       <PageSection>
         <Tabs
           activeKey={activeTab}
-          onSelect={(_, key) => setActiveTab(key as string)}
+          onSelect={(_: React.SyntheticEvent, key: string) => setActiveTab(key)}
         >
           <Tab eventKey="info" title={<TabTitleText>Info</TabTitleText>} />
           <Tab eventKey="messages" title={<TabTitleText>Messages</TabTitleText>} />

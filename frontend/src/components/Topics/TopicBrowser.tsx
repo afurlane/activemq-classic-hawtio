@@ -1,22 +1,39 @@
 import React, { useState } from 'react'
-import { Card, CardBody, Spinner, EmptyState, EmptyStateHeader, EmptyStateBody } from '@patternfly/react-core'
+import {
+  Card, CardBody, Spinner, EmptyState, EmptyStateHeader, EmptyStateBody,
+  Pagination
+} from '@patternfly/react-core'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@patternfly/react-table'
 import { CodeBlock, CodeBlockCode } from '@patternfly/react-core'
 import { useTopicMessages } from '../../hooks/useTopicMessages'
 
 interface Props {
-    mbean: string 
+  mbean: string 
 }
 
 export const TopicBrowser: React.FC<Props> = ({ mbean }) => {
   const [page, setPage] = useState(0)
   const pageSize = 20
 
-  const { data: messages = [], isLoading, error } = useTopicMessages(mbean, page, pageSize)
+  const { data, isLoading, error } = useTopicMessages(mbean, page, pageSize)
+
+  const messages = data?.messages ?? []
+  const total = data?.total ?? 0
+
 
   return (
     <Card isFlat isCompact>
       <CardBody>
+
+        {/* PAGINATION TOP */}
+        <Pagination
+          itemCount={total}
+          perPage={pageSize}
+          page={page + 1}
+          onSetPage={(_: React.SyntheticEvent, newPage: number) => setPage(newPage - 1)}
+          isCompact
+        />
+
         {isLoading && <Spinner size="xl" />}
         {error && (
           <EmptyState>
@@ -29,29 +46,43 @@ export const TopicBrowser: React.FC<Props> = ({ mbean }) => {
             <EmptyStateHeader titleText="No messages" />
           </EmptyState>
         )}
+
         {!isLoading && !error && messages.length > 0 && (
-          <Table variant="compact">
-            <Thead>
-              <Tr>
-                <Th>ID</Th>
-                <Th>Timestamp</Th>
-                <Th>Body</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {messages.map((m, i) => (
-                <Tr key={i}>
-                  <Td>{m.id}</Td>
-                  <Td>{new Date(m.timestamp).toLocaleString()}</Td>
-                  <Td>
-                    <CodeBlock>
-                      <CodeBlockCode>{JSON.stringify(m.body, null, 2)}</CodeBlockCode>
-                    </CodeBlock>
-                  </Td>
+          <>
+            <Table variant="compact">
+              <Thead>
+                <Tr>
+                  <Th>ID</Th>
+                  <Th>Timestamp</Th>
+                  <Th>Body</Th>
                 </Tr>
-              ))}
-            </Tbody>
-          </Table>
+              </Thead>
+              <Tbody>
+                {messages.map((m, i) => (
+                  <Tr key={i}>
+                    <Td>{m.id}</Td>
+                    <Td>{new Date(m.timestamp).toLocaleString()}</Td>
+                    <Td>
+                      <CodeBlock>
+                        <CodeBlockCode>
+                          {JSON.stringify(m.body, null, 2)}
+                        </CodeBlockCode>
+                      </CodeBlock>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+
+            {/* PAGINATION BOTTOM */}
+            <Pagination
+              itemCount={total}
+              perPage={pageSize}
+              page={page + 1}
+              onSetPage={(_: React.SyntheticEvent, newPage: number) => setPage(newPage - 1)}
+              isCompact
+            />
+          </>
         )}
       </CardBody>
     </Card>

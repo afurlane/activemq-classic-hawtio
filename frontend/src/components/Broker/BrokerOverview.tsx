@@ -82,9 +82,9 @@ export const BrokerOverview: React.FC = () => {
 
   // FILTRI
   const filtered = queues.filter(q => {
-    const inflight = q.stats.inflight ?? 0
+    // const inflight = q.stats.inflight ?? 0
     const size = q.size ?? 0
-    const lag = size - inflight
+    // const lag = size - inflight
     const mem = q.memory.percent ?? 0
 
     if (filter.critical && mem < 80 && size < 10000) return false
@@ -149,7 +149,7 @@ export const BrokerOverview: React.FC = () => {
                   id="filter-critical"
                   label="Critical only"
                   isChecked={filter.critical}
-                  onChange={(_, checked) => setFilter({ ...filter, critical: checked })}
+                  onChange={(_: React.SyntheticEvent, checked: boolean) => setFilter({ ...filter, critical: checked })}
                 />
               </ToolbarItem>
 
@@ -158,7 +158,7 @@ export const BrokerOverview: React.FC = () => {
                   id="filter-backlog"
                   label="Backlog > 1000"
                   isChecked={filter.backlog}
-                  onChange={(_, checked) => setFilter({ ...filter, backlog: checked })}
+                  onChange={(_: React.SyntheticEvent, checked: boolean) => setFilter({ ...filter, backlog: checked })}
                 />
               </ToolbarItem>
 
@@ -169,7 +169,7 @@ export const BrokerOverview: React.FC = () => {
                   value={filter.name}
                   type="text"
                   placeholder="Filter by name..."
-                  onChange={(_, value) => setFilter({ ...filter, name: value })}
+                  onChange={(_: React.SyntheticEvent, value: string) => setFilter({ ...filter, name: value })}
                 />
               </ToolbarItem>
 

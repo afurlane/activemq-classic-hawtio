@@ -4,7 +4,7 @@ import { useBrokerThroughput } from './useBrokerThroughput'
 export function useBrokerThroughputRates(brokerName: string | null) {
   const { data: totals } = useBrokerThroughput(brokerName)
 
-  const [history, setHistory] = useState<
+  const [_history, setHistory] = useState<
     { enqueue: number; dequeue: number; dispatch: number }[]
   >([])
 

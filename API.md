@@ -148,7 +148,7 @@ listQueuesWithRawAttributes(brokerName)
 
 Returns raw Jolokia attributes for debugging.
 ```ts
-browseQueue(mbean, page, pageSize)
+browseQueue(mbean)
 ```
 
 Reads messages using:
@@ -185,7 +185,7 @@ Returns all topics.
 getTopicAttributes(mbean)
 
 Reads topic attributes.
-browseTopic(mbean, page, pageSize)
+browseTopic(mbean)
 
 Uses:
 

@@ -28,14 +28,13 @@ interface Props {
 }
 
 export const QueueBrowser: React.FC<Props> = ({ queue }) => {
-  const [page, setPage] = useState(0)
-  const pageSize = 20
+  const [page, setPage] = useState(0);
+  const pageSize = 20;
 
-  const {
-    data: messages = [],
-    isLoading,
-    error,
-  } = useQueueMessages(queue.mbean, page, pageSize)
+  const { data, isLoading, error } = useQueueMessages(queue.mbean, page, pageSize);
+
+  const messages = data?.messages ?? [];
+  const total = data?.total ?? 0;
 
   const onSetPage = (_evt: any, newPage: number) => {
     setPage(newPage - 1) // PatternFly pages are 1-based
@@ -108,7 +107,7 @@ export const QueueBrowser: React.FC<Props> = ({ queue }) => {
             </Table>
 
             <Pagination
-              itemCount={999999} // ActiveMQ non dà il totale
+              itemCount={total}
               perPage={pageSize}
               page={page + 1}
               onSetPage={onSetPage}

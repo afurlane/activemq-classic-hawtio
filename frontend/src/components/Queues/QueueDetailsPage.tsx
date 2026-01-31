@@ -108,7 +108,7 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
       <PageSection>
         <Tabs
           activeKey={activeTab}
-          onSelect={(_, key) => setActiveTab(key as string)}
+          onSelect={(_: React.SyntheticEvent, key: string) => setActiveTab(key)}
         >
           <Tab eventKey="overview" title={<TabTitleText>Overview</TabTitleText>} />
           <Tab eventKey="metrics" title={<TabTitleText>Metrics</TabTitleText>} />
