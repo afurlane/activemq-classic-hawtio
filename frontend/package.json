@@ -1,13 +1,14 @@
 {
   "name": "activemq-classic-hawtio",
   "version": "1.0.0",
-  "private": false,
+  "license": "Apache-2.0",
   "main": "build/remoteEntry.js",
   "files": [
-    "build", "README.md"
+    "build",
+    "README.md"
   ],
-  "publishConfig": { 
-    "access": "public" 
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "webpack --config webpack.config.js --mode production",
@@ -44,5 +45,6 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.30.1",
     "swr": "^2.3.8"
-  }
+  },
+  "packageManager": "yarn@4.12.0"
 }

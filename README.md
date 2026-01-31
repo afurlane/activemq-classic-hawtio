@@ -1,7 +1,6 @@
 # ActiveMQ Classic 6 – Hawtio Plugin
 
-A modern, fast, and modular management console for ActiveMQ Classic 6, built as a
-self‑contained Hawtio 4 plugin running on Jetty 11 / Jakarta EE.
+A modern, fast, and modular management console for **ActiveMQ Classic 6**, delivered as a fully self‑contained **Hawtio 4 federated plugin** running on **Jetty 11 / Jakarta EE**. 
 
 ![Build](https://github.com/afurlane/activemq-classic-hawtio/actions/workflows/build.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue)
@@ -19,7 +18,7 @@ self‑contained Hawtio 4 plugin running on Jetty 11 / Jakarta EE.
 
 ---
 
-## Key Features
+## ✨ Key Features
 
 ### ✔️ Queues
 - Queue list
@@ -61,18 +60,18 @@ self‑contained Hawtio 4 plugin running on Jetty 11 / Jakarta EE.
 ## Installation
 
 1. Clone the repository  
-2. Install UI dependencies:
+2. Install frontend dependencies:
 
+2.1 The followin steps are required for building frontend only, skip for building whole plugin
 ```sh
-npm install
+yarn install --immutable
 ```
-3. Build production assets:
 ```sh
-npm run build
+yarn build
 ```
-4. Build the plugin JAR:
+2.2. Build the plugin JAR:
 ```sh
-mvn clean package
+./mvnw (or maven) clean package
 ```
 5. Drop the resulting JAR into your Hawtio plugins directory and test.
 
@@ -94,8 +93,8 @@ Short‑term
 Mid‑term
 - Introduce plugin configuration UI
 - Add message search and filtering
-- Improve DLQ tooling
-- Add performance profiling tools
+- Enhanced DLQ tooling
+- Performance profiling tools
 
 Long‑term
 - Optional multi‑module architecture
@@ -137,5 +136,5 @@ See .github/dependabot.yml for details.
 Read the [ACTIVEMQ.md](ACTIVEMQ.md) for deployment notes
 
 # License
-MIT License.
+Apache 2 License.
 See the [LICENSE.md](LICENSE.md) file for more information.

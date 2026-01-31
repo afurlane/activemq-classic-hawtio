@@ -16,6 +16,7 @@
     <plugin.module>plugin</plugin.module>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.build.resourcesEncoding>UTF-8 </project.build.resourcesEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <encoding>UTF-8</encoding>
     <maven.compiler.source>17</maven.compiler.source>
