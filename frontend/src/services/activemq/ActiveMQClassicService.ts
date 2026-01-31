@@ -34,6 +34,15 @@ export function getBrokerMBean(brokerName: string) {
   return `org.apache.activemq:type=Broker,brokerName=${brokerName}`;
 }
 
+function getBrokerMBeanFromQueueMBean(queueMBean: string): string {
+  const match = queueMBean.match(/brokerName=([^,]+)/)
+  if (!match) {
+    throw new Error(`Cannot extract brokerName from MBean: ${queueMBean}`)
+  }
+  const brokerName = match[1]
+  return `org.apache.activemq:type=Broker,brokerName=${brokerName}`
+}
+
 export class ActiveMQClassicService {
 
   private async resolveBroker(name?: string): Promise<BrokerInfo | null> {
@@ -261,13 +270,16 @@ export class ActiveMQClassicService {
     return await jolokiaService.execute(mbean, 'resetStatistics()', []);
   }
 
-  async deleteQueue(brokerMBean: string, name: string) {
+  async deleteQueue(queueMBean: string, name: string) {
+    const brokerMBean = getBrokerMBeanFromQueueMBean(queueMBean)
+
     return await jolokiaService.execute(
       brokerMBean,
       'removeQueue(java.lang.String)',
       [name],
-    );
+    )
   }
+
 
   async retryMessages(mbean: string) {
     return await jolokiaService.execute(mbean, 'retryMessages()', []);

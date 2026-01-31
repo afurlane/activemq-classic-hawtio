@@ -9,14 +9,18 @@ import { RemoveMessageGroupModal } from './RemoveMessageGroupModal'
 import { SendMessageModal } from './SendMessageModal'
 import { log } from '../../globals'
 import { activemq } from '../../services/activemq/ActiveMQClassicService'
+import { PurgeQueueModal } from './PurgeQueueModal'
+import { DeleteQueueModal } from './DeleteQueueModal'
 
 export const QueueOperations: React.FC<{ queue: Queue, onAction: () => Promise<void> }> = ({ queue, onAction }) => {
-  const [isMoveOpen, setMoveOpen] = useState(false)
-  const [isCopyOpen, setCopyOpen] = useState(false)
-  const [isRemoveOpen, setRemoveOpen] = useState(false)
-  const [isRetryOpen, setRetryOpen] = useState(false)
-  const [isRemoveGroupOpen, setRemoveGroupOpen] = useState(false)
-  const [isSendOpen, setSendOpen] = useState(false)
+  const [isMoveOpen, setMoveOpen] = useState(false);
+  const [isCopyOpen, setCopyOpen] = useState(false);
+  const [isRemoveOpen, setRemoveOpen] = useState(false);
+  const [isRetryOpen, setRetryOpen] = useState(false);
+  const [isRemoveGroupOpen, setRemoveGroupOpen] = useState(false);
+  const [isSendOpen, setSendOpen] = useState(false);
+  const [showPurge, setShowPurge] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
 
   return (
     <>
@@ -26,6 +30,10 @@ export const QueueOperations: React.FC<{ queue: Queue, onAction: () => Promise<v
       <Button onClick={() => setRetryOpen(true)}>Retry Message</Button>
       <Button onClick={() => setRemoveGroupOpen(true)}>Remove Group</Button>
       <Button onClick={() => setSendOpen(true)}>Send Message</Button>
+      <Button variant="secondary" isDisabled={queue.state.paused === true} onClick={() => activemq.pauseQueue(queue.mbean)}>Pause</Button>
+      <Button variant="secondary" isDisabled={queue.state.paused === false} onClick={() => activemq.resumeQueue(queue.mbean)}>Resume</Button>
+      <Button variant="danger" onClick={() => setShowPurge(true)}>Purge</Button>
+      <Button variant="danger" onClick={() => setShowDelete(true)}>Delete Queue</Button>
 
       <MoveMessageModal
         isOpen={isMoveOpen}
@@ -91,6 +99,26 @@ export const QueueOperations: React.FC<{ queue: Queue, onAction: () => Promise<v
           await onAction();
           setSendOpen(false);
         }}
+      />
+
+      <PurgeQueueModal
+        isOpen={showPurge}
+        onClose={() => setShowPurge(false)}
+        onConfirm={() => {
+          activemq.purgeQueue(queue.mbean)
+          setShowPurge(false) }
+        }
+        queueName={queue.name}
+      />
+
+      <DeleteQueueModal
+        isOpen={showDelete}
+        onClose={() => setShowDelete(false)}
+        onConfirm={() => {
+            activemq.deleteQueue(queue.mbean, queue.name);
+            setShowDelete(false)
+        }}
+        queueName={queue.name}
       />
     </>
   )
