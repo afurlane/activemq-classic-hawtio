@@ -185,26 +185,21 @@ export class ActiveMQClassicService {
   // BROWSE / MESSAGES / DLQ / SUBSCRIPTIONS
   // ────────────────────────────────────────────────────────────────
 
-  async browseQueue(mbean: string, page: number, pageSize: number): Promise<Message[]> {
-    const start = page * pageSize;
+  async browseQueue(mbean: string): Promise<Message[]> {
     const raw = await jolokiaService.execute(
       mbean,
       'browse()',
     ) as ActiveMQMessageAttributes[];
-
-    const slice = raw.slice(start, start + pageSize);
-    return slice.map(mapMessage);
+    return raw.map(mapMessage);
   }
 
-  async browseTopic(mbean: string, page: number, pageSize: number): Promise<Message[]> {
-    const start = page * pageSize;
+  async browseTopic(mbean: string): Promise<Message[]> {
     const raw = await jolokiaService.execute(
       mbean,
       'browse()',
     ) as ActiveMQMessageAttributes[];
 
-    const slice = raw.slice(start, start + pageSize);
-    return slice.map(mapMessage);
+    return raw.map(mapMessage);
   }
 
   async getDLQInfo(mbean: string): Promise<DLQ> {

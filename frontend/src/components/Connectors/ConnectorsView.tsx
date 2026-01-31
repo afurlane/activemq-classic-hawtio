@@ -42,7 +42,7 @@ export const ConnectorsView: React.FC = () => {
   }
 
   // SWR: lista connectors
-  const { data: connectors = [], error: connectorsError, isLoading } = useConnectors(brokerName)
+  const { data: connectors = [], error: connectorsError } = useConnectors(brokerName)
 
   // Drawer state
   const [selected, setSelected] = useState<any | null>(null)

@@ -1,4 +1,4 @@
-const pluginId = process.env.PLUGIN_ID;
+// const pluginId = process.env.PLUGIN_ID;
 const pluginScope = process.env.PLUGIN_SCOPE;
 const pluginModule = process.env.PLUGIN_MODULE;
 

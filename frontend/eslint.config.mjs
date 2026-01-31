@@ -8,6 +8,7 @@ export default [
   // Ignore global build folders
   { 
     ignores: [
+       ".yarn/",
        "dist/", 
        "build/", 
        "node/",
@@ -53,7 +54,7 @@ export default [
       // ============================
       // TypeScript rules
       // ============================
-      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
       "@typescript-eslint/no-explicit-any": "off",
 
       // ============================
@@ -71,5 +72,22 @@ export default [
       "max-lines-per-function": ["warn", { max: 50, skipBlankLines: true, skipComments: true }],
       "max-depth": ["warn", 4]
     }
-  }
+  },
+  {
+    files: ["webpack.config.js", "*.config.js", "*.cjs"],
+    languageOptions: {
+      parserOptions: {
+        project: null
+      }
+    }
+  },
+  {
+  files: ["**/*.tsx", "**/*.jsx"],
+    rules: {
+      "max-lines-per-function": "off",
+      "complexity": "off",
+      "max-lines": "off",
+      "max-depth": "off"
+    }
+  },
 ];

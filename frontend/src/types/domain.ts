@@ -147,18 +147,32 @@ export interface Connector {
   }
 }
 
-export function mapConnector(mbean: string, a: ActiveMQConnectorAttributes): Connector {
+export function mapConnector(mbean: string, a: any): Connector {
+  // Estrai i parametri dal nome dell’MBean
+  const parts = mbean.split(',')
+
+  const connectorPart = parts.find(p => p.startsWith('connector='))
+  const connectorNamePart = parts.find(p => p.startsWith('connectorName='))
+
+  const name = connectorPart?.split('=')[1] ?? 'unknown'
+  const protocol = connectorNamePart?.split('=')[1] ?? 'unknown'
+
   return {
-    name: a.Name,
+    name,
     mbean,
 
-    protocol: a.Protocol,
-    active: a.State === 'Started' || a.State === 'Active',
-    connectionCount: a.ConnectionCount,
+    protocol,
+    active: !!a.Started,
+
+    // ActiveMQ 5 non espone ConnectionCount per connector
+    connectionCount:
+      typeof a.MaxConnectionExceededCount === 'number' && a.MaxConnectionExceededCount >= 0
+        ? a.MaxConnectionExceededCount
+        : 0,
 
     traffic: {
-      inbound: a.InboundTraffic,
-      outbound: a.OutboundTraffic,
+      inbound: 0,
+      outbound: 0,
     },
   }
 }

@@ -1,12 +1,12 @@
 import useSWR from 'swr'
 import { activemq } from '../services/activemq/ActiveMQClassicService'
-import { Queue } from '../types/domain'
+// import { Queue } from '../types/domain'
 import { useEffect, useState } from 'react';
 
 export function useQueueHistory(brokerName: string | null) {
   return useSWR<Record<string, { queueSize: number[]; inflight: number[]; lag: number[] }>>(
     brokerName ? ['queue-history', brokerName] : null,
-    async ([_key, broker]) => {
+    async ([_, broker]: [string, string | undefined]) => {
       const queues = await activemq.listQueues(broker)
 
       const history: Record<string, { queueSize: number[]; inflight: number[]; lag: number[] }> = {}
