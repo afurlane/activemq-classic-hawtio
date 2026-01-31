@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 This project adheres to the Conventional Commits specification and uses
 automated release generation via GitHub Actions.
 
+## [1.0.9](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.0.8...v1.0.9) (2026-01-31)
+
+
+### Bug Fixes
+
+* Add automatic React resolution in swc-loader ([42f3141](https://github.com/afurlane/activemq-classic-hawtio/commit/42f314171a2e344651ecab00783e1508933b4fbf))
+* add missing operations pause, resume, purge and delete for queue ([42f3141](https://github.com/afurlane/activemq-classic-hawtio/commit/42f314171a2e344651ecab00783e1508933b4fbf))
+* MoveMessage missing react. ([42f3141](https://github.com/afurlane/activemq-classic-hawtio/commit/42f314171a2e344651ecab00783e1508933b4fbf))
+* to connector overview ([42f3141](https://github.com/afurlane/activemq-classic-hawtio/commit/42f314171a2e344651ecab00783e1508933b4fbf))
+* to queue messages pagination ([42f3141](https://github.com/afurlane/activemq-classic-hawtio/commit/42f314171a2e344651ecab00783e1508933b4fbf))
+* to queue operations ([42f3141](https://github.com/afurlane/activemq-classic-hawtio/commit/42f314171a2e344651ecab00783e1508933b4fbf))
+* to topic browser pagination ([42f3141](https://github.com/afurlane/activemq-classic-hawtio/commit/42f314171a2e344651ecab00783e1508933b4fbf))
+* update ESLint configuration and improve type safety in components ([42f3141](https://github.com/afurlane/activemq-classic-hawtio/commit/42f314171a2e344651ecab00783e1508933b4fbf))
+
 ## [1.0.8](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.0.7...v1.0.8) (2026-01-27)
 
 
