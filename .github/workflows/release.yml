@@ -93,7 +93,7 @@ jobs:
         run: |
           gh run download ${{ github.event.workflow_run.id }} \
             --name green-checks \
-            --dir reports
+            --dir .
 
       - name: Upload green reports to Release
         if: ${{ steps.release.outputs.release_created }}
