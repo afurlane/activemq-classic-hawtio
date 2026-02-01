@@ -86,12 +86,17 @@ jobs:
           git add README.md
           git commit -m "docs: update release badge to ${TAG}" || echo "No changes"
           git push
-      - name: Prepare directories
-        run: |
-          rm -rf reports
-          rm -rf badges
-          mkdir -p reports
-          mkdir -p badges
+
+  publish-green-checks:
+    needs: release
+    if: ${{ needs.release.outputs.release_created }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
 
       - name: Download green reports artifact
         env:
@@ -101,12 +106,17 @@ jobs:
             --name green-checks \
             --dir .
 
-      - name: Upload green reports to Release
-        if: ${{ steps.release.outputs.release_created }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Copy reports and badges
         run: |
-          gh release upload "${{ steps.release.outputs.tag_name }}" \
-            reports/creedengo.json \
-            reports/overall.json \
-            --clobber
+          mkdir -p reports
+          mkdir -p badges
+          cp -f reports/*.json reports/
+          cp -f badges/*.svg badges/
+
+      - name: Commit and push updates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports badges
+          git commit -m "docs: update green checks for ${{ needs.release.outputs.tag_name }}" || echo "No changes"
+          git push origin gh-pages
