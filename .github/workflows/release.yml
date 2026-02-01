@@ -86,6 +86,12 @@ jobs:
           git add README.md
           git commit -m "docs: update release badge to ${TAG}" || echo "No changes"
           git push
+      - name: Prepare directories
+        run: |
+          rm -rf reports
+          rm -rf badges
+          mkdir -p reports
+          mkdir -p badges
 
       - name: Download green reports artifact
         env:
