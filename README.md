@@ -13,8 +13,8 @@ A modern, fast, and modular management console for **ActiveMQ Classic 6**, deliv
 ![Latest Release](https://img.shields.io/github/v/release/afurlane/activemq-classic-hawtio?label=latest-release&color=blue)
 
 ## 🌿 Green Metrics
-![Creedengo](https://img.shields.io/endpoint?url=https://afurlane.github.io/activemq-classic-hawtio/reports/creedengo.json)
-![Overall](https://img.shields.io/endpoint?url=https://afurlane.github.io/activemq-classic-hawtio/reports/overall.json)
+![Creedengo](https://afurlane.github.io/activemq-classic-hawtio/badges/creedengo.svg)
+![Overall](https://afurlane.github.io/activemq-classic-hawtio/badges/overall.svg)
 
 ---
 

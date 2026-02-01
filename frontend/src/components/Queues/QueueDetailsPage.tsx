@@ -19,7 +19,7 @@ import { buildQueuesUrl } from '../../router/router'
 import { QueueBrowser } from './QueueBrowser'
 import { QueueOperations } from './QueueOperations'
 import { QueueAttributes } from './QueueAttributes'
-import { QueueMetricsOverview } from './QueueMetrics'
+import { QueueMetrics } from './QueueMetrics'
 import { QueueHealth } from './QueueHealth'
 import { QueueThroughput } from './QueueThroughput'
 import { QueueLag } from './QueueLag'
@@ -31,6 +31,7 @@ import { QueueConsumers } from './QueueConsumers'
 import { useQueueMetrics } from '../../hooks/useQueueMetrics'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
 import { useQueue } from '../../hooks/useQueue'
+import { QueueThroughputChart } from './QueueThroughputChart'
 
 export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName }) => {
   const brokerName = useSelectedBrokerName()
@@ -108,7 +109,7 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
       <PageSection>
         <Tabs
           activeKey={activeTab}
-          onSelect={(_: React.SyntheticEvent, key: string) => setActiveTab(key)}
+          onSelect={(_: React.SyntheticEvent, key: string | number) => setActiveTab(String(key))}
         >
           <Tab eventKey="overview" title={<TabTitleText>Overview</TabTitleText>} />
           <Tab eventKey="metrics" title={<TabTitleText>Metrics</TabTitleText>} />
@@ -127,16 +128,14 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
         {activeTab === 'overview' && (
           <>
             <QueueHealth queue={latest} />
-            <QueueThroughput history={history} />
-            <QueueLag queue={latest} />
-            <QueueMetricsOverview history={history} />
           </>
         )}
 
         {activeTab === 'metrics' && (
           <>
-            <QueueMetricsOverview history={history} />
+            <QueueMetrics history={history} />
             <QueueThroughput history={history} />
+            <QueueThroughputChart history={history} />
             <QueueLag queue={latest} />
           </>
         )}

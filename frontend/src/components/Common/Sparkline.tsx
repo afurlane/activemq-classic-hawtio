@@ -2,30 +2,30 @@ import React, { useMemo } from 'react'
 import {
   Chart,
   ChartLine,
-  ChartAxis,
-  ChartGroup
+  ChartVoronoiContainer,
+  ChartTooltip
 } from '@patternfly/react-charts'
 
 interface Props {
   data: number[]
   color?: string
+  height?: number
 }
 
-export const Sparkline: React.FC<Props> = ({ data, color = '#00bcd4' }) => {
-  // Pre-elaborazione sicura
-  const chartData = useMemo(
-    () => data.map((v, i) => ({ x: i, y: v })),
-    [data]
-  )
+export const Sparkline: React.FC<Props> = ({
+  data,
+  color = 'var(--pf-v5-global--primary-color--100)',
+  height = 28
+}) => {
 
-  // Se non ci sono dati, linea piatta
-  const safe = chartData.length > 0 ? chartData : [{ x: 0, y: 0 }]
+  const safe = useMemo(() => {
+    const mapped = data.map((v, i) => ({ x: i, y: v }))
+    return mapped.length > 0 ? mapped : [{ x: 0, y: 0 }]
+  }, [data])
 
-  // Dominio Y dinamico
   let yMin = Math.min(...safe.map(p => p.y))
   let yMax = Math.max(...safe.map(p => p.y))
 
-  // Evita dominio piatto
   if (yMin === yMax) {
     const pad = Math.max(1, Math.abs(yMin) * 0.1)
     yMin -= pad
@@ -33,39 +33,38 @@ export const Sparkline: React.FC<Props> = ({ data, color = '#00bcd4' }) => {
   }
 
   return (
-    <div style={{ width: '100%', height: 40 }}>
+    <div style={{ width: '100%', height }}>
       <Chart
-        height={40}
-        padding={{ top: 0, bottom: 0, left: 0, right: 0 }}
+        height={height}
+        padding={{ top: 2, bottom: 2, left: 2, right: 2 }}
         domain={{ y: [yMin, yMax] }}
-        animate={{ duration: 300, easing: 'cubicOut' as const }}
-      >
-        <ChartGroup>
-          <ChartLine
-            data={safe}
-            style={{
-              data: {
-                stroke: color,
-                strokeWidth: 1.5
-              }
-            }}
+        animate={{ duration: 200, easing: 'cubicOut' as const }}
+        containerComponent={
+          <ChartVoronoiContainer
+            labels={({ datum }) => `${datum.y}`}
+            labelComponent={
+              <ChartTooltip
+                flyoutStyle={{
+                  fill: 'var(--pf-v5-global--palette--black-700)',
+                  stroke: 'none',
+                  padding: 2
+                }}
+                style={{
+                  fill: 'white',
+                  fontSize: 7
+                }}
+              />
+            }
           />
-        </ChartGroup>
-
-        {/* Assi nascosti */}
-        <ChartAxis
+        }
+      >
+        <ChartLine
+          data={safe}
           style={{
-            axis: { stroke: 'none' },
-            ticks: { stroke: 'none' },
-            tickLabels: { fill: 'none' }
-          }}
-        />
-        <ChartAxis
-          dependentAxis
-          style={{
-            axis: { stroke: 'none' },
-            ticks: { stroke: 'none' },
-            tickLabels: { fill: 'none' }
+            data: {
+              stroke: color,
+              strokeWidth: 1
+            }
           }}
         />
       </Chart>

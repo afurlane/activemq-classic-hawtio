@@ -2,156 +2,110 @@ import React, { useMemo } from 'react'
 import {
   Card,
   CardBody,
-  Title,
-  DescriptionList,
-  DescriptionListGroup,
-  DescriptionListTerm,
-  DescriptionListDescription,
-  Label,
+  CardHeader,
+  CardTitle,
+  Grid,
+  GridItem,
   Flex,
   FlexItem
 } from '@patternfly/react-core'
 
-import {
-  Chart,
-  ChartLine,
-  ChartVoronoiContainer
-} from '@patternfly/react-charts'
-
+import { Sparkline } from '../Common/Sparkline'
 import { Queue } from '../../types/domain'
+import { ChartColors } from '../../themes/charts'
+import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from '@patternfly/react-icons'
 
-interface Props {
-  history: Queue[]
-  intervalMs?: number
-}
+export const QueueThroughput: React.FC<{ history: Queue[], intervalMs?: number }> = ({
+  history,
+  intervalMs = 2000
+}) => {
 
-const trend = (current: number, previous: number) => {
-  if (current > previous) return <Label color="green">↑</Label>
-  if (current < previous) return <Label color="red">↓</Label>
-  return <Label color="grey">→</Label>
-}
-
-const spark = (values: number[], color: string, yMax: number) => (
-  <Chart
-    height={60}
-    padding={{ top: 5, bottom: 5, left: 30, right: 10 }}
-    containerComponent={<ChartVoronoiContainer labels={() => ''} />}
-    domain={{ y: [0, yMax] }}
-  >
-    <ChartLine
-      data={values.map((y, i) => ({ x: i, y }))}
-      style={{
-        data: { stroke: color },
-        labels: { fontSize: 8 }
-      }}
-    />
-  </Chart>
-)
-
-export const QueueThroughput: React.FC<Props> = ({ history, intervalMs = 2000 }) => {
-  const metrics = useMemo(() => {
+  const data = useMemo(() => {
     if (history.length < 2) return null
 
     const dt = intervalMs / 1000
+    const prev = history.slice(0, -1)
+    const curr = history.slice(1)
 
-    const prevList = history.slice(0, -1)
-    const currList = history.slice(1)
-
-    const enqueueRates = currList.map((curr, i) => {
-      const prev = prevList[i]!
-      return (curr.stats.enqueue - prev.stats.enqueue) / dt
+    return curr.map((c, i) => {
+      const p = prev[i]!
+      return {
+        enqueue: (c.stats.enqueue - p.stats.enqueue) / dt,
+        dequeue: (c.stats.dequeue - p.stats.dequeue) / dt,
+        total: ((c.stats.enqueue - p.stats.enqueue) + (c.stats.dequeue - p.stats.dequeue)) / dt
+      }
     })
-
-    const dequeueRates = currList.map((curr, i) => {
-      const prev = prevList[i]!
-      return (curr.stats.dequeue - prev.stats.dequeue) / dt
-    })
-
-    const enqueueRate = enqueueRates.at(-1)!
-    const dequeueRate = dequeueRates.at(-1)!
-    const totalRate = enqueueRate + dequeueRate
-
-    const prevEnqueueRate = enqueueRates.length > 1 ? enqueueRates.at(-2)! : enqueueRate
-    const prevDequeueRate = dequeueRates.length > 1 ? dequeueRates.at(-2)! : dequeueRate
-
-    const maxValue = Math.max(...enqueueRates, ...dequeueRates)
-    const yMax = maxValue === 0 ? 1 : maxValue * 1.2
-
-    return {
-      enqueueRate,
-      dequeueRate,
-      totalRate,
-      prevEnqueueRate,
-      prevDequeueRate,
-      enqueueRates,
-      dequeueRates,
-      yMax
-    }
   }, [history, intervalMs])
 
-  if (!metrics) {
-    return (
-      <Card isFlat isCompact>
-        <CardBody>
-          <Title headingLevel="h4">Throughput (msg/sec)</Title>
-          <Label color="blue">Collecting throughput data…</Label>
-        </CardBody>
-      </Card>
-    )
+  if (!data) return null
+
+  const last = data.at(-1)!
+  const prev = data.length > 1 ? data.at(-2)! : null
+
+  const trend = (c: number, p: number | null) => {
+    if (p === null) {
+      return <MinusIcon color="var(--pf-v5-global--palette--black-500)" />
+    }
+    if (c > p) {
+      return <ArrowUpIcon color="var(--pf-v5-global--success-color--100)" />
+    }
+    if (c < p) {
+      return <ArrowDownIcon color="var(--pf-v5-global--danger-color--100)" />
+    }
+    return <MinusIcon color="var(--pf-v5-global--palette--black-500)" />
   }
 
-  const {
-    enqueueRate,
-    dequeueRate,
-    totalRate,
-    prevEnqueueRate,
-    prevDequeueRate,
-    enqueueRates,
-    dequeueRates,
-    yMax
-  } = metrics
-
-  const items = [
-    {
-      label: 'Enqueue',
-      value: enqueueRate.toFixed(1),
-      trend: trend(enqueueRate, prevEnqueueRate),
-      spark: spark(enqueueRates, 'var(--pf-v5-global--success-color--100)', yMax)
-    },
-    {
-      label: 'Dequeue',
-      value: dequeueRate.toFixed(1),
-      trend: trend(dequeueRate, prevDequeueRate),
-      spark: spark(dequeueRates, 'var(--pf-v5-global--danger-color--100)', yMax)
-    },
-    {
-      label: 'Total',
-      value: <Label color="blue">{totalRate.toFixed(1)} msg/s</Label>,
-      trend: null,
-      spark: null
-    }
-  ]
-
   return (
-    <Card isFlat isCompact>
-      <CardBody>
-        <Title headingLevel="h4">Throughput (msg/sec)</Title>
+    <Card isFlat className="pf-v5-u-mb-md">
+      <CardHeader>
+        <CardTitle className="pf-v5-u-font-size-md">Throughput (msg/sec)</CardTitle>
+      </CardHeader>
 
-        <DescriptionList isHorizontal>
-          {items.map((m, i) => (
-            <DescriptionListGroup key={i}>
-              <DescriptionListTerm>{m.label}</DescriptionListTerm>
-              <DescriptionListDescription>
-                <Flex direction={{ default: 'column' }}>
-                  <FlexItem>
-                    {m.value} {m.trend}
-                  </FlexItem>
-                  {m.spark && <FlexItem>{m.spark}</FlexItem>}
-                </Flex>
-              </DescriptionListDescription>
-            </DescriptionListGroup>
+      <CardBody>
+        <Grid hasGutter>
+          {[
+            { label: 'Enqueue', value: last.enqueue, color: ChartColors.enqueue },
+            { label: 'Dequeue', value: last.dequeue, color: ChartColors.dequeue },
+            { label: 'Total', value: last.total, color: ChartColors.throughput }
+          ].map((m, i) => (
+            <GridItem key={i} span={2}>
+              <Card
+                isCompact
+                isFlat
+                className="pf-v5-u-border-left pf-v5-u-border-color-200 pf-v5-u-p-sm"
+              >
+                <CardBody className="pf-v5-u-p-0">
+                  <Flex direction={{ default: 'column' }}>
+                    
+                    {/* Label + trend */}
+                    <FlexItem>
+                      <span className="pf-v5-u-font-size-xs pf-v5-u-color-200">
+                        {m.label}
+                      </span>{' '}
+                      {trend(m.value, prev ? prev[m.label.toLowerCase() as 'enqueue' | 'dequeue' | 'total'] : null)}
+
+                    </FlexItem>
+
+                    {/* Value */}
+                    <FlexItem className="pf-v5-u-font-size-lg pf-v5-u-font-weight-bold pf-v5-u-my-xs">
+                      {m.value.toFixed(1)}
+                    </FlexItem>
+
+                    {/* Sparkline */}
+                    <FlexItem className="pf-v5-u-mt-xs">
+                      <Sparkline
+                        data={data.map(d => d[m.label.toLowerCase() as 'enqueue' | 'dequeue' | 'total'])}
+                        color={m.color}
+                        height={28}
+                      />
+                    </FlexItem>
+
+                  </Flex>
+                </CardBody>
+              </Card>
+            </GridItem>
           ))}
-        </DescriptionList>
+        </Grid>
       </CardBody>
     </Card>
   )

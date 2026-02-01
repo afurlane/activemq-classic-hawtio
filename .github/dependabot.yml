@@ -73,13 +73,15 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    allow:
+      - dependency-type: "development"
     groups:
       build-tools:
         patterns:
-          - "vite"
           - "eslint*"
           - "@typescript-eslint/*"
           - "typescript"
+
     labels:
       - "dependencies"
       - "automated"
