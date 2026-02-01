@@ -32,10 +32,10 @@ jobs:
             yarn-berry-
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
 
@@ -90,7 +90,7 @@ jobs:
       # RELEASE
       # -----------------------------
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: green-checks
           path: |
