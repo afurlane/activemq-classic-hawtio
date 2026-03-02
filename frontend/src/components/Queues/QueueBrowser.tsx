@@ -3,25 +3,15 @@ import {
   Card,
   CardBody,
   Pagination,
-  CodeBlock,
-  CodeBlockCode,
   Spinner,
   EmptyState,
   EmptyStateHeader,
   EmptyStateBody
 } from '@patternfly/react-core'
 
-import {
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td
-} from '@patternfly/react-table'
-
-import { Queue } from '../../types/domain'
+import { Queue, Message } from '../../types/domain'
 import { useQueueMessages } from '../../hooks/useQueueMessages'
+import { MessageTable } from '../Common/MessageTable'
 
 interface Props {
   queue: Queue
@@ -33,7 +23,7 @@ export const QueueBrowser: React.FC<Props> = ({ queue }) => {
 
   const { data, isLoading, error } = useQueueMessages(queue.mbean, page, pageSize);
 
-  const messages = data?.messages ?? [];
+  const messages: Message[] = data?.messages ?? [];
   const total = data?.total ?? 0;
 
   const onSetPage = (_evt: any, newPage: number) => {
@@ -80,32 +70,7 @@ export const QueueBrowser: React.FC<Props> = ({ queue }) => {
         {/* TABLE */}
         {!isLoading && !error && messages.length > 0 && (
           <>
-            <Table variant="compact">
-              <Thead>
-                <Tr>
-                  <Th>ID</Th>
-                  <Th>Timestamp</Th>
-                  <Th>Body</Th>
-                </Tr>
-              </Thead>
-
-              <Tbody>
-                {messages.map((m, i) => (
-                  <Tr key={i}>
-                    <Td>{m.id}</Td>
-                    <Td>{new Date(m.timestamp).toLocaleString()}</Td>
-                    <Td>
-                      <CodeBlock readOnly>
-                        <CodeBlockCode>
-                          {JSON.stringify(m.body, null, 2)}
-                        </CodeBlockCode>
-                      </CodeBlock>
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-
+            <MessageTable messages={messages} />
             <Pagination
               itemCount={total}
               perPage={pageSize}

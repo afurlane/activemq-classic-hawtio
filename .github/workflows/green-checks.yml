@@ -51,10 +51,13 @@ jobs:
           PLUGIN_SCOPE: activemqClassic 
           PLUGIN_MODULE: plugin
 
+      - name: Ensure reports directory exists
+        run: mkdir -p reports
+
       - name: Execute creedengo scan
         run: |
          cd frontend
-         npx eslint . -f json -o ../reports/creedengo.json || true
+         npx eslint . -f json -o ../reports/creedengo.json
          cd ..
         env: 
           PLUGIN_ID: activemq-classic 

@@ -6,10 +6,11 @@ import { BrokerProvider } from './context/BrokerProvider'
 export const ActiveMQClassicPlugin: React.FC = () => {
   return (
     <SWRConfig value={{
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-      dedupingInterval: 2000,
-      errorRetryInterval: 5000,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 10000,     // evita richieste duplicate per 10s
+      refreshInterval: 5000,       // 1 richiesta ogni 5s
+      errorRetryInterval: 10000,   // se fallisce, riprova dopo 10s
     }}>
       <BrokerProvider>
         <BrokerPanel />

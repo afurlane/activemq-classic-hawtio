@@ -176,9 +176,6 @@ export interface ActiveMQMessageAttributes {
   // Proprietà custom
   Properties: Record<string, any>
 
-  // Corpo del messaggio
-  Body: string | null
-
   // AMQ specifici
   BrokerPath?: string[]
   OriginalDestination?: string
