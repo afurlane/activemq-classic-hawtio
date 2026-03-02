@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 This project adheres to the Conventional Commits specification and uses
 automated release generation via GitHub Actions.
 
+## [1.1.0](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.0.11...v1.1.0) (2026-03-02)
+
+
+### Features
+
+* **message-inspector:** add message details modal ([4a35383](https://github.com/afurlane/activemq-classic-hawtio/commit/4a35383c13d6d362cc206dbf480e720e562909e5)), closes [#29](https://github.com/afurlane/activemq-classic-hawtio/issues/29) [#31](https://github.com/afurlane/activemq-classic-hawtio/issues/31)
+
 ## [1.0.11](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.0.10...v1.0.11) (2026-02-01)
 
 
