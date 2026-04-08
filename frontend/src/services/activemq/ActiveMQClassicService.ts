@@ -361,6 +361,18 @@ export class ActiveMQClassicService {
     );
   }
 
+  async sendTextMessageWithHeaders(
+    mbean: string,
+    body: string,
+    headers: Record<string, string>
+  ) {
+    return await jolokiaService.execute(
+      mbean,
+      'sendTextMessage(java.lang.String,java.util.Map)',
+      [body, headers],
+    );
+  }
+
   async dropConnection(connectorMBean: string, connectionId: string) {
     return await jolokiaService.execute(
       connectorMBean,
