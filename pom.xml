@@ -132,7 +132,7 @@
       <!-- Copia plugin FE nel WAR -->
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>3.4.0</version>
+        <version>3.5.0</version>
         <executions>
 
           <!-- Copia plugin FE nel WAR -->
