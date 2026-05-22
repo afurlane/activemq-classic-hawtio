@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
   PageSection,
   PageSectionVariants,
@@ -32,9 +32,32 @@ import { useQueueMetrics } from '../../hooks/useQueueMetrics'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
 import { useQueue } from '../../hooks/useQueue'
 import { QueueThroughputChart } from './QueueThroughputChart'
+import { RefreshToolbar } from '../Common/RefreshControls'
+
+const rightAlignedStyle: React.CSSProperties = { textAlign: 'right' }
 
 export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName }) => {
   const brokerName = useSelectedBrokerName()
+  const handleBackToQueuesClick = useCallback(() => {
+    window.location.hash = buildQueuesUrl()
+  }, [])
+
+    // SWR: carica la queue
+  const { data: queue, isLoading: queueLoading } = useQueue(brokerName, queueName)
+
+  // SWR: carica metriche
+  const [autoRefresh, setAutoRefresh] = useState(false)
+  const [interval, setInterval] = useState(10000)
+  const { latest, history, loading: metricsLoading, refresh: poll } = useQueueMetrics(queue?.mbean ?? '', autoRefresh, interval)
+
+  const [activeTab, setActiveTab] = useState<string>('overview')
+  const handleTabSelect = useCallback((_: React.SyntheticEvent, key: string | number) => {
+    setActiveTab(String(key))
+  }, [])
+  const handleManualRefresh = useCallback(() => {
+    poll()
+  }, [poll])
+  const handleNoopAction = useCallback(async () => {}, [])
 
   if (!brokerName) {
     return (
@@ -45,15 +68,6 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
       </Card>
     )
   }
-
-  // SWR: carica la queue
-  const { data: queue, isLoading: queueLoading } = useQueue(brokerName, queueName)
-
-  // SWR: carica metriche
-  const { latest, history, loading: metricsLoading } =
-    useQueueMetrics(queue?.mbean ?? '')
-
-  const [activeTab, setActiveTab] = useState<string>('overview')
 
   if (queueLoading || metricsLoading || !queue || !latest) {
     return (
@@ -71,10 +85,10 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
           <GridItem span={8}>
             <Title headingLevel="h2">{queue.name}</Title>
           </GridItem>
-          <GridItem span={4} style={{ textAlign: 'right' }}>
+          <GridItem span={4} style={rightAlignedStyle}>
             <Button
               variant="secondary"
-              onClick={() => (window.location.hash = buildQueuesUrl())}
+              onClick={handleBackToQueuesClick}
             >
               Back to queues
             </Button>
@@ -109,7 +123,7 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
       <PageSection>
         <Tabs
           activeKey={activeTab}
-          onSelect={(_: React.SyntheticEvent, key: string | number) => setActiveTab(String(key))}
+          onSelect={handleTabSelect}
         >
           <Tab eventKey="overview" title={<TabTitleText>Overview</TabTitleText>} />
           <Tab eventKey="metrics" title={<TabTitleText>Metrics</TabTitleText>} />
@@ -153,11 +167,22 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
         {activeTab === 'attributes' && <QueueAttributes queue={latest} />}
 
         {activeTab === 'alerts' && (
-          <QueueAlerts queue={latest} history={history} />
+          <>
+            <RefreshToolbar
+              autoRefresh={autoRefresh}
+              onToggle={setAutoRefresh}
+              interval={interval}
+              onIntervalChange={setInterval}
+              onManualRefresh={handleManualRefresh}
+            />
+
+            <QueueAlerts queue={latest} history={history} />
+          </>
         )}
 
+
         {activeTab === 'operations' && (
-          <QueueOperations queue={queue} onAction={async () => {}} />
+          <QueueOperations queue={queue} onAction={handleNoopAction} />
         )}
       </PageSection>
     </>

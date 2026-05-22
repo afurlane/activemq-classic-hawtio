@@ -3,6 +3,8 @@ import '@testing-library/jest-dom'
 import { MessageModal } from '../../../src/components/Common/MessageModal'
 import { makeMessage } from '../../utils/makeMessage'
 
+const noop = () => {}
+
 describe('MessageModal', () => {
   test('Show title when opened', () => {
     const message = makeMessage({
@@ -12,7 +14,7 @@ describe('MessageModal', () => {
       extra: { size: 123 }
     })
 
-    render(<MessageModal isOpen={true} message={message} onClose={() => {}} />)
+    render(<MessageModal isOpen={true} message={message} onClose={noop} />)
 
     expect(screen.getByText('Message Details')).toBeInTheDocument()
     expect(screen.getByText('Body')).toBeInTheDocument()
@@ -22,7 +24,7 @@ describe('MessageModal', () => {
     const message = makeMessage()
 
     const { container } = render(
-      <MessageModal isOpen={false} message={message} onClose={() => {}} />
+      <MessageModal isOpen={false} message={message} onClose={noop} />
     )
 
     expect(container.firstChild).toBeNull()
@@ -31,7 +33,7 @@ describe('MessageModal', () => {
   test('Show formatted body', () => {
     const message = makeMessage({ body: '{"foo":"bar"}' })
 
-    render(<MessageModal isOpen={true} message={message} onClose={() => {}} />)
+    render(<MessageModal isOpen={true} message={message} onClose={noop} />)
 
     expect(screen.getByText(/foo/)).toBeInTheDocument()
   })
@@ -39,7 +41,7 @@ describe('MessageModal', () => {
   test('Applies styles to CodeBlock when body is valid JSON', () => {
     const message = makeMessage({ body: '{"foo":"bar"}' })
 
-    render(<MessageModal isOpen={true} message={message} onClose={() => {}} />)
+    render(<MessageModal isOpen={true} message={message} onClose={noop} />)
 
     // PatternFly Modal usa un portal → il contenuto è in document.body
     const codeBlock = document.body.querySelector('.pf-v5-c-code-block')

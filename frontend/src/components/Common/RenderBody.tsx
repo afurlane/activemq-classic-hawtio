@@ -1,6 +1,8 @@
 import { CodeBlock, CodeBlockCode } from '@patternfly/react-core'
 import { MessageTypeLabel } from './MessageTypeLabel'
 
+const containerStyle = { display: 'flex', flexDirection: 'column', gap: '0.25rem' } as const
+
 export const renderBody = (m: any, maxLines?: number) => {
   const isText = m.bodyType === "text"
 
@@ -12,7 +14,7 @@ export const renderBody = (m: any, maxLines?: number) => {
   })()
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+    <div style={containerStyle}>
       <MessageTypeLabel type={m.bodyType} />
 
       {m.bodyType === "text" && (

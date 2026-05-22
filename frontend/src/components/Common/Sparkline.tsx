@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import {
   Chart,
   ChartLine,
@@ -32,27 +32,50 @@ export const Sparkline: React.FC<Props> = ({
     yMax += pad
   }
 
+  const containerStyle = useMemo(() => ({ width: '100%', height }), [height])
+  const chartPadding = useMemo(() => ({ top: 2, bottom: 2, left: 2, right: 2 }), [])
+  const chartDomain = useMemo(() => ({ y: [yMin, yMax] as [number, number] }), [yMin, yMax])
+  const chartAnimate = useMemo(() => ({ duration: 200, easing: 'cubicOut' as const }), [])
+  const chartLabels = useCallback(({ datum }: { datum: { y: number } }) => `${datum.y}`, [])
+  const tooltipFlyoutStyle = useMemo(
+    () => ({
+      fill: 'var(--pf-v5-global--palette--black-700)',
+      stroke: 'none',
+      padding: 2
+    }),
+    []
+  )
+  const tooltipStyle = useMemo(
+    () => ({
+      fill: 'white',
+      fontSize: 7
+    }),
+    []
+  )
+  const lineStyle = useMemo(
+    () => ({
+      data: {
+        stroke: color,
+        strokeWidth: 1
+      }
+    }),
+    [color]
+  )
+
   return (
-    <div style={{ width: '100%', height }}>
+    <div style={containerStyle}>
       <Chart
         height={height}
-        padding={{ top: 2, bottom: 2, left: 2, right: 2 }}
-        domain={{ y: [yMin, yMax] }}
-        animate={{ duration: 200, easing: 'cubicOut' as const }}
+        padding={chartPadding}
+        domain={chartDomain}
+        animate={chartAnimate}
         containerComponent={
           <ChartVoronoiContainer
-            labels={({ datum }) => `${datum.y}`}
+            labels={chartLabels}
             labelComponent={
               <ChartTooltip
-                flyoutStyle={{
-                  fill: 'var(--pf-v5-global--palette--black-700)',
-                  stroke: 'none',
-                  padding: 2
-                }}
-                style={{
-                  fill: 'white',
-                  fontSize: 7
-                }}
+                flyoutStyle={tooltipFlyoutStyle}
+                style={tooltipStyle}
               />
             }
           />
@@ -60,12 +83,7 @@ export const Sparkline: React.FC<Props> = ({
       >
         <ChartLine
           data={safe}
-          style={{
-            data: {
-              stroke: color,
-              strokeWidth: 1
-            }
-          }}
+          style={lineStyle}
         />
       </Chart>
     </div>

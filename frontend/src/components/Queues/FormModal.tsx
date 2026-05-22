@@ -9,7 +9,7 @@ export interface Field {
   required?: boolean
   type?: FieldType
   value: string
-  onChange: (v: string) => void
+  onChange: (_: unknown, v: string) => void
 }
 
 interface FormModalProps {
@@ -18,22 +18,24 @@ interface FormModalProps {
 
 export const FormModal: React.FC<FormModalProps> = ({ fields }) => (
   <Form>
-    {fields.map(f => (
-      <FormGroup key={f.name} label={f.label} isRequired={f.required}>
-        {f.type === 'textarea' ? (
-          <TextArea
-            value={f.value}
-            onChange={(_, v) => f.onChange(v)}
-            resizeOrientation="vertical"
-          />
-        ) : (
-          <TextInput
-            id={f.name}
-            value={f.value}
-            onChange={(_, v) => f.onChange(v)}
-          />
-        )}
-      </FormGroup>
-    ))}
+    {fields.map(f => {
+      return (
+        <FormGroup key={f.name} label={f.label} isRequired={f.required}>
+          {f.type === 'textarea' ? (
+            <TextArea
+              value={f.value}
+              onChange={f.onChange}
+              resizeOrientation="vertical"
+            />
+          ) : (
+            <TextInput
+              id={f.name}
+              value={f.value}
+              onChange={f.onChange}
+            />
+          )}
+        </FormGroup>
+      )
+    })}
   </Form>
 )

@@ -26,6 +26,8 @@ interface Props {
   history: Queue[]
 }
 
+const flexSpaceItemsSm = { default: 'spaceItemsSm' } as const
+
 export const QueueConsumers: React.FC<Props> = ({ queue, history }) => {
   const latest = queue
   const prev = history.length >= 2 ? history.at(-2)! : null
@@ -105,7 +107,7 @@ export const QueueConsumers: React.FC<Props> = ({ queue, history }) => {
           <DescriptionListGroup>
             <DescriptionListTerm>Dispatch Rate</DescriptionListTerm>
             <DescriptionListDescription>
-              <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+              <Flex spaceItems={flexSpaceItemsSm}>
                 <FlexItem>{dispatchRate.toFixed(1)} msg/s</FlexItem>
                 <FlexItem>{trendIcon}</FlexItem>
               </Flex>

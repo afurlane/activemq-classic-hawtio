@@ -10,10 +10,13 @@ import {
   ClipboardCopyButton,
   CodeBlockAction
 } from '@patternfly/react-core';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Message } from '../../types/domain';
 import { formatBody } from '../../utils/bodyFormatter';
 import { useScrollStyles } from '../../utils/useScrollStyles';
+
+const bodyHeadingStyle = { marginBottom: '0.5rem' };
+const downloadSectionStyle = { marginTop: '1rem' };
 
 export interface MessageModalProps {
   message: Message | null
@@ -24,6 +27,27 @@ export interface MessageModalProps {
 export const MessageModal: React.FC<MessageModalProps> = ({ message, isOpen, onClose }) => {
   const { modalScroll, bodyScroll, sectionScroll } = useScrollStyles();
   const headerRef = useRef<HTMLSpanElement>(null)
+  const { text, html, lang } = formatBody(message?.body ?? '')
+  const bodyHtml = useMemo(() => ({ __html: html }), [html])
+
+  const handleCopyClick = useCallback(() => {
+    navigator.clipboard.writeText(text)
+  }, [text])
+
+  const handleDownloadClick = useCallback(() => {
+    if (!message) return;
+
+    const blob = new Blob(
+      [JSON.stringify(message, null, 2)],
+      { type: 'application/json;charset=utf-8' }
+    );
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `message-${message.id ?? 'details'}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [message])
 
   useEffect(() => {
     if (!isOpen) return;
@@ -40,15 +64,13 @@ export const MessageModal: React.FC<MessageModalProps> = ({ message, isOpen, onC
 
   if (!isOpen || !message) return null
 
-  const { text, html, lang } = formatBody(message.body)
-
   const actions = (
     <CodeBlockAction>
       <ClipboardCopyButton
         id="copy-body-button"
         textId="message-body"
         aria-label="Copy to clipboard"
-        onClick={() => navigator.clipboard.writeText(text)}
+        onClick={handleCopyClick}
       >
         Copy
       </ClipboardCopyButton>
@@ -66,10 +88,10 @@ export const MessageModal: React.FC<MessageModalProps> = ({ message, isOpen, onC
 
         {/* BODY */}
         <div>
-          <h3 style={{ marginBottom: '0.5rem' }}>Body</h3>
+          <h3 style={bodyHeadingStyle}>Body</h3>
           <CodeBlock actions={actions} style={bodyScroll}>
             <CodeBlockCode id="message-body" lang={lang} className={`language-${lang}`}>
-              <span key={lang} dangerouslySetInnerHTML={{ __html: html }}/>
+              <span key={lang} dangerouslySetInnerHTML={bodyHtml}/>
             </CodeBlockCode>
           </CodeBlock>
         </div>
@@ -121,20 +143,8 @@ export const MessageModal: React.FC<MessageModalProps> = ({ message, isOpen, onC
         </ExpandableSection>
         
         {/* DOWNLOAD MESSAGE */}
-        <div style={{ marginTop: '1rem' }}>
-          <button className="pf-v5-c-button pf-m-secondary" onClick={() => {
-              const blob = new Blob(
-                [JSON.stringify(message, null, 2)],
-                { type: 'application/json;charset=utf-8' }
-              );
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `message-${message.id ?? 'details'}.json`;
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-          >
+        <div style={downloadSectionStyle}>
+          <button className="pf-v5-c-button pf-m-secondary" onClick={handleDownloadClick}>
             Download Message
           </button>
         </div>

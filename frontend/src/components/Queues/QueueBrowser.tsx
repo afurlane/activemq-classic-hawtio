@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
   Card,
   CardBody,
@@ -12,31 +12,109 @@ import {
 import { Queue, Message } from '../../types/domain'
 import { useQueueMessages } from '../../hooks/useQueueMessages'
 import { MessageTable } from '../Common/MessageTable'
+import { RefreshToolbar } from '../Common/RefreshControls'
 
 interface Props {
   queue: Queue
 }
 
+const spinnerStyle = { padding: '2rem', textAlign: 'center' as const }
+const paginationStyle = { marginTop: '1rem' }
+const perPageOptions = [
+  { title: '10', value: 10 },
+  { title: '20', value: 20 },
+  { title: '50', value: 50 },
+  { title: '100', value: 100 },
+]
+
 export const QueueBrowser: React.FC<Props> = ({ queue }) => {
   const [page, setPage] = useState(0);
-  const pageSize = 20;
+  const [pageSize, setPageSize] = useState(20);
 
-  const { data, isLoading, error } = useQueueMessages(queue.mbean, page, pageSize);
+  const [sortBy, setSortBy] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  const messages: Message[] = data?.messages ?? [];
-  const total = data?.total ?? 0;
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const [interval, setInterval] = useState(5000);
 
-  const onSetPage = (_evt: any, newPage: number) => {
+  const { data, isLoading, error, mutate } = useQueueMessages(queue.mbean, autoRefresh, interval);
+
+  const raw = data ?? []
+
+  // const messages: Message[] = data?.messages ?? [];
+  const total = raw?.length ?? 0;
+
+  const onSetPage = useCallback((_evt: any, newPage: number) => {
     setPage(newPage - 1) // PatternFly pages are 1-based
+  }, [])
+
+  const onPerPageSelect = useCallback((_evt: any, newSize: number) => {
+    setPageSize(newSize)
+    setPage(0) // reset alla prima pagina
+  }, [])
+
+  const onManualRefresh = useCallback(() => {
+    mutate()
+  }, [mutate])
+
+  function getSortValue(msg: Message, sortBy: string) {
+    switch (sortBy) {
+      case 'id':
+        return msg.id
+      case 'timestamp':
+        return msg.timestamp
+      case 'priority':
+        return msg.priority
+      case 'size':
+        return msg.extra.size ?? 0
+      default:
+        return null
+    }
   }
+
+  const handleSort = useCallback((column: string) => {
+    if (sortBy === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(column)
+      setSortDirection('asc')
+    }
+  }, [sortBy, sortDirection])
+
+  // 1. Sorting
+  let sorted = [...raw]
+
+  if (sortBy) {
+    sorted.sort((a, b) => {
+      const va = getSortValue(a, sortBy as string) ?? 0;
+      const vb = getSortValue(b, sortBy as string) ?? 0;
+
+      if (va < vb) return sortDirection === 'asc' ? -1 : 1
+      if (va > vb) return sortDirection === 'asc' ? 1 : -1
+      return 0
+    })
+  }
+
+  // 2. Pagination
+  const start = page * pageSize
+  const messages = sorted.slice(start, start + pageSize)
+
 
   return (
     <Card isFlat isCompact>
       <CardBody>
+        <RefreshToolbar
+          autoRefresh={autoRefresh}
+          onToggle={setAutoRefresh}
+          interval={interval}
+          onIntervalChange={setInterval}
+          onManualRefresh={onManualRefresh}
+        />
+
 
         {/* LOADING */}
         {isLoading && (
-          <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <div style={spinnerStyle}>
             <Spinner size="xl" />
           </div>
         )}
@@ -70,14 +148,16 @@ export const QueueBrowser: React.FC<Props> = ({ queue }) => {
         {/* TABLE */}
         {!isLoading && !error && messages.length > 0 && (
           <>
-            <MessageTable messages={messages} />
+            <MessageTable messages={messages} sortDirection={sortDirection} onSort={handleSort} />
+
             <Pagination
               itemCount={total}
               perPage={pageSize}
               page={page + 1}
               onSetPage={onSetPage}
-              isCompact
-              style={{ marginTop: '1rem' }}
+              style={paginationStyle}
+              onPerPageSelect={onPerPageSelect}
+              perPageOptions={perPageOptions}
             />
           </>
         )}
