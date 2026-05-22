@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 This project adheres to the Conventional Commits specification and uses
 automated release generation via GitHub Actions.
 
+## [1.2.0](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.1.0...v1.2.0) (2026-05-22)
+
+
+### Features
+
+* add support for sending messages with headers in ActiveMQClassi… ([b4a10d0](https://github.com/afurlane/activemq-classic-hawtio/commit/b4a10d0c3b6f9aeeaf01b95bfa26d9b5f4ebf15a))
+* add support for sending messages with headers in ActiveMQClassicService ([cf9a947](https://github.com/afurlane/activemq-classic-hawtio/commit/cf9a94788e90fdc40ffb5dba51852784d5a5d071))
+
 ## [1.1.0](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.0.11...v1.1.0) (2026-03-02)
 
 
