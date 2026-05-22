@@ -24,14 +24,9 @@ interface Props {
 
 export const QueueDLQ: React.FC<Props> = ({ queue }) => {
 
-  /* ────────────────────────────────────────────────
-     VALUE FORMATTER
-     ──────────────────────────────────────────────── */
-
-  const formatValue = (value: any, label: string) => {
+  const formatValue = (value: any, key: string) => {
     if (value === undefined || value === null) return '—'
 
-    // Booleani con icone PF5
     if (typeof value === 'boolean') {
       return value ? (
         <Label color="green" icon={<CheckCircleIcon />}>Yes</Label>
@@ -40,9 +35,8 @@ export const QueueDLQ: React.FC<Props> = ({ queue }) => {
       )
     }
 
-    // Numeri con highlight dinamico
     if (typeof value === 'number') {
-      if (label.toLowerCase().includes('expired') && value > 1000) {
+      if (key === 'expired' && value > 1000) {
         return (
           <Label color="orange" icon={<ExclamationTriangleIcon />}>
             {value.toLocaleString()}
@@ -50,7 +44,7 @@ export const QueueDLQ: React.FC<Props> = ({ queue }) => {
         )
       }
 
-      if (label.toLowerCase().includes('redelivered') && value > 1000) {
+      if (key === 'redelivered' && value > 1000) {
         return (
           <Label color="red" icon={<ExclamationTriangleIcon />}>
             {value.toLocaleString()}
@@ -64,17 +58,11 @@ export const QueueDLQ: React.FC<Props> = ({ queue }) => {
     return String(value)
   }
 
-  /* ────────────────────────────────────────────────
-     DECLARATIVE ROWS
-     ──────────────────────────────────────────────── */
-
   const rows = [
-    { label: 'Is DLQ', value: queue.state.dlq },
-    { label: 'Expired Messages', value: queue.stats.expired },
-    { label: 'Redelivered Messages', value: queue.stats.redelivered }
+    { key: 'dlq', label: 'Is DLQ', value: queue.state.dlq },
+    { key: 'expired', label: 'Expired Messages', value: queue.stats.expired },
+    { key: 'redelivered', label: 'Redelivered Messages', value: queue.stats.redelivered }
   ]
-
-  /* ──────────────────────────────────────────────── */
 
   return (
     <Card isFlat isCompact>
@@ -82,11 +70,11 @@ export const QueueDLQ: React.FC<Props> = ({ queue }) => {
         <Title headingLevel="h4">DLQ / Redelivery</Title>
 
         <DescriptionList isHorizontal>
-          {rows.map((r, i) => (
-            <DescriptionListGroup key={i}>
+          {rows.map((r) => (
+            <DescriptionListGroup key={r.key}>
               <DescriptionListTerm>{r.label}</DescriptionListTerm>
               <DescriptionListDescription>
-                {formatValue(r.value, r.label)}
+                {formatValue(r.value, r.key)}
               </DescriptionListDescription>
             </DescriptionListGroup>
           ))}

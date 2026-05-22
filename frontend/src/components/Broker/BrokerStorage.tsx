@@ -12,39 +12,22 @@ import {
   Label
 } from '@patternfly/react-core'
 
-import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
-import { useBrokerStorage } from '../../hooks/useBrokerStorage'
+import type { BrokerMetrics } from '../../hooks/useBrokerMetrics'
 
-export const BrokerStorage: React.FC = () => {
-  const brokerName = useSelectedBrokerName()
+interface Props {
+  latest: BrokerMetrics
+}
 
-  if (!brokerName) {
+const labelAutoMarginStyle = { marginLeft: 'auto' }
+
+export const BrokerStorage: React.FC<Props> = ({ latest }) => {
+  const storage = latest.storage
+
+  if (!storage) {
     return (
       <Card isFlat isCompact>
         <CardBody>
-          <Alert variant="danger" title="No broker selected" isInline />
-        </CardBody>
-      </Card>
-    )
-  }
-
-  const { data: storage, isLoading, error } = useBrokerStorage(brokerName)
-
-  if (isLoading) {
-    return (
-      <Card isFlat isCompact>
-        <CardBody>
-          <Alert variant="info" title="Loading storage metrics…" isInline />
-        </CardBody>
-      </Card>
-    )
-  }
-
-  if (error || !storage) {
-    return (
-      <Card isFlat isCompact>
-        <CardBody>
-          <Alert variant="danger" title="Failed to load storage metrics" isInline />
+          <Alert variant="danger" title="No storage metrics available" isInline />
         </CardBody>
       </Card>
     )
@@ -61,7 +44,7 @@ export const BrokerStorage: React.FC = () => {
     <Card isFlat isCompact>
       <CardHeader>
         <CardTitle>Broker Storage</CardTitle>
-        <Label color={severity} style={{ marginLeft: 'auto' }}>
+        <Label color={severity} style={labelAutoMarginStyle}>
           {severity === 'red'
             ? 'Critical'
             : severity === 'orange'

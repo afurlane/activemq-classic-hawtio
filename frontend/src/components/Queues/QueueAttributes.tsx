@@ -78,25 +78,29 @@ export const QueueAttributes: React.FC<Props> = ({ queue }) => {
     id: string
     title: string
     rows: { label: string; value: any }[]
-  }) => (
-    <AccordionItem>
-      <AccordionToggle
-        onClick={() => onToggle(id)}
-        isExpanded={expanded === id}
-        id={id}
-      >
-        {title}
-      </AccordionToggle>
+  }) => {
+    const handleToggle = React.useCallback(() => onToggle(id), [id])
 
-      <AccordionContent isHidden={expanded !== id}>
-        <DescriptionList isHorizontal>
-          {rows.map((r, i) => (
-            <Row key={i} label={r.label} value={r.value} />
-          ))}
-        </DescriptionList>
-      </AccordionContent>
-    </AccordionItem>
-  )
+    return (
+      <AccordionItem>
+        <AccordionToggle
+          onClick={handleToggle}
+          isExpanded={expanded === id}
+          id={id}
+        >
+          {title}
+        </AccordionToggle>
+
+        <AccordionContent isHidden={expanded !== id}>
+          <DescriptionList isHorizontal>
+            {rows.map((r, i) => (
+              <Row key={i} label={r.label} value={r.value} />
+            ))}
+          </DescriptionList>
+        </AccordionContent>
+      </AccordionItem>
+    )
+  }
 
   const sections = [
     {

@@ -1,9 +1,8 @@
 import useSWR from 'swr'
 import { activemq } from '../services/activemq/ActiveMQClassicService'
-// import { Queue } from '../types/domain'
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
-export function useQueueHistory(brokerName: string | null) {
+function useQueueHistory(brokerName: string | null) {
   return useSWR<Record<string, { queueSize: number[]; inflight: number[]; lag: number[] }>>(
     brokerName ? ['queue-history', brokerName] : null,
     async ([_, broker]: [string, string | undefined]) => {
@@ -34,14 +33,13 @@ export function useQueueHistory(brokerName: string | null) {
 }
 
 export function useQueueHistoryAccumulated(brokerName: string | null) {
-  const { data: snapshot } = useQueueHistory(brokerName)
-
-  const [acc, setAcc] = useState<Record<string, { queueSize: number[]; inflight: number[]; lag: number[] }>>({})
+  const { data: snapshot } = useQueueHistory(brokerName)  
+  const accRef = useRef<Record<string, { queueSize: number[]; inflight: number[]; lag: number[] }>>({})
 
   useEffect(() => {
     if (!snapshot) return
 
-    const next = { ...acc }
+    const next = { ...accRef.current }
 
     Object.entries(snapshot).forEach(([name, h]) => {
       if (!next[name]) {
@@ -53,8 +51,8 @@ export function useQueueHistoryAccumulated(brokerName: string | null) {
       next[name].lag = [...next[name].lag, ...h.lag].slice(-30)
     })
 
-    setAcc(next)
+    accRef.current = next
   }, [snapshot])
 
-  return acc
+  return accRef.current
 }

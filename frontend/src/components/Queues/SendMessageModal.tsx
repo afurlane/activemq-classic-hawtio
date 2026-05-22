@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useCallback, useMemo, useState } from "react"
 import { BaseModal } from "./BaseModal"
 import {
   Button,
@@ -11,6 +11,7 @@ import { Thead, Tbody, Tr, Th, Td, Table } from "@patternfly/react-table"
 import { EnvelopeIcon, TrashIcon } from "@patternfly/react-icons"
 import { FormModal } from "./FormModal"
 
+const flexSpaceItems = { default: "spaceItemsMd" } as const
 interface HeaderEntry {
   key: string
   value: string
@@ -32,22 +33,55 @@ export const SendMessageModal: React.FC<SendMessageModalProps> = ({
   const [headerKey, setHeaderKey] = useState("")
   const [headerValue, setHeaderValue] = useState("")
 
-  const addHeader = () => {
+  const addHeader = useCallback(() => {
     if (!headerKey.trim() || !headerValue.trim()) return
     setHeaders([...headers, { key: headerKey.trim(), value: headerValue }])
     setHeaderKey("")
     setHeaderValue("")
-  }
+  }, [headerKey, headerValue, headers])
 
   const removeHeader = (index: number) => {
     setHeaders(headers.filter((_, i) => i !== index))
   }
 
-  const confirm = () => {
+  const onRemoveHeaderClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const index = Number(event.currentTarget.dataset.index)
+    if (!Number.isNaN(index)) {
+      removeHeader(index)
+    }
+  }
+
+  const confirm = useCallback(() => {
     onConfirm(body, headers)
     setBody("")
     setHeaders([])
-  }
+  }, [body, headers, onConfirm])
+
+  const onBodyChange = useCallback((_: unknown, v: string) => {
+    setBody(v)
+  }, [])
+
+  const onHeaderKeyChange = useCallback((_: unknown, v: string) => {
+    setHeaderKey(v)
+  }, [])
+
+  const onHeaderValueChange = useCallback((_: unknown, v: string) => {
+    setHeaderValue(v)
+  }, [])
+
+  const formFields = useMemo(
+    () => [
+      {
+        name: "body",
+        label: "Message Body",
+        required: true,
+        type: "textarea" as const,
+        value: body,
+        onChange: onBodyChange,
+      },
+    ],
+    [body, onBodyChange],
+  )
 
   return (
     <BaseModal
@@ -60,28 +94,17 @@ export const SendMessageModal: React.FC<SendMessageModalProps> = ({
       onConfirm={confirm}
     >
       {/* Message body */}
-      <FormModal
-        fields={[
-          {
-            name: "body",
-            label: "Message Body",
-            required: true,
-            type: "textarea",
-            value: body,
-            onChange: setBody,
-          },
-        ]}
-      />
+      <FormModal fields={formFields} />
 
       {/* Header inputs */}
       <FormGroup label="Add Header" fieldId="headerKey">
-        <Flex spaceItems={{ default: "spaceItemsMd" }}>
+        <Flex spaceItems={flexSpaceItems}>
           <FlexItem>
             <TextInput
               id="headerKey"
               placeholder="Header key"
               value={headerKey}
-              onChange={(_, v) => setHeaderKey(v)}
+              onChange={onHeaderKeyChange}
             />
           </FlexItem>
           <FlexItem>
@@ -89,7 +112,7 @@ export const SendMessageModal: React.FC<SendMessageModalProps> = ({
               id="headerValue"
               placeholder="Header value"
               value={headerValue}
-              onChange={(_, v) => setHeaderValue(v)}
+              onChange={onHeaderValueChange}
             />
           </FlexItem>
           <FlexItem>
@@ -120,7 +143,8 @@ export const SendMessageModal: React.FC<SendMessageModalProps> = ({
                     <Button
                       variant="plain"
                       icon={<TrashIcon />}
-                      onClick={() => removeHeader(i)}
+                      data-index={i}
+                      onClick={onRemoveHeaderClick}
                     />
                   </Td>
                 </Tr>

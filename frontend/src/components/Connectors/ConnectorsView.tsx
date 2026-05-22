@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
 import { useConnectors } from '../../hooks/useConnectors'
 import { useConnections } from '../../hooks/useConnections'
@@ -28,18 +28,11 @@ import {
 
 import { activemq } from '../../services/activemq/ActiveMQClassicService'
 
+const drawerPanelWidths = { default: 'width_50' } as const
+const closeButtonStyle = { marginTop: '1rem' } as const
+
 export const ConnectorsView: React.FC = () => {
   const brokerName = useSelectedBrokerName()
-
-  if (!brokerName) {
-    return (
-      <Card isFlat isCompact>
-        <CardBody>
-          <Alert variant="danger" title="No broker selected" isInline />
-        </CardBody>
-      </Card>
-    )
-  }
 
   // SWR: lista connectors
   const { data: connectors = [], error: connectorsError } = useConnectors(brokerName)
@@ -51,16 +44,47 @@ export const ConnectorsView: React.FC = () => {
   // SWR: connections del connector selezionato
   const { data: connections = [] } = useConnections(selected?.mbean ?? null)
 
-  const openDrawer = (connector: any) => {
+  const openDrawer = useCallback((connector: any) => {
     setSelected(connector)
-  }
+  }, [])
 
-  const closeDrawer = () => {
+  const closeDrawer = useCallback(() => {
     setSelected(null)
+  }, [])
+
+  const handleDropConnection = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      if (!selected?.mbean) return
+      const connectionId = event.currentTarget.dataset.connectionId
+      if (!connectionId) return
+      activemq.dropConnection(selected.mbean, connectionId)
+    },
+    [selected],
+  )
+
+  const handleOpenDrawer = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const mbean = event.currentTarget.dataset.mbean
+      if (!mbean) return
+      const connector = connectors.find((c) => c.mbean === mbean)
+      if (!connector) return
+      openDrawer(connector)
+    },
+    [connectors, openDrawer],
+  )
+
+  if (!brokerName) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>
+          <Alert variant="danger" title="No broker selected" isInline />
+        </CardBody>
+      </Card>
+    )
   }
 
   const panel = selected && (
-    <DrawerPanelContent widths={{ default: 'width_50' }}>
+    <DrawerPanelContent widths={drawerPanelWidths}>
       <Card isFlat>
         <CardBody>
           <Title headingLevel="h3">Connections for {selected.name}</Title>
@@ -88,9 +112,8 @@ export const ConnectorsView: React.FC = () => {
                     <Button
                       variant="danger"
                       size="sm"
-                      onClick={() =>
-                        activemq.dropConnection(selected.mbean, conn.connectionId)
-                      }
+                      data-connection-id={conn.connectionId}
+                      onClick={handleDropConnection}
                     >
                       Drop
                     </Button>
@@ -100,7 +123,7 @@ export const ConnectorsView: React.FC = () => {
             </Tbody>
           </Table>
 
-          <Button variant="secondary" onClick={closeDrawer} style={{ marginTop: '1rem' }}>
+          <Button variant="secondary" onClick={closeDrawer} style={closeButtonStyle}>
             Close
           </Button>
         </CardBody>
@@ -148,7 +171,8 @@ export const ConnectorsView: React.FC = () => {
                       <Button
                         variant="primary"
                         size="sm"
-                        onClick={() => openDrawer(c)}
+                        data-mbean={c.mbean}
+                        onClick={handleOpenDrawer}
                       >
                         Details
                       </Button>

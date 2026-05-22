@@ -1,364 +1,177 @@
-import { jolokiaService } from '@hawtio/react'
-import { JolokiaRequest, RequestType } from 'jolokia.js'
-import {
-  mapQueue,
-  mapTopic,
-  mapConnector,
-  mapMessage,
-  mapDLQ,
-  mapSubscription,
-  Queue,
-  Topic,
-  Connector,
-  Message,
-  DLQ,
-  Subscription,
-} from '../../types/domain'
-import {
-  ActiveMQQueueAttributes,
-  ActiveMQTopicAttributes,
-  ActiveMQConnectorAttributes,
-  ActiveMQMessageAttributes,
-  ActiveMQDLQAttributes,
-} from '../../types/activemq'
 import { BrokerInfo } from '../../hooks/useBrokers'
+import { Connector, DLQ, Message, Queue, Subscription, Topic } from '../../types/domain'
+import {
+  createTopic,
+  deleteTopic,
+  getTopicAttributes,
+  listTopics,
+  browseTopic,
+} from './operations/topics'
+import {
+  browseQueue,
+  copyMatchingMessages,
+  copyMessageTo,
+  deleteQueue,
+  getDLQInfo,
+  getQueue,
+  listQueues,
+  listQueuesWithRawAttributes,
+  moveMatchingMessages,
+  moveMessageTo,
+  pauseQueue,
+  purgeQueue,
+  removeAllMessageGroups,
+  removeMatchingMessages,
+  removeMessage,
+  removeMessageGroup,
+  resetStats,
+  resumeQueue,
+  retryMessage,
+  retryMessages,
+  sendTextMessage,
+  sendTextMessageWithHeaders,
+} from './operations/queues'
+import {
+  dropConnection,
+  getConsumerAttributes,
+  getProducerAttributes,
+  listConnectors,
+  listConnections,
+  listConsumers,
+  listProducers,
+} from './operations/connectors'
+import { browseSubscription, listSubscriptions } from './operations/subscriptions'
+import { getBrokerMBean, resolveBroker } from './operations/common'
 
-function normalizeBulk<T>(r: any) {
-  if (r.status !== 200 || r.error) {
-    return { request: r.request, value: null as T | null };
-  }
-  return { request: r.request, value: r.value as T };
-}
-
-export function getBrokerMBean(brokerName: string) {
-  return `org.apache.activemq:type=Broker,brokerName=${brokerName}`;
-}
-
-function getBrokerMBeanFromQueueMBean(queueMBean: string): string {
-  const match = queueMBean.match(/brokerName=([^,]+)/)
-  if (!match) {
-    throw new Error(`Cannot extract brokerName from MBean: ${queueMBean}`)
-  }
-  const brokerName = match[1]
-  return `org.apache.activemq:type=Broker,brokerName=${brokerName}`
-}
+export { getBrokerMBean }
 
 export class ActiveMQClassicService {
-
   private async resolveBroker(name?: string): Promise<BrokerInfo | null> {
-    // Se il nome è stato passato dal contesto React → usalo
-    if (name && name.trim().length > 0) {
-      return {
-        name,
-        mbean: getBrokerMBean(name)
-      }
-    }
-
-    // Altrimenti scopri il broker via Jolokia
-    const mbeans = await jolokiaService.search(
-      'org.apache.activemq:type=Broker,brokerName=*'
-    )
-
-    if (!mbeans || mbeans.length === 0) {
-      return null
-    }
-
-    const mbean = mbeans[0]
-    if (!mbean) {
-      return null
-    }
-    const match = /brokerName=([^,]+)/.exec(mbean)
-    const brokerName = match?.[1] ?? 'default'
-
-    return {
-      name: brokerName,
-      mbean
-    }
+    return resolveBroker(name)
   }
-
-  private base(brokerName: string) {
-    return getBrokerMBean(brokerName);
-  }
-
-  // ────────────────────────────────────────────────────────────────
-  // QUEUES
-  // ────────────────────────────────────────────────────────────────
 
   async listQueues(brokerName?: string): Promise<Queue[]> {
-    const broker = await this.resolveBroker(brokerName);
-    if (!broker) return [];
-
-    const pattern = `${this.base(broker.name)},destinationType=Queue,destinationName=*`;
-    const mbeans = await jolokiaService.search(pattern);
-
-    const requests: JolokiaRequest[] = mbeans.map(mbean => ({
-      type: 'read' as RequestType,
-      mbean,
-    } as JolokiaRequest));
-
-    const raw = await jolokiaService.bulkRequest(requests);
-
-    return raw
-      .map(normalizeBulk<ActiveMQQueueAttributes>)
-      .filter(r => r.value)
-      .map(r => mapQueue(r.request.mbean, r.value!));
+    return listQueues(this.resolveBroker.bind(this), brokerName)
   }
 
   async getQueue(mbean: string): Promise<Queue | null> {
-    const attrs = await jolokiaService.readAttributes(mbean);
-    if (!attrs) return null;
-    return mapQueue(mbean, attrs as ActiveMQQueueAttributes);
+    return getQueue(mbean)
   }
 
   async listQueuesWithRawAttributes(brokerName: string) {
-    const broker = await this.resolveBroker(brokerName);
-    if (!broker) return [];
-
-    const pattern = `${this.base(broker.name)},destinationType=Queue,destinationName=*`;
-    const mbeans = await jolokiaService.search(pattern);
-
-    const requests: JolokiaRequest[] = mbeans.map(mbean => ({
-      type: 'read' as RequestType,
-      mbean,
-    } as JolokiaRequest));
-
-    const raw = await jolokiaService.bulkRequest(requests);
-
-    return raw
-      .map(normalizeBulk<ActiveMQQueueAttributes>)
-      .filter(r => r.value)
-      .map(r => ({
-        mbean: r.request.mbean,
-        attrs: r.value!,
-      }));
+    return listQueuesWithRawAttributes(this.resolveBroker.bind(this), brokerName)
   }
 
-  // ────────────────────────────────────────────────────────────────
-  // TOPICS
-  // ────────────────────────────────────────────────────────────────
-
   async listTopics(brokerName?: string): Promise<Topic[]> {
-    const broker = await this.resolveBroker(brokerName);
-    if (!broker) return [];
-
-    const pattern = `${this.base(broker.name)},destinationType=Topic,destinationName=*`;
-    const mbeans = await jolokiaService.search(pattern);
-
-    const requests: JolokiaRequest[] = mbeans.map(mbean => ({
-      type: 'read' as RequestType,
-      mbean,
-    } as JolokiaRequest));
-
-    const raw = await jolokiaService.bulkRequest(requests);
-
-    return raw
-      .map(normalizeBulk<ActiveMQTopicAttributes>)
-      .filter(r => r.value)
-      .map(r => mapTopic(r.request.mbean, r.value!));
+    return listTopics(this.resolveBroker.bind(this), brokerName)
   }
 
   async getTopicAttributes(mbean: string): Promise<any> {
-    return jolokiaService.readAttributes(mbean);
+    return getTopicAttributes(mbean)
   }
 
-  // ────────────────────────────────────────────────────────────────
-  // CONNECTORS & CONNECTIONS
-  // ────────────────────────────────────────────────────────────────
-
   async listConnectors(brokerName?: string): Promise<Connector[]> {
-    const broker = await this.resolveBroker(brokerName);
-    if (!broker) return [];
-
-    const pattern = `${this.base(broker.name)},connector=*,connectorName=*`;
-    const mbeans = await jolokiaService.search(pattern);
-
-    const requests: JolokiaRequest[] = mbeans.map(mbean => ({
-      type: 'read' as RequestType,
-      mbean,
-    } as JolokiaRequest));
-
-    const raw = await jolokiaService.bulkRequest(requests);
-
-    return raw
-      .map(normalizeBulk<ActiveMQConnectorAttributes>)
-      .filter(r => r.value)
-      .map(r => mapConnector(r.request.mbean, r.value!));
+    return listConnectors(this.resolveBroker.bind(this), brokerName)
   }
 
   async listConnections(connectorMBean: string): Promise<any[]> {
-    const attrs = await jolokiaService.readAttributes(connectorMBean) as ActiveMQConnectorAttributes;
-    return attrs?.Connections ?? [];
+    return listConnections(connectorMBean)
   }
 
-  // ────────────────────────────────────────────────────────────────
-  // BROWSE / MESSAGES / DLQ / SUBSCRIPTIONS
-  // ────────────────────────────────────────────────────────────────
-
   async browseQueue(mbean: string): Promise<Message[]> {
-    const raw = await jolokiaService.execute(
-      mbean,
-      'browse()',
-    ) as ActiveMQMessageAttributes[];
-    return raw.map(mapMessage);
+    return browseQueue(mbean)
   }
 
   async browseTopic(mbean: string): Promise<Message[]> {
-    const raw = await jolokiaService.execute(
-      mbean,
-      'browse()',
-    ) as ActiveMQMessageAttributes[];
-
-    return raw.map(mapMessage);
+    return browseTopic(mbean)
   }
 
   async getDLQInfo(mbean: string): Promise<DLQ> {
-    const attrs = await jolokiaService.readAttributes(mbean) as ActiveMQDLQAttributes;
-    return mapDLQ(mbean, attrs);
+    return getDLQInfo(mbean)
   }
 
   async listSubscriptions(topicOrQueueMBean: string): Promise<Subscription[]> {
-    const attrs = await jolokiaService.readAttributes(topicOrQueueMBean) as any;
-    const subs = attrs.Subscriptions ?? [];
-    return subs.map(mapSubscription);
+    return listSubscriptions(topicOrQueueMBean)
   }
 
-  // ────────────────────────────────────────────────────────────────
-  // CONSUMERS / PRODUCERS
-  // ────────────────────────────────────────────────────────────────
-
   async listConsumers(brokerName: string): Promise<string[]> {
-    const broker = await this.resolveBroker(brokerName);
-    if (!broker) return [];
-
-    const pattern = `${this.base(broker.name)},destinationType=Queue,destinationName=*,consumerId=*`;
-    return jolokiaService.search(pattern);
+    return listConsumers(this.resolveBroker.bind(this), brokerName)
   }
 
   async getConsumerAttributes(mbean: string): Promise<any> {
-    return jolokiaService.readAttributes(mbean);
+    return getConsumerAttributes(mbean)
   }
 
   async listProducers(brokerName: string): Promise<string[]> {
-    const broker = await this.resolveBroker(brokerName);
-    if (!broker) return [];
-
-    const pattern = `${this.base(broker.name)},destinationType=Queue,destinationName=*,producerId=*`;
-    return jolokiaService.search(pattern);
+    return listProducers(this.resolveBroker.bind(this), brokerName)
   }
 
   async getProducerAttributes(mbean: string): Promise<any> {
-    return jolokiaService.readAttributes(mbean)
+    return getProducerAttributes(mbean)
   }
 
-  // ────────────────────────────────────────────────────────────────
-  // WRITE OPS + INVALIDAZIONI GROSSE (cache.clear)
-  // ────────────────────────────────────────────────────────────────
-
   async purgeQueue(mbean: string) {
-    return await jolokiaService.execute(mbean, 'purge()', []);
+    return purgeQueue(mbean)
   }
 
   async pauseQueue(mbean: string) {
-    return await jolokiaService.execute(mbean, 'pause()', []);
+    return pauseQueue(mbean)
   }
 
   async resumeQueue(mbean: string) {
-    return await jolokiaService.execute(mbean, 'resume()', []);
+    return resumeQueue(mbean)
   }
 
   async resetStats(mbean: string) {
-    return await jolokiaService.execute(mbean, 'resetStatistics()', []);
+    return resetStats(mbean)
   }
 
   async deleteQueue(queueMBean: string, name: string) {
-    const brokerMBean = getBrokerMBeanFromQueueMBean(queueMBean)
-
-    return await jolokiaService.execute(
-      brokerMBean,
-      'removeQueue(java.lang.String)',
-      [name],
-    )
+    return deleteQueue(queueMBean, name)
   }
 
-
   async retryMessages(mbean: string) {
-    return await jolokiaService.execute(mbean, 'retryMessages()', []);
+    return retryMessages(mbean)
   }
 
   async retryMessage(mbean: string, id: string) {
-    return await jolokiaService.execute(
-      mbean,
-      'retryMessage(java.lang.String)',
-      [id],
-    );
+    return retryMessage(mbean, id)
   }
 
   async moveMessageTo(mbean: string, id: string, dest: string) {
-    return await jolokiaService.execute(
-      mbean,
-      'moveMessageTo(java.lang.String,java.lang.String)',
-      [id, dest],
-    );
+    return moveMessageTo(mbean, id, dest)
   }
 
   async copyMessageTo(mbean: string, id: string, dest: string) {
-    return await jolokiaService.execute(
-      mbean,
-      'copyMessageTo(java.lang.String,java.lang.String)',
-      [id, dest],
-    );
+    return copyMessageTo(mbean, id, dest)
   }
 
   async removeMessage(mbean: string, id: string) {
-    return await jolokiaService.execute(
-      mbean,
-      'removeMessage(java.lang.String)',
-      [id],
-    );
+    return removeMessage(mbean, id)
   }
 
   async moveMatchingMessages(mbean: string, selector: string, dest: string) {
-    return await jolokiaService.execute(
-      mbean,
-      'moveMatchingMessages(java.lang.String,java.lang.String)',
-      [selector, dest],
-    );
+    return moveMatchingMessages(mbean, selector, dest)
   }
 
   async copyMatchingMessages(mbean: string, selector: string, dest: string) {
-    return await jolokiaService.execute(
-      mbean,
-      'copyMatchingMessages(java.lang.String,java.lang.String)',
-      [selector, dest],
-    );
+    return copyMatchingMessages(mbean, selector, dest)
   }
 
   async removeMatchingMessages(mbean: string, selector: string) {
-    return await jolokiaService.execute(
-      mbean,
-      'removeMatchingMessages(java.lang.String)',
-      [selector],
-    );
+    return removeMatchingMessages(mbean, selector)
   }
 
   async removeAllMessageGroups(mbean: string) {
-    return await jolokiaService.execute(mbean, 'removeAllMessageGroups()', []);
+    return removeAllMessageGroups(mbean)
   }
 
   async removeMessageGroup(mbean: string, group: string) {
-    return await jolokiaService.execute(
-      mbean,
-      'removeMessageGroup(java.lang.String)',
-      [group],
-    );
+    return removeMessageGroup(mbean, group)
   }
 
   async sendTextMessage(mbean: string, body: string) {
-    return await jolokiaService.execute(
-      mbean,
-      'sendTextMessage(java.lang.String)',
-      [body],
-    );
+    return sendTextMessage(mbean, body)
   }
 
   async sendTextMessageWithHeaders(
@@ -366,48 +179,24 @@ export class ActiveMQClassicService {
     body: string,
     headers: Record<string, string>
   ) {
-    return await jolokiaService.execute(
-      mbean,
-      'sendTextMessage(java.lang.String,java.util.Map)',
-      [body, headers],
-    );
+    return sendTextMessageWithHeaders(mbean, body, headers)
   }
 
   async dropConnection(connectorMBean: string, connectionId: string) {
-    return await jolokiaService.execute(
-      connectorMBean,
-      'dropConnection(java.lang.String)',
-      [connectionId],
-    );
+    return dropConnection(connectorMBean, connectionId)
   }
 
   async deleteTopic(brokerMBean: string, name: string) {
-    return await jolokiaService.execute(
-      brokerMBean,
-      'removeTopic(java.lang.String)',
-      [name],
-    );
+    return deleteTopic(brokerMBean, name)
   }
 
   async createTopic(brokerMBean: string, name: string) {
-    return await jolokiaService.execute(
-      brokerMBean,
-      'addTopic(java.lang.String)',
-      [name],
-    )
+    return createTopic(brokerMBean, name)
   }
-
-  // Subscriptions
 
   async browseSubscription(mbean: string): Promise<Message[]> {
-    const raw = await jolokiaService.execute(
-      mbean,
-      'browse()',
-    ) as ActiveMQMessageAttributes[];
-
-    return raw.map(mapMessage);
+    return browseSubscription(mbean)
   }
-
 }
 
 export const activemq = new ActiveMQClassicService()

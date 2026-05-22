@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
   Card, CardBody, Spinner, EmptyState, EmptyStateHeader, EmptyStateBody,
   Pagination
@@ -14,12 +14,26 @@ interface Props {
 export const TopicBrowser: React.FC<Props> = ({ mbean }) => {
   const [page, setPage] = useState(0)
   const pageSize = 20
+  const handleSetPage = useCallback((_: unknown, newPage: number) => {
+    setPage(newPage - 1)
+  }, [])
 
   const { data, isLoading, error } = useTopicMessages(mbean, page, pageSize)
 
   const messages = data?.messages ?? []
   const total = data?.total ?? 0
 
+  if (!mbean) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>
+          <EmptyState>
+            <EmptyStateHeader titleText="No topic selected" />
+          </EmptyState>
+        </CardBody>
+      </Card>
+    )
+  }
 
   return (
     <Card isFlat isCompact>
@@ -30,7 +44,7 @@ export const TopicBrowser: React.FC<Props> = ({ mbean }) => {
           itemCount={total}
           perPage={pageSize}
           page={page + 1}
-          onSetPage={(_: React.SyntheticEvent, newPage: number) => setPage(newPage - 1)}
+          onSetPage={handleSetPage}
           isCompact
         />
 
@@ -79,7 +93,7 @@ export const TopicBrowser: React.FC<Props> = ({ mbean }) => {
               itemCount={total}
               perPage={pageSize}
               page={page + 1}
-              onSetPage={(_: React.SyntheticEvent, newPage: number) => setPage(newPage - 1)}
+              onSetPage={handleSetPage}
               isCompact
             />
           </>

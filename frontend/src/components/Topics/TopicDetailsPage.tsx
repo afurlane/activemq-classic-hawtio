@@ -1,80 +1,45 @@
-import React, { useEffect, useRef, useState } from 'react'
+// components/Topics/TopicDetailsPage.tsx
+import React, { useCallback, useState } from 'react'
 import {
-  Alert,
-  Card,
-  CardBody,
   PageSection,
   PageSectionVariants,
+  Title,
+  Card,
+  CardBody,
+  Alert,
+  Spinner,
   Tab,
   Tabs,
-  TabTitleText,
-  Title
+  TabTitleText
 } from '@patternfly/react-core'
 
-import { activemq } from '../../services/activemq/ActiveMQClassicService'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
+import { useTopicMetrics } from '../../hooks/useTopicMetrics'
 
 import { TopicInfo } from './TopicInfo'
-import { TopicCharts } from './TopicCharts'
+import { TopicTrends } from './TopicTrends'
 import { TopicAlerts } from './TopicAlerts'
+import { TopicSubscribers } from './TopicSubscribers'
+import { TopicProducers } from './TopicProducers'
+import { TopicBrowser } from './TopicBrowser'
 import { TopicOperations } from './TopicOperations'
 import { TopicSendMessage } from './TopicSendMessage'
 import { TopicDelete } from './TopicDelete'
-import { TopicSubscribers } from './TopicSubscribers'
-import { TopicProducers } from './TopicProducers'
-
-import { ActiveMQTopicAttributes } from '../../types/activemq'
-import { TopicBrowser } from './TopicBrowser'
 
 interface Props {
   topicName: string
 }
 
+const loadingTitleStyle = { marginTop: 12 }
+
 export const TopicDetailsPage: React.FC<Props> = ({ topicName }) => {
   const brokerName = useSelectedBrokerName()
-
-  const [mbean, setMbean] = useState<string | null>(null)
-  const [attrs, setAttrs] = useState<ActiveMQTopicAttributes | null>(null)
-  const [history, setHistory] = useState<ActiveMQTopicAttributes[]>([])
-  const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('info')
-
-  const mounted = useRef(false)
-
-  const load = async () => {
-    if (!brokerName || !mounted.current) return
-
-    try {
-      const list = await activemq.listTopics(brokerName)
-      const topic = list.find(t => t.name === topicName)
-      if (!topic) {
-        setError(`Topic "${topicName}" not found`)
-        return
-      }
-
-      setMbean(topic.mbean)
-
-      const a = await activemq.getTopicAttributes(topic.mbean)
-      if (!mounted.current) return
-
-      setAttrs(a)
-      setHistory(prev => [...prev, a].slice(-50))
-      setError(null)
-    } catch (err: any) {
-      setError(err?.message ?? 'Failed to load topic data')
-    }
-  }
-
-  useEffect(() => {
-    mounted.current = true
-    load()
-    const id = setInterval(load, 5000)
-    return () => {
-      mounted.current = false
-      clearInterval(id)
-    }
-  }, [brokerName, topicName])
-
+  const handleTabSelect = useCallback((_: unknown, key: string | number) => {
+    setActiveTab(String(key))
+  }, [])
+  const { data, error, isLoading } = useTopicMetrics(brokerName, topicName)
+  
   if (!brokerName) {
     return (
       <Card isFlat isCompact>
@@ -85,32 +50,37 @@ export const TopicDetailsPage: React.FC<Props> = ({ topicName }) => {
     )
   }
 
-  if (error) {
+  if (isLoading) {
     return (
       <PageSection>
-        <Alert variant="danger" title={error} isInline />
+        <Spinner size="lg" />
+        <Title headingLevel="h3" style={loadingTitleStyle}>
+          Loading topic…
+        </Title>
       </PageSection>
     )
   }
 
-  if (!attrs) {
+  if (error || !data) {
     return (
       <PageSection>
-        <Title headingLevel="h3">Loading topic…</Title>
+        <Alert variant="danger" title={String(error)} isInline />
       </PageSection>
     )
   }
+
+  const { latest, history } = data
 
   return (
     <>
       <PageSection variant={PageSectionVariants.light}>
-        <Title headingLevel="h2">Topic: {topicName}</Title>
+        <Title headingLevel="h2">Topic: {latest.name}</Title>
       </PageSection>
 
       <PageSection>
         <Tabs
           activeKey={activeTab}
-          onSelect={(_: React.SyntheticEvent, key: string) => setActiveTab(key)}
+          onSelect={handleTabSelect}
         >
           <Tab eventKey="info" title={<TabTitleText>Info</TabTitleText>} />
           <Tab eventKey="messages" title={<TabTitleText>Messages</TabTitleText>} />
@@ -125,16 +95,16 @@ export const TopicDetailsPage: React.FC<Props> = ({ topicName }) => {
       </PageSection>
 
       <PageSection>
-        {activeTab === 'info' && <TopicInfo attrs={attrs} />}
-        {activeTab === 'messages' && <TopicBrowser mbean={mbean!} />}
-        {activeTab === 'charts' && <TopicCharts history={history} />}
-        {activeTab === 'alerts' && <TopicAlerts attrs={attrs} />}
-        {activeTab === 'subscribers' && <TopicSubscribers attrs={attrs} />}
-        {activeTab === 'producers' && <TopicProducers attrs={attrs} />}
+        {activeTab === 'info' && <TopicInfo latest={latest} />}
+        {activeTab === 'messages' && <TopicBrowser mbean={latest.mbean} />}
+        {activeTab === 'charts' && <TopicTrends history={history} />}
+        {activeTab === 'alerts' && <TopicAlerts latest={latest} />}
+        {activeTab === 'subscribers' && <TopicSubscribers latest={latest} />}
+        {activeTab === 'producers' && <TopicProducers latest={latest} />}
         {activeTab === 'operations' && <TopicOperations />}
         {activeTab === 'send' && <TopicSendMessage />}
-        {activeTab === 'delete' && <TopicDelete mbean={mbean!} />}
+        {activeTab === 'delete' && <TopicDelete mbean={latest.mbean} />}
       </PageSection>
     </>
-)
+  )
 }

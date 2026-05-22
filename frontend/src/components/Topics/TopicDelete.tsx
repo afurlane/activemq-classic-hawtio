@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   Card,
   CardBody,
@@ -24,31 +24,14 @@ export const TopicDelete: React.FC<Props> = ({ mbean }) => {
   const [success, setSuccess] = useState(false)
 
   const brokerName = useSelectedBrokerName()
-
-  if (!brokerName) {
-    return (
-      <Card isFlat isCompact>
-        <CardBody>
-          <Alert variant="danger" title="No broker selected" isInline />
-        </CardBody>
-      </Card>
-    )
-  }
-
   const match = /destinationName=([^,]+)/.exec(mbean)
   const topicName = match?.[1]
 
-  if (!topicName) {
-    return (
-      <Card isFlat isCompact>
-        <CardBody>
-          <Alert variant="danger" title="Invalid topic MBean" isInline />
-        </CardBody>
-      </Card>
-    )
-  }
+  const del = useCallback(async () => {
+    if (!brokerName || !topicName) {
+      return
+    }
 
-  const del = async () => {
     setIsDeleting(true)
     setError(null)
     setSuccess(false)
@@ -62,6 +45,56 @@ export const TopicDelete: React.FC<Props> = ({ mbean }) => {
     } finally {
       setIsDeleting(false)
     }
+  }, [brokerName, topicName])
+
+  const openDeleteModal = useCallback(() => {
+    setIsOpen(true)
+  }, [])
+
+  const closeDeleteModal = useCallback(() => {
+    setIsOpen(false)
+  }, [])
+
+  const modalActions = useMemo(
+    () => [
+      <Button
+        key="confirm"
+        variant={ButtonVariant.danger}
+        isDisabled={isDeleting}
+        onClick={del}
+      >
+        {isDeleting ? <Spinner size="sm" /> : 'Yes, delete'}
+      </Button>,
+      <Button
+        key="cancel"
+        variant={ButtonVariant.secondary}
+        isDisabled={isDeleting}
+        onClick={closeDeleteModal}
+      >
+        Cancel
+      </Button>
+    ],
+    [closeDeleteModal, del, isDeleting]
+  )
+
+  if (!brokerName) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>
+          <Alert variant="danger" title="No broker selected" isInline />
+        </CardBody>
+      </Card>
+    )
+  }
+
+  if (!topicName) {
+    return (
+      <Card isFlat isCompact>
+        <CardBody>
+          <Alert variant="danger" title="Invalid topic MBean" isInline />
+        </CardBody>
+      </Card>
+    )
   }
 
   return (
@@ -89,7 +122,7 @@ export const TopicDelete: React.FC<Props> = ({ mbean }) => {
 
         <Button
           variant={ButtonVariant.danger}
-          onClick={() => setIsOpen(true)}
+          onClick={openDeleteModal}
         >
           Delete topic
         </Button>
@@ -97,25 +130,8 @@ export const TopicDelete: React.FC<Props> = ({ mbean }) => {
         <Modal
           title="Confirm deletion"
           isOpen={isOpen}
-          onClose={() => setIsOpen(false)}
-          actions={[
-            <Button
-              key="confirm"
-              variant={ButtonVariant.danger}
-              isDisabled={isDeleting}
-              onClick={del}
-            >
-              {isDeleting ? <Spinner size="sm" /> : 'Yes, delete'}
-            </Button>,
-            <Button
-              key="cancel"
-              variant={ButtonVariant.secondary}
-              isDisabled={isDeleting}
-              onClick={() => setIsOpen(false)}
-            >
-              Cancel
-            </Button>
-          ]}
+          onClose={closeDeleteModal}
+          actions={modalActions}
         >
           This action will permanently delete the topic <b>{topicName}</b>.
           This cannot be undone.

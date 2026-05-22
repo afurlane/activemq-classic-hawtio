@@ -19,20 +19,20 @@ export function formatBody(raw: string | null): { text: string; html: string, la
   try {
     const parsed = JSON.stringify(JSON.parse(trimmed), null, 2);
     return { text: parsed, html: hljs.highlight(parsed, { language: "json" }).value, lang: "json" }
-  } catch (_) {}
+  } catch {}
 
   if (/^<\?xml|<[\w]+[\s\S]*>/.test(trimmed)) {
     try {
         new DOMParser().parseFromString(trimmed, "application/xml");
         const parsed = formatXml(trimmed, { indentation: '  ', collapseContent: true });
         return { text: parsed, html: hljs.highlight(parsed, { language: "xml" }).value, lang: "xml" };
-    } catch (_) {}
+    } catch {}
   }
 
   try {
       const yamlObj = yaml.dump(yaml.load(trimmed), { indent: 2 });
       return { text: yamlObj, html: hljs.highlight(yamlObj, { language: "yaml" }).value, lang: "yaml" };
-  } catch (_) {}
+  } catch {}
 
   return { text: trimmed, html: trimmed, lang: "text" }
 }

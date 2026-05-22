@@ -3,13 +3,15 @@ import { activemq } from '../services/activemq/ActiveMQClassicService'
 import { Queue } from '../types/domain'
 
 export function useQueues(brokerName: string | null) {
+  const enabled = !!brokerName
+
   return useSWR<Queue[]>(
-    brokerName ? ['queues', brokerName] : null,
-    () => activemq.listQueues(brokerName!),
+    enabled ? ['queues', brokerName] : ['queues', 'disabled'],
+    enabled ? () => activemq.listQueues(brokerName!) : null,
     {
-      refreshInterval: 5000,
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
+      refreshInterval: enabled ? 5000 : 0,
+      revalidateOnFocus: enabled,
+      revalidateOnReconnect: enabled,
     }
   )
 }

@@ -1,18 +1,20 @@
 import useSWR from 'swr'
 import { activemq } from '../services/activemq/ActiveMQClassicService'
 
-export function useQueueMessages(mbean: string, page: number, pageSize: number) {
+export function useQueueMessages(
+  mbean: string,
+  autoRefresh: boolean,
+  interval: number
+) {
   return useSWR(
-    ['queue-messages', mbean, page],
+    ['queue-messages', mbean],
     async () => {
-      const raw = await activemq.browseQueue(mbean) // carica TUTTI
-      const total = raw.length
-
-      const start = page * pageSize
-      const messages = raw.slice(start, start + pageSize)
-
-      return { messages, total }
+      const raw = await activemq.browseQueue(mbean);
+      return raw;
     },
-    { revalidateOnFocus: false }
-  )
+    {
+      revalidateOnFocus: false,
+      refreshInterval: autoRefresh ? interval : 0,
+    }
+  );
 }

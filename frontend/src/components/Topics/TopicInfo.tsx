@@ -9,11 +9,7 @@ import {
   DescriptionListDescription
 } from '@patternfly/react-core'
 
-import { ActiveMQTopicAttributes } from '../../types/activemq'
-
-interface Props {
-  attrs: ActiveMQTopicAttributes
-}
+import { TopicMetricsLatest } from 'src/hooks/useTopicMetrics'
 
 const formatBytes = (bytes: number) => {
   if (bytes === undefined || bytes === null) return '—'
@@ -27,16 +23,31 @@ const formatBytes = (bytes: number) => {
   return `${value.toFixed(1)} ${units[i]}`
 }
 
-export const TopicInfo: React.FC<Props> = ({ attrs }) => {
+const formatNullableNumber = (value: number | null | undefined) => {
+  if (value === undefined || value === null) return '—'
+  return value
+}
+
+export const TopicInfo: React.FC<{ latest: TopicMetricsLatest }> = ({ latest }) => {
   const items = [
-    { label: 'Producers', value: attrs.ProducerCount },
-    { label: 'Subscribers', value: attrs.ConsumerCount },
-    { label: 'Enqueued', value: attrs.EnqueueCount },
-    { label: 'Dequeued', value: attrs.DequeueCount },
-    { label: 'Dispatched', value: attrs.DispatchCount },
-    { label: 'Memory Usage (%)', value: `${attrs.MemoryPercentUsage}%` },
-    { label: 'Memory Used', value: formatBytes(attrs.MemoryUsageByteCount) },
-    { label: 'Memory Limit', value: formatBytes(attrs.MemoryLimit) }
+    { label: 'Object Name', value: latest.objectName ?? '—' },
+    { label: 'Producers', value: latest.producers },
+    { label: 'Subscribers', value: latest.consumers },
+    { label: 'Enqueued', value: latest.enqueue },
+    { label: 'Dequeued', value: latest.dequeue },
+    { label: 'Dispatched', value: latest.dispatch },
+    { label: 'Memory Usage (%)', value: `${latest.memoryPercent}%` },
+    { label: 'Memory Usage (bytes)', value: formatBytes(latest.memoryUsageBytes) },
+    { label: 'Memory Limit', value: formatBytes(latest.memoryLimit) },
+    { label: 'Avg Enqueue Time', value: formatNullableNumber(latest.averageEnqueueTime) },
+    { label: 'Max Enqueue Time', value: formatNullableNumber(latest.maxEnqueueTime) },
+    { label: 'Min Enqueue Time', value: formatNullableNumber(latest.minEnqueueTime) },
+    { label: 'Avg Message Size', value: formatNullableNumber(latest.averageMessageSize) },
+    { label: 'Max Message Size', value: formatNullableNumber(latest.maxMessageSize) },
+    { label: 'Min Message Size', value: formatNullableNumber(latest.minMessageSize) },
+    { label: 'Network Enqueues', value: formatNullableNumber(latest.networkEnqueues) },
+    { label: 'Network Dequeues', value: formatNullableNumber(latest.networkDequeues) },
+    { label: 'Options', value: latest.options ?? '—' }
   ]
 
   return (

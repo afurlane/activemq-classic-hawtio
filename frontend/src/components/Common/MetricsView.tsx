@@ -12,6 +12,8 @@ import {
 
 import { Sparkline } from '../Common/Sparkline'
 
+const flexColumnDirection = { default: 'column' } as const
+
 interface MetricItem {
   label: string
   value: React.ReactNode
@@ -42,7 +44,7 @@ export const MetricsView: React.FC<Props> = ({ title, items }) => {
                 className="pf-v5-u-border-left pf-v5-u-border-color-200 pf-v5-u-p-sm"
               >
                 <CardBody className="pf-v5-u-p-0">
-                  <Flex direction={{ default: 'column' }}>
+                  <Flex direction={flexColumnDirection}>
                     
                     {/* Label + trend */}
                     <FlexItem>

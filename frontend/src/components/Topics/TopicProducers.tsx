@@ -7,14 +7,10 @@ import {
   Alert
 } from '@patternfly/react-core'
 
-import { ActiveMQTopicAttributes } from '../../types/activemq'
+import { TopicMetricsLatest } from 'src/hooks/useTopicMetrics'
 
-interface Props {
-  attrs: ActiveMQTopicAttributes
-}
-
-export const TopicProducers: React.FC<Props> = ({ attrs }) => {
-  const count = attrs.ProducerCount
+export const TopicProducers: React.FC<{ latest: TopicMetricsLatest }> = ({ latest }) => {
+  const count = latest.producers
 
   return (
     <Card isFlat isCompact>
@@ -22,13 +18,7 @@ export const TopicProducers: React.FC<Props> = ({ attrs }) => {
         <Title headingLevel="h4">Producers</Title>
 
         {count === 0 ? (
-          <Alert
-            variant="warning"
-            isInline
-            title="No active producers"
-          >
-            This topic currently has no producers connected.
-          </Alert>
+          <Alert variant="warning" isInline title="No active producers" />
         ) : (
           <Label color="blue">
             {count} active producer{count !== 1 ? 's' : ''}

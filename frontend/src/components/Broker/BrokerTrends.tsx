@@ -21,32 +21,25 @@ import {
 } from '@patternfly/react-icons'
 
 import { Sparkline } from '../Common/Sparkline'
-import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
-import { useBrokerTrendsHistory } from '../../hooks/useBrokerTrendsHistory'
+import type { BrokerMetrics, BrokerMetricsHistory } from '../../hooks/useBrokerMetrics'
 
-export const BrokerTrends: React.FC = () => {
-  const brokerName = useSelectedBrokerName()
+interface Props {
+  latest: BrokerMetrics
+  history: BrokerMetricsHistory
+}
 
-  if (!brokerName) {
+export const BrokerTrends: React.FC<Props> = ({ latest, history }) => {
+  if (!latest || !history) {
     return (
       <Card isFlat isCompact>
         <CardBody>
-          <Alert variant="danger" title="No broker selected" isInline />
+          <Alert variant="info" title="Loading broker trends…" isInline />
         </CardBody>
       </Card>
     )
   }
 
-  const { history, latest } = useBrokerTrendsHistory(brokerName)
-
-  if (!latest) {
-    return (
-      <Card isFlat isCompact>
-        <CardBody>Loading broker trends…</CardBody>
-      </Card>
-    )
-  }
-
+  // Identica alla tua logica
   const severity =
     latest.avgMemory > 80 || latest.totalLag > 50000
       ? 'red'
@@ -72,7 +65,7 @@ export const BrokerTrends: React.FC = () => {
     <Card isFlat isCompact>
       <CardHeader>
         <CardTitle>Broker Trends</CardTitle>
-        <Label color={severity} icon={severityIcon} style={{ marginLeft: 'auto' }}>
+        <Label color={severity} icon={severityIcon} className="pf-v5-u-ml-auto">
           {severityLabel}
         </Label>
       </CardHeader>
@@ -113,7 +106,7 @@ export const BrokerTrends: React.FC = () => {
         <Sparkline data={history.totalLag} color="#dc3545" />
 
         {/* EXTRA METRICS */}
-        <Flex style={{ marginTop: '1rem' }}>
+        <Flex className="pf-v5-u-mt-md">
           <FlexItem>
             <strong>Active Consumers:</strong> {latest.consumers}
           </FlexItem>
