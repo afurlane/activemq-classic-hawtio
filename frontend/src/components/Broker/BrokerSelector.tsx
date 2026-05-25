@@ -16,31 +16,40 @@ export function BrokerSelector() {
 
   const [open, setOpen] = React.useState(false)
 
+  const handleToggleClick = React.useCallback(() => {
+    setOpen(prevOpen => !prevOpen)
+  }, [])
+
+  const renderToggle = React.useCallback(
+    (toggleRef: React.Ref<HTMLButtonElement>) => (
+      <MenuToggle ref={toggleRef} onClick={handleToggleClick} isExpanded={open}>
+        {brokerName ?? 'Select broker'}
+      </MenuToggle>
+    ),
+    [brokerName, handleToggleClick, open],
+  )
+
+  const handleSelect = React.useCallback(
+    (_event: unknown, value: string | number | undefined) => {
+      if (typeof value === 'string') {
+        setBrokerName(value)
+        setOpen(false)
+      }
+    },
+    [setBrokerName],
+  )
+
   return (
     <Select
       isOpen={open}
       selected={brokerName ?? undefined}
       onOpenChange={setOpen}
-      toggle={toggleRef => (
-        <MenuToggle
-          ref={toggleRef}
-          onClick={() => setOpen(!open)}
-          isExpanded={open}
-        >
-          {brokerName ?? 'Select broker'}
-        </MenuToggle>
-      )}
+      onSelect={handleSelect}
+      toggle={renderToggle}
     >
       <SelectList>
         {brokers.map(b => (
-          <SelectOption
-            key={b.name}
-            value={b.name}
-            onClick={() => {
-              setBrokerName(b.name)
-              setOpen(false)
-            }}
-          >
+          <SelectOption key={b.name} value={b.name}>
             {b.name}
           </SelectOption>
         ))}

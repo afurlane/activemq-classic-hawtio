@@ -15,23 +15,28 @@ import {
 } from "@patternfly/react-core"
 
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
-import { useSelectedBrokerName } from "../../hooks/useSelectedBroker"
-import { useTopProducers } from "../../hooks/useTopProducers"
+import type { BrokerMetrics } from "../../hooks/useBrokerMetrics"
 
-export const TopProducers: React.FC = () => {
-  const brokerName = useSelectedBrokerName()
+interface Props {
+  latest: BrokerMetrics
+}
 
-  if (!brokerName) {
+const producerCardStyle = { marginBottom: '0.75rem' } as const
+const producerHeaderJustifyContent = { default: 'justifyContentSpaceBetween' } as const
+const producerDescriptionListStyle = { marginTop: '0.5rem' } as const
+
+export const TopProducers: React.FC<Props> = ({ latest }) => {
+  const producers = latest.topProducers ?? []
+
+  if (!producers) {
     return (
       <Card isFlat isCompact>
         <CardBody>
-          <Alert variant="danger" title="No broker selected" isInline />
+          <Alert variant="danger" title="No producer data available" isInline />
         </CardBody>
       </Card>
     )
   }
-
-  const { data: producers = [], isLoading, error } = useTopProducers(brokerName)
 
   return (
     <Card isFlat isCompact>
@@ -41,23 +46,15 @@ export const TopProducers: React.FC = () => {
 
       <CardBody>
 
-        {isLoading && (
-          <Alert variant="info" title="Loading producers…" isInline />
-        )}
-
-        {error && (
-          <Alert variant="danger" title="Failed to load producers" isInline />
-        )}
-
-        {!isLoading && !error && producers.length === 0 && (
+        {producers.length === 0 && (
           <Alert variant="info" title="No producers found" isInline />
         )}
 
         {producers.map((p, i) => (
-          <Card key={i} isCompact isFlat style={{ marginBottom: '0.75rem' }}>
+          <Card key={i} isCompact isFlat style={producerCardStyle}>
             <CardBody>
 
-              <Flex justifyContent={{ default: 'justifyContentSpaceBetween' }}>
+              <Flex justifyContent={producerHeaderJustifyContent}>
                 <FlexItem>
                   <strong>{p.clientId}</strong>
                 </FlexItem>
@@ -71,7 +68,7 @@ export const TopProducers: React.FC = () => {
                 )}
               </Flex>
 
-              <DescriptionList isHorizontal style={{ marginTop: '0.5rem' }}>
+              <DescriptionList isHorizontal style={producerDescriptionListStyle}>
                 <DescriptionListGroup>
                   <DescriptionListTerm>Destination</DescriptionListTerm>
                   <DescriptionListDescription>

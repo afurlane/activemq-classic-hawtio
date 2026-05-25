@@ -15,6 +15,8 @@ import { Queue } from '../../types/domain'
 import { ChartColors } from '../../themes/charts'
 import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from '@patternfly/react-icons'
 
+const flexDirectionColumn = { default: 'column' } as const
+
 export const QueueThroughput: React.FC<{ history: Queue[], intervalMs?: number }> = ({
   history,
   intervalMs = 2000
@@ -75,7 +77,7 @@ export const QueueThroughput: React.FC<{ history: Queue[], intervalMs?: number }
                 className="pf-v5-u-border-left pf-v5-u-border-color-200 pf-v5-u-p-sm"
               >
                 <CardBody className="pf-v5-u-p-0">
-                  <Flex direction={{ default: 'column' }}>
+                  <Flex direction={flexDirectionColumn}>
                     
                     {/* Label + trend */}
                     <FlexItem>

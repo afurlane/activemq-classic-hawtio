@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { activemq } from '../services/activemq/ActiveMQClassicService'
 import { Queue } from '../types/domain'
 
@@ -6,17 +6,21 @@ export interface QueueMetrics {
   latest: Queue | null
   history: Queue[]
   loading: boolean
+  refresh: () => void
 }
 
-export function useQueueMetrics(mbean: string, intervalMs: number = 2000): QueueMetrics {
+export function useQueueMetrics(
+  mbean: string,
+  autoRefresh: boolean,
+  intervalMs: number
+): QueueMetrics {
   const [latest, setLatest] = useState<Queue | null>(null)
   const [history, setHistory] = useState<Queue[]>([])
   const [loading, setLoading] = useState(true)
 
-  const poll = async () => {
+  const poll = useCallback(async () => {
     if (!mbean) return
 
-    // ⬅️ ActiveMQClassicService deve avere questo metodo
     const q = await activemq.getQueue(mbean)
     if (!q) return
 
@@ -28,7 +32,7 @@ export function useQueueMetrics(mbean: string, intervalMs: number = 2000): Queue
     })
 
     setLoading(false)
-  }
+  }, [mbean])
 
   useEffect(() => {
     setLatest(null)
@@ -36,13 +40,17 @@ export function useQueueMetrics(mbean: string, intervalMs: number = 2000): Queue
     setLoading(true)
 
     if (mbean) poll()
+  }, [mbean, poll])
+
+  useEffect(() => {
+    if (!autoRefresh) return
 
     const id = setInterval(() => {
-      if (mbean) poll()
+      poll()
     }, intervalMs)
 
     return () => clearInterval(id)
-  }, [mbean, intervalMs])
+  }, [autoRefresh, intervalMs, poll])
 
-  return { latest, history, loading }
+  return { latest, history, loading, refresh: poll }
 }

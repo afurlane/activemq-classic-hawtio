@@ -30,6 +30,8 @@ type AlertItem = {
   severity: number   // 0 = critical, 1 = warning, 2 = info, 3 = success
 }
 
+const alertTitleSpaceItems = { default: 'spaceItemsSm' } as const
+
 export const QueueAlerts: React.FC<Props> = ({ queue, history }) => {
 
   const alerts = useMemo(() => computeQueueAlerts(queue, history), [queue, history])
@@ -57,7 +59,7 @@ export const QueueAlerts: React.FC<Props> = ({ queue, history }) => {
                 isInline
                 customIcon={a.icon}
                 title={
-                  <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+                  <Flex spaceItems={alertTitleSpaceItems}>
                     <FlexItem>{a.icon}</FlexItem>
                     <FlexItem>{a.title}</FlexItem>
                   </Flex>

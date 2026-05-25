@@ -6,37 +6,16 @@ import {
   Alert,
   AlertGroup
 } from '@patternfly/react-core'
+import type { AlertProps } from '@patternfly/react-core'
+import { TopicMetricsLatest } from 'src/hooks/useTopicMetrics'
 
-import { ActiveMQTopicAttributes } from '../../types/activemq'
+type Severity = AlertProps['variant']
 
-interface Props {
-  attrs: ActiveMQTopicAttributes
-}
-
-type Severity = 'success' | 'warning' | 'danger'
-
-export const TopicAlerts: React.FC<Props> = ({ attrs }) => {
-
-  const rules: Array<{
-    when: boolean
-    message: string
-    severity: Severity
-  }> = [
-    {
-      when: attrs.MemoryPercentUsage > 80,
-      message: 'High memory usage',
-      severity: 'danger'
-    },
-    {
-      when: attrs.ProducerCount === 0,
-      message: 'No producers',
-      severity: 'warning'
-    },
-    {
-      when: attrs.ConsumerCount === 0,
-      message: 'No subscribers',
-      severity: 'warning'
-    }
+export const TopicAlerts: React.FC<{ latest: TopicMetricsLatest }> = ({ latest }) => {
+  const rules:Array<{when: boolean, message: string, severity: Severity}> = [
+    { when: latest.memoryPercent > 80, message: 'High memory usage', severity: 'danger' },
+    { when: latest.producers === 0, message: 'No producers', severity: 'warning' },
+    { when: latest.consumers === 0, message: 'No subscribers', severity: 'warning' }
   ]
 
   const alerts = rules.filter(r => r.when)
@@ -47,22 +26,13 @@ export const TopicAlerts: React.FC<Props> = ({ attrs }) => {
         <Title headingLevel="h4">Alerts</Title>
 
         {alerts.length === 0 && (
-          <Alert
-            variant="success"
-            title="No alerts"
-            isInline
-          />
+          <Alert variant="success" title="No alerts" isInline />
         )}
 
         {alerts.length > 0 && (
           <AlertGroup isLiveRegion>
             {alerts.map((a, i) => (
-              <Alert
-                key={i}
-                variant={a.severity}
-                title={a.message}
-                isInline
-              />
+              <Alert key={i} variant={a.severity} title={a.message} isInline />
             ))}
           </AlertGroup>
         )}

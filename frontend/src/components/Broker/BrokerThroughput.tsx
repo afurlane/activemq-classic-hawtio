@@ -18,28 +18,36 @@ import {
   ExclamationCircleIcon
 } from '@patternfly/react-icons'
 
-import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
-import { useBrokerThroughputRates } from '../../hooks/useBrokerThroughputRates'
+import type { BrokerMetrics, BrokerMetricsHistory } from '../../hooks/useBrokerMetrics'
 
-export const BrokerThroughput: React.FC = () => {
-  const brokerName = useSelectedBrokerName()
+interface Props {
+  latest: BrokerMetrics
+  history: BrokerMetricsHistory
+}
 
-  if (!brokerName) {
+const labelStyle = { marginLeft: 'auto' }
+
+export const BrokerThroughput: React.FC<Props> = ({ latest, history }) => {
+  if (!latest || !history) {
     return (
       <Card isFlat isCompact>
         <CardBody>
-          <Alert variant="danger" title="No broker selected" isInline />
+          <Alert variant="danger" title="No throughput data available" isInline />
         </CardBody>
       </Card>
     )
   }
 
-  const rates = useBrokerThroughputRates(brokerName)
+  // Throughput rates (msg/sec)
+  const enqueue = history.enqueueRate.at(-1) ?? 0
+  const dequeue = history.dequeueRate.at(-1) ?? 0
+  const dispatch = history.dispatchRate.at(-1) ?? 0
 
+  // Severity logic (identica alla tua)
   const severity =
-    rates.enqueue > 5000 || rates.dispatch > 5000
+    enqueue > 5000 || dispatch > 5000
       ? 'green'
-      : rates.enqueue > 1000 || rates.dispatch > 1000
+      : enqueue > 1000 || dispatch > 1000
       ? 'orange'
       : 'red'
 
@@ -61,7 +69,7 @@ export const BrokerThroughput: React.FC = () => {
     <Card isFlat isCompact>
       <CardHeader>
         <CardTitle>Broker Throughput (msg/sec)</CardTitle>
-        <Label color={severity} icon={severityIcon} style={{ marginLeft: 'auto' }}>
+        <Label color={severity} icon={severityIcon} style={labelStyle}>
           {severityLabel}
         </Label>
       </CardHeader>
@@ -72,21 +80,21 @@ export const BrokerThroughput: React.FC = () => {
           <DescriptionListGroup>
             <DescriptionListTerm>Enqueue</DescriptionListTerm>
             <DescriptionListDescription>
-              {rates.enqueue.toFixed(1)}
+              {enqueue.toFixed(1)}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
             <DescriptionListTerm>Dequeue</DescriptionListTerm>
             <DescriptionListDescription>
-              {rates.dequeue.toFixed(1)}
+              {dequeue.toFixed(1)}
             </DescriptionListDescription>
           </DescriptionListGroup>
 
           <DescriptionListGroup>
             <DescriptionListTerm>Dispatch</DescriptionListTerm>
             <DescriptionListDescription>
-              {rates.dispatch.toFixed(1)}
+              {dispatch.toFixed(1)}
             </DescriptionListDescription>
           </DescriptionListGroup>
 

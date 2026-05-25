@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import {
   Card,
   CardBody,
@@ -15,10 +15,19 @@ import {
 import { Queue } from '../../types/domain'
 import { ChartColors } from '../../themes/charts'
 
+const chartPadding = { top: 10, bottom: 40, left: 40, right: 10 }
+const axisStyle = {
+  tickLabels: { fontSize: 8, padding: 2 }
+}
+const enqueueLineStyle = { data: { stroke: ChartColors.enqueue, strokeWidth: 1 } }
+const dequeueLineStyle = { data: { stroke: ChartColors.dequeue, strokeWidth: 1 } }
+
 export const QueueThroughputChart: React.FC<{ history: Queue[], intervalMs?: number }> = ({
   history,
   intervalMs = 2000
 }) => {
+
+  const formatTimeTick = useCallback((t: Date | number | string) => new Date(t).toLocaleTimeString(), [])
 
   const data = useMemo(() => {
     if (history.length < 2) return null
@@ -48,31 +57,27 @@ export const QueueThroughputChart: React.FC<{ history: Queue[], intervalMs?: num
 
             <Chart
             height={160}
-            padding={{ top: 10, bottom: 40, left: 40, right: 10 }}
+            padding={chartPadding}
             containerComponent={<ChartVoronoiContainer />}
             >
             <ChartAxis
-                tickFormat={t => new Date(t).toLocaleTimeString()}
-                style={{
-                tickLabels: { fontSize: 8, padding: 2 }
-                }}
+              tickFormat={formatTimeTick}
+                style={axisStyle}
             />
 
             <ChartAxis
                 dependentAxis
-                style={{
-                tickLabels: { fontSize: 8, padding: 2 }
-                }}
+              style={axisStyle}
             />
 
             <ChartLine
                 data={data.map(d => ({ x: d.time, y: d.enqueue }))}
-                style={{ data: { stroke: ChartColors.enqueue, strokeWidth: 1 } }}
+              style={enqueueLineStyle}
             />
 
             <ChartLine
                 data={data.map(d => ({ x: d.time, y: d.dequeue }))}
-                style={{ data: { stroke: ChartColors.dequeue, strokeWidth: 1 } }}
+              style={dequeueLineStyle}
             />
             </Chart>
       </CardBody>

@@ -18,8 +18,10 @@ function badge(score, label) {
 </svg>`;
 }
 
-const creedengo = JSON.parse(fs.readFileSync("reports/creedengo.json")).score;
-const overall = JSON.parse(fs.readFileSync("reports/overall.json")).score;
+const { creedengo, total } = JSON.parse(fs.readFileSync("reports/overall.json"));
+
+console.log(`Creedengo Score: ${creedengo}`);
+console.log(`Overall Score: ${total}`);
 
 fs.writeFileSync("badges/creedengo.svg", badge(creedengo, "Creedengo"));
-fs.writeFileSync("badges/overall.svg", badge(overall, "Overall"));
+fs.writeFileSync("badges/overall.svg", badge(total, "Overall"));
