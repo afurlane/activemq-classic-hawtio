@@ -1,0 +1,55 @@
+name: Release (1.0)
+
+on:
+  workflow_run:
+    workflows: ["Green Checks"]
+    types:
+      - completed
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.ref == 'refs/heads/1.0' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Release Please
+        id: release
+        uses: googleapis/release-please-action@v5
+        with:
+          config-file: .release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      - name: Set up JDK
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set Maven version from tag
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          VERSION="${{ steps.release.outputs.tag_name }}"
+          VERSION="${VERSION#v}"
+          mvn -B versions:set -DnewVersion="$VERSION"
+
+      - name: Build plugin
+        if: ${{ steps.release.outputs.release_created }}
+        run: mvn -B clean package
+
+      - name: Upload JAR to Release
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ steps.release.outputs.tag_name }}" \
+            "target/activemq-classic-hawtio-*.jar" \
+            --clobber
