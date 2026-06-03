@@ -45,13 +45,13 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install dependencies (npm audit)
-        run: |
-          yarn install --frozen-lockfile --immutable --immutable-cache
-          yarn audit --groups dependencies || true
-
       - name: Build plugin (Maven)
         run: ./mvnw -B clean install
+
+      - name: Audit FE dependencies 
+        run: |
+          cd frontend
+          yarn npm audit --environment production || true
 
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v7

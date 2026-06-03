@@ -12,7 +12,7 @@ export const MessageTypeLabel: React.FC<{ type: string }> = ({ type }) => {
     case "object":
       return <Label color="orange">ObjectMessage</Label>
     case "stream":
-      return <Label color="cyan">StreamMessage</Label>
+      return <Label color="yellow">StreamMessage</Label>
     default:
       return <Label color="grey">No body</Label>
   }

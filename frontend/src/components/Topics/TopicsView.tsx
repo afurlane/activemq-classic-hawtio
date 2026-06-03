@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import {
   PageSection,
-  PageSectionVariants,
   Title,
   Card,
   CardBody,
@@ -71,8 +70,8 @@ export const TopicsView: React.FC = () => {
   // NO BROKER SELECTED
   if (!brokerName) {
     return (
-      <PageSection>
-        <Card isFlat isCompact>
+      <PageSection hasBodyWrapper={false}>
+        <Card isCompact>
           <CardBody>
             <Alert variant="danger" title="No broker selected" isInline />
           </CardBody>
@@ -83,7 +82,7 @@ export const TopicsView: React.FC = () => {
 
   if (loading) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Spinner size="lg" />
         <Title headingLevel="h3" style={TITLE_STYLE}>
           Loading topics…
@@ -94,7 +93,7 @@ export const TopicsView: React.FC = () => {
 
   if (error) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Alert variant="danger" title="Failed to load topics" isInline>
           {error}
         </Alert>
@@ -103,10 +102,10 @@ export const TopicsView: React.FC = () => {
   }
 
   return (
-    <PageSection variant={PageSectionVariants.light}>
+    <PageSection hasBodyWrapper={false} >
       <Title headingLevel="h2">Topics</Title>
 
-      <Card isFlat isCompact style={CARD_STYLE}>
+      <Card isCompact style={CARD_STYLE}>
         <CardBody>
           <Table variant="compact">
             <Thead>

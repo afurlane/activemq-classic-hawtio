@@ -25,7 +25,7 @@ export const BrokerStorage: React.FC<Props> = ({ latest }) => {
 
   if (!storage) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
           <Alert variant="danger" title="No storage metrics available" isInline />
         </CardBody>
@@ -41,7 +41,7 @@ export const BrokerStorage: React.FC<Props> = ({ latest }) => {
       : 'green'
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardHeader>
         <CardTitle>Broker Storage</CardTitle>
         <Label color={severity} style={labelAutoMarginStyle}>

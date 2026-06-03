@@ -29,7 +29,7 @@ export const TopConsumers: React.FC<Props> = ({ latest }) => {
 
   if (!consumers) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
           <Alert variant="danger" title="No consumer data available" isInline />
         </CardBody>
@@ -38,7 +38,7 @@ export const TopConsumers: React.FC<Props> = ({ latest }) => {
   }
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardHeader>
         <CardTitle>Top Consumers</CardTitle>
       </CardHeader>
@@ -50,7 +50,7 @@ export const TopConsumers: React.FC<Props> = ({ latest }) => {
         )}
 
         {consumers.map((c, i) => (
-          <Card key={i} isCompact isFlat style={consumerCardStyle}>
+          <Card key={i} isCompact style={consumerCardStyle}>
             <CardBody>
 
               <Flex justifyContent={justifyContentSpaceBetween}>

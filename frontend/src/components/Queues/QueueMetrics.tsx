@@ -20,9 +20,9 @@ export const QueueMetrics: React.FC<{ history: Queue[] }> = ({ history }) => {
   }, [history])
 
   const trend = (c: number, p: number) =>
-    c > p ? <ArrowUpIcon color="var(--pf-v5-global--success-color--100)" /> :
-    c < p ? <ArrowDownIcon color="var(--pf-v5-global--danger-color--100)" /> :
-    <MinusIcon color="var(--pf-v5-global--palette--black-500)" />
+    c > p ? <ArrowUpIcon color="var(--pf-t--temp--dev--tbd)"/* CODEMODS: original v5 color was --pf-v5-global--success-color--100 */ /> :
+    c < p ? <ArrowDownIcon color="var(--pf-t--temp--dev--tbd)"/* CODEMODS: original v5 color was --pf-v5-global--danger-color--100 */ /> :
+    <MinusIcon color="var(--pf-t--temp--dev--tbd)"/* CODEMODS: original v5 color was --pf-v5-global--palette--black-500 */ />
 
   const items = useMemo(() => {
     if (data.length < 2) return []

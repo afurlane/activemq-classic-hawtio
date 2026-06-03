@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { mutate } from 'swr'
 import {
   PageSection,
-  PageSectionVariants,
   Title,
   Tabs,
   Tab,
@@ -42,7 +41,10 @@ import { useSelectedBroker } from '../../hooks/useSelectedBroker'
 import { useBrokers } from '../../hooks/useBrokers'
 
 const noPadding = { default: 'noPadding' } as const;
-const alighRight = { default: 'alignRight' } as const;
+const alighRight = { default: 'alignEnd' } as const;
+
+const ACTIONS_STYLE = { fontSize: '1.5rem', lineHeight: 1 } as const;
+const ACTIONS_ICON = <span style={ACTIONS_STYLE}>⋮</span>;
 
 const viewToTab = {
   connectors: 0,
@@ -125,10 +127,9 @@ export const BrokerPanel: React.FC = () => {
         ref={toggleRef}
         onClick={onToggleClick}
         isExpanded={actionsOpen}
-        variant="plain"
-      >
-        ⋮
-      </MenuToggle>
+        variant="plain"        
+        icon={ACTIONS_ICON}
+      />
     ),
     [actionsOpen, onToggleClick]
   );
@@ -156,8 +157,8 @@ export const BrokerPanel: React.FC = () => {
   return (
     <>
       {/* HEADER */}
-      <PageSection variant={PageSectionVariants.light} padding={noPadding}>
-        <PageSection variant={PageSectionVariants.light}>
+      <PageSection hasBodyWrapper={false}  padding={noPadding}>
+        <PageSection hasBodyWrapper={false} >
           <Breadcrumb>
             <BreadcrumbItem to="#">ActiveMQ</BreadcrumbItem>
             <BreadcrumbItem isActive>
@@ -166,7 +167,7 @@ export const BrokerPanel: React.FC = () => {
           </Breadcrumb>
         </PageSection>
 
-        <PageSection variant={PageSectionVariants.light}>
+        <PageSection hasBodyWrapper={false} >
           <Toolbar>
             <ToolbarContent>
 
@@ -210,7 +211,7 @@ export const BrokerPanel: React.FC = () => {
       </PageSection>
 
       {/* MAIN CONTENT */}
-      <PageSection isFilled key={refreshVersion}>
+      <PageSection hasBodyWrapper={false} isFilled key={refreshVersion}>
         {route.view === 'connectors' && <ConnectorsView />}
 
         {route.view === 'queues' && !route.queueName && <QueuesView />}
