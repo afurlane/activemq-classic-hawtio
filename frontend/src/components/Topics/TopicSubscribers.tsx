@@ -51,7 +51,7 @@ export const TopicSubscribers: React.FC<Props> = ({ latest }) => {
   )
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
         <Title headingLevel="h4">Subscribers</Title>
 

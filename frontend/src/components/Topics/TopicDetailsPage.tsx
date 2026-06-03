@@ -2,7 +2,6 @@
 import React, { useCallback, useState } from 'react'
 import {
   PageSection,
-  PageSectionVariants,
   Title,
   Card,
   CardBody,
@@ -42,7 +41,7 @@ export const TopicDetailsPage: React.FC<Props> = ({ topicName }) => {
   
   if (!brokerName) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
           <Alert variant="danger" title="No broker selected" isInline />
         </CardBody>
@@ -52,7 +51,7 @@ export const TopicDetailsPage: React.FC<Props> = ({ topicName }) => {
 
   if (isLoading) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Spinner size="lg" />
         <Title headingLevel="h3" style={loadingTitleStyle}>
           Loading topic…
@@ -63,7 +62,7 @@ export const TopicDetailsPage: React.FC<Props> = ({ topicName }) => {
 
   if (error || !data) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Alert variant="danger" title={String(error)} isInline />
       </PageSection>
     )
@@ -73,11 +72,11 @@ export const TopicDetailsPage: React.FC<Props> = ({ topicName }) => {
 
   return (
     <>
-      <PageSection variant={PageSectionVariants.light}>
+      <PageSection hasBodyWrapper={false} >
         <Title headingLevel="h2">Topic: {latest.name}</Title>
       </PageSection>
 
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Tabs
           activeKey={activeTab}
           onSelect={handleTabSelect}
@@ -94,7 +93,7 @@ export const TopicDetailsPage: React.FC<Props> = ({ topicName }) => {
         </Tabs>
       </PageSection>
 
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         {activeTab === 'info' && <TopicInfo latest={latest} />}
         {activeTab === 'messages' && <TopicBrowser mbean={latest.mbean} />}
         {activeTab === 'charts' && <TopicTrends history={history} />}

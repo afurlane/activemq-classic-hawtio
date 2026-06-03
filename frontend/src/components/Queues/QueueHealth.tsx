@@ -76,7 +76,7 @@ export const QueueHealth: React.FC<Props> = ({ queue }) => {
   ]
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
         <Title headingLevel="h4">Health Overview</Title>
 

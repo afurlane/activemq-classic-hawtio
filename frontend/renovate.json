@@ -1,0 +1,38 @@
+{
+  "extends": [
+    "config:recommended"
+  ],
+  "rangeStrategy": "bump",
+  "dependencyDashboard": true,
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["^@patternfly/"],
+      "enabled": false
+    },
+    {
+      "matchPackageNames": ["react", "react-dom", "@swc/core"],
+      "enabled": false
+    },
+    {
+      "matchDepTypes": ["dependencies"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": false
+    },
+    {
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchPackagePatterns": ["^@types/"],
+      "automerge": true
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchPackagePatterns": ["eslint", "jest", "typescript"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
+    }
+  ]
+}

@@ -75,7 +75,7 @@ export const ConnectorsView: React.FC = () => {
 
   if (!brokerName) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
           <Alert variant="danger" title="No broker selected" isInline />
         </CardBody>
@@ -85,7 +85,7 @@ export const ConnectorsView: React.FC = () => {
 
   const panel = selected && (
     <DrawerPanelContent widths={drawerPanelWidths}>
-      <Card isFlat>
+      <Card>
         <CardBody>
           <Title headingLevel="h3">Connections for {selected.name}</Title>
 
@@ -132,7 +132,7 @@ export const ConnectorsView: React.FC = () => {
   )
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <Title headingLevel="h2">Connectors</Title>
 
       <Drawer isExpanded={isDrawerExpanded}>

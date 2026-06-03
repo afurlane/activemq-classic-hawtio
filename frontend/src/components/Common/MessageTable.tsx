@@ -165,14 +165,12 @@ export const MessageTable: React.FC<Props> = ({
               </Td>
 
               <Td>
-                <Button
+                <Button icon={<EllipsisVIcon />}
                   variant="plain"
                   aria-label="Apri dettagli"
                   data-index={i}
                   onClick={onOpenDetails}
-                >
-                  <EllipsisVIcon />
-                </Button>
+                 />
               </Td>
             </Tr>
           ))}

@@ -4,7 +4,7 @@ import {
   ChartLine,
   ChartVoronoiContainer,
   ChartTooltip
-} from '@patternfly/react-charts'
+} from '@patternfly/react-charts/victory'
 
 interface Props {
   data: number[]
@@ -14,7 +14,7 @@ interface Props {
 
 export const Sparkline: React.FC<Props> = ({
   data,
-  color = 'var(--pf-v5-global--primary-color--100)',
+  color = "var(--pf-t--temp--dev--tbd)"/* CODEMODS: original v5 color was --pf-v5-global--primary-color--100 */,
   height = 28
 }) => {
 
@@ -39,7 +39,7 @@ export const Sparkline: React.FC<Props> = ({
   const chartLabels = useCallback(({ datum }: { datum: { y: number } }) => `${datum.y}`, [])
   const tooltipFlyoutStyle = useMemo(
     () => ({
-      fill: 'var(--pf-v5-global--palette--black-700)',
+      fill: "var(--pf-t--temp--dev--tbd)"/* CODEMODS: original v5 color was --pf-v5-global--palette--black-700 */,
       stroke: 'none',
       padding: 2
     }),

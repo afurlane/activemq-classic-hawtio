@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import {
   PageSection,
-  PageSectionVariants,
   Title,
   Button,
   Grid,
@@ -61,7 +60,7 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
 
   if (!brokerName) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
           <Alert variant="danger" title="No broker selected" isInline />
         </CardBody>
@@ -71,7 +70,7 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
 
   if (queueLoading || metricsLoading || !queue || !latest) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Title headingLevel="h3">Loading queue {queueName}…</Title>
       </PageSection>
     )
@@ -80,7 +79,7 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
   return (
     <>
       {/* HEADER */}
-      <PageSection variant={PageSectionVariants.light}>
+      <PageSection hasBodyWrapper={false} >
         <Grid hasGutter>
           <GridItem span={8}>
             <Title headingLevel="h2">{queue.name}</Title>
@@ -97,8 +96,8 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
       </PageSection>
 
       {/* SUMMARY */}
-      <PageSection>
-        <Card isFlat>
+      <PageSection hasBodyWrapper={false}>
+        <Card >
           <CardBody>
             <Grid hasGutter>
               <GridItem span={2}><b>Size:</b> {queue.size}</GridItem>
@@ -120,7 +119,7 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
       </PageSection>
 
       {/* TABS */}
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Tabs
           activeKey={activeTab}
           onSelect={handleTabSelect}
@@ -138,7 +137,7 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
       </PageSection>
 
       {/* TAB CONTENT */}
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         {activeTab === 'overview' && (
           <>
             <QueueHealth queue={latest} />

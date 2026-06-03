@@ -46,19 +46,19 @@ export const QueueThroughput: React.FC<{ history: Queue[], intervalMs?: number }
 
   const trend = (c: number, p: number | null) => {
     if (p === null) {
-      return <MinusIcon color="var(--pf-v5-global--palette--black-500)" />
+      return <MinusIcon color="var(--pf-t--temp--dev--tbd)"/* CODEMODS: original v5 color was --pf-v5-global--palette--black-500 */ />
     }
     if (c > p) {
-      return <ArrowUpIcon color="var(--pf-v5-global--success-color--100)" />
+      return <ArrowUpIcon color="var(--pf-t--temp--dev--tbd)"/* CODEMODS: original v5 color was --pf-v5-global--success-color--100 */ />
     }
     if (c < p) {
-      return <ArrowDownIcon color="var(--pf-v5-global--danger-color--100)" />
+      return <ArrowDownIcon color="var(--pf-t--temp--dev--tbd)"/* CODEMODS: original v5 color was --pf-v5-global--danger-color--100 */ />
     }
-    return <MinusIcon color="var(--pf-v5-global--palette--black-500)" />
+    return <MinusIcon color="var(--pf-t--temp--dev--tbd)"/* CODEMODS: original v5 color was --pf-v5-global--palette--black-500 */ />
   }
 
   return (
-    <Card isFlat className="pf-v5-u-mb-md">
+    <Card className="pf-v5-u-mb-md">
       <CardHeader>
         <CardTitle className="pf-v5-u-font-size-md">Throughput (msg/sec)</CardTitle>
       </CardHeader>
@@ -73,7 +73,6 @@ export const QueueThroughput: React.FC<{ history: Queue[], intervalMs?: number }
             <GridItem key={i} span={2}>
               <Card
                 isCompact
-                isFlat
                 className="pf-v5-u-border-left pf-v5-u-border-color-200 pf-v5-u-p-sm"
               >
                 <CardBody className="pf-v5-u-p-0">

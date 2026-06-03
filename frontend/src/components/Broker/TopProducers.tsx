@@ -30,7 +30,7 @@ export const TopProducers: React.FC<Props> = ({ latest }) => {
 
   if (!producers) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
           <Alert variant="danger" title="No producer data available" isInline />
         </CardBody>
@@ -39,7 +39,7 @@ export const TopProducers: React.FC<Props> = ({ latest }) => {
   }
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardHeader>
         <CardTitle>Top Producers</CardTitle>
       </CardHeader>
@@ -51,7 +51,7 @@ export const TopProducers: React.FC<Props> = ({ latest }) => {
         )}
 
         {producers.map((p, i) => (
-          <Card key={i} isCompact isFlat style={producerCardStyle}>
+          <Card key={i} isCompact style={producerCardStyle}>
             <CardBody>
 
               <Flex justifyContent={producerHeaderJustifyContent}>
