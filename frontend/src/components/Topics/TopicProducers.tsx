@@ -17,7 +17,7 @@ export const TopicProducers: React.FC<Props> = ({ attrs }) => {
   const count = attrs.ProducerCount
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
         <Title headingLevel="h4">Producers</Title>
 

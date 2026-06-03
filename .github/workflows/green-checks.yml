@@ -45,7 +45,8 @@ jobs:
       - name: Switch to frontend directory
         run: |
          cd frontend
-         yarn install --frozen-lockfile --immutable --immutable-cache
+         corepack enable
+         yarn install --immutable
         env: 
           PLUGIN_ID: activemq-classic 
           PLUGIN_SCOPE: activemqClassic 

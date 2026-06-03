@@ -20,7 +20,7 @@ export const BrokerStorage: React.FC = () => {
 
   if (!brokerName) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
           <Alert variant="danger" title="No broker selected" isInline />
         </CardBody>
@@ -32,7 +32,7 @@ export const BrokerStorage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
           <Alert variant="info" title="Loading storage metrics…" isInline />
         </CardBody>
@@ -42,7 +42,7 @@ export const BrokerStorage: React.FC = () => {
 
   if (error || !storage) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
           <Alert variant="danger" title="Failed to load storage metrics" isInline />
         </CardBody>
@@ -58,7 +58,7 @@ export const BrokerStorage: React.FC = () => {
       : 'green'
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardHeader>
         <CardTitle>Broker Storage</CardTitle>
         <Label color={severity} style={{ marginLeft: 'auto' }}>

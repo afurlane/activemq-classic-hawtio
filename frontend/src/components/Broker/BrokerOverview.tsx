@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import {
   PageSection,
-  PageSectionVariants,
   Title,
   Toolbar,
   ToolbarContent,
@@ -27,9 +26,11 @@ import {
 
 import { Sparkline } from '../Common/Sparkline'
 import { BrokerTrends } from './BrokerTrends'
+
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
 import { useQueues } from '../../hooks/useQueues'
 import { useQueueHistoryAccumulated } from '../../hooks/useQueueHistory'
+import { useBrokerMetrics } from '../../hooks/useBrokerMetrics'
 
 import {
   CheckCircleIcon,
@@ -37,13 +38,77 @@ import {
   ExclamationCircleIcon
 } from '@patternfly/react-icons'
 
+interface FilterState {
+  critical: boolean
+  backlog: boolean
+  name: string
+}
+
+// PatternFly Flex presets
+const FLEX_ALIGN = { default: 'alignItemsCenter' } as const
+const FLEX_JUSTIFY = { default: 'justifyContentSpaceBetween' } as const
+
+// Stili
+const SUBTITLE_STYLE = { marginTop: '0.25rem', opacity: 0.7 } as const
+const UL_STYLE = { margin: 0, paddingLeft: '1.2rem' } as const
+
+// Icone
+const STATUS_ICON = {
+  green: <CheckCircleIcon />,
+  orange: <ExclamationTriangleIcon />,
+  red: <ExclamationCircleIcon />
+} as const
+
+const STATUS_LABEL = {
+  connected: 'Connected',
+  warning: 'Warning',
+  critical: 'Critical'
+} as const
+
+const useFilterHandlers = (setFilter: React.Dispatch<React.SetStateAction<FilterState>>) => {
+  const handleCritical = React.useCallback(
+    (_: unknown, checked: boolean) => setFilter(f => ({ ...f, critical: checked })),
+    [setFilter]
+  )
+
+  const handleBacklog = React.useCallback(
+    (_: unknown, checked: boolean) => setFilter(f => ({ ...f, backlog: checked })),
+    [setFilter]
+  )
+
+  const handleName = React.useCallback(
+    (_: unknown, value: string) => setFilter(f => ({ ...f, name: value })),
+    [setFilter]
+  )
+
+  return { handleCritical, handleBacklog, handleName }
+}
+
+
 export const BrokerOverview: React.FC = () => {
   const brokerName = useSelectedBrokerName()
 
+  const { data: queues = [], isLoading, error } = useQueues(brokerName)
+  const queueHistory = useQueueHistoryAccumulated(brokerName)
+
+  const {
+    latest,
+    history,
+    loading: metricsLoading,
+  } = useBrokerMetrics(brokerName, false, 10000)
+
+  const [filter, setFilter] = useState<FilterState>({
+    critical: false,
+    backlog: false,
+    name: '',
+  })
+
+  const { handleCritical, handleBacklog, handleName } = useFilterHandlers(setFilter)
+
   if (!brokerName) {
     return (
-      <PageSection>
-        <Card isFlat isCompact>
+      <PageSection hasBodyWrapper={false}>
+        <Card isCompact>
           <CardBody>
             <Alert variant="danger" title="No broker selected" isInline />
           </CardBody>
@@ -52,21 +117,9 @@ export const BrokerOverview: React.FC = () => {
     )
   }
 
-  // SWR: queues
-  const { data: queues = [], isLoading, error } = useQueues(brokerName)
-
-  // SWR: history accumulata
-  const history = useQueueHistoryAccumulated(brokerName)
-
-  const [filter, setFilter] = useState({
-    critical: false,
-    backlog: false,
-    name: '',
-  })
-
-  if (isLoading) {
+  if (isLoading || metricsLoading || !latest) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Title headingLevel="h3">Loading broker overview…</Title>
       </PageSection>
     )
@@ -74,7 +127,7 @@ export const BrokerOverview: React.FC = () => {
 
   if (error) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Alert variant="danger" title="Failed to load broker data" isInline />
       </PageSection>
     )
@@ -82,9 +135,7 @@ export const BrokerOverview: React.FC = () => {
 
   // FILTRI
   const filtered = queues.filter(q => {
-    // const inflight = q.stats.inflight ?? 0
     const size = q.size ?? 0
-    // const lag = size - inflight
     const mem = q.memory.percent ?? 0
 
     if (filter.critical && mem < 80 && size < 10000) return false
@@ -108,18 +159,18 @@ export const BrokerOverview: React.FC = () => {
 
   return (
     <>
-      {/* HEADER PF5 */}
-      <PageSection variant={PageSectionVariants.light}>
-        <Flex alignItems={{ default: 'alignItemsCenter' }} justifyContent={{ default: 'justifyContentSpaceBetween' }}>
+      {/* HEADER */}
+      <PageSection hasBodyWrapper={false} >
+        <Flex alignItems={FLEX_ALIGN} justifyContent={FLEX_JUSTIFY}>
           <FlexItem>
             <Title headingLevel="h2">Broker Overview</Title>
-            <div style={{ marginTop: '0.25rem', opacity: 0.7 }}>
+            <div style={SUBTITLE_STYLE}>
               Operational metrics and health indicators for <strong>{brokerName}</strong>
             </div>
           </FlexItem>
 
           <FlexItem>
-            <Label color="green" icon={<CheckCircleIcon />}>
+            <Label color="green" icon={STATUS_ICON.green}>
               Connected
             </Label>
           </FlexItem>
@@ -127,19 +178,19 @@ export const BrokerOverview: React.FC = () => {
       </PageSection>
 
       {/* TRENDS */}
-      <PageSection>
-        <Card isFlat>
+      <PageSection hasBodyWrapper={false}>
+        <Card>
           <CardHeader>
             <CardTitle>Broker Trends</CardTitle>
           </CardHeader>
           <CardBody>
-            <BrokerTrends />
+            <BrokerTrends latest={latest} history={history} />
           </CardBody>
         </Card>
       </PageSection>
 
-      {/* FILTRI PF5 */}
-      <PageSection>
+      {/* FILTRI */}
+      <PageSection hasBodyWrapper={false}>
         <Toolbar>
           <ToolbarContent>
             <ToolbarGroup>
@@ -149,7 +200,7 @@ export const BrokerOverview: React.FC = () => {
                   id="filter-critical"
                   label="Critical only"
                   isChecked={filter.critical}
-                  onChange={(_: React.SyntheticEvent, checked: boolean) => setFilter({ ...filter, critical: checked })}
+                  onChange={handleCritical}
                 />
               </ToolbarItem>
 
@@ -158,7 +209,7 @@ export const BrokerOverview: React.FC = () => {
                   id="filter-backlog"
                   label="Backlog > 1000"
                   isChecked={filter.backlog}
-                  onChange={(_: React.SyntheticEvent, checked: boolean) => setFilter({ ...filter, backlog: checked })}
+                  onChange={handleBacklog}
                 />
               </ToolbarItem>
 
@@ -169,7 +220,7 @@ export const BrokerOverview: React.FC = () => {
                   value={filter.name}
                   type="text"
                   placeholder="Filter by name..."
-                  onChange={(_: React.SyntheticEvent, value: string) => setFilter({ ...filter, name: value })}
+                  onChange={handleName}
                 />
               </ToolbarItem>
 
@@ -179,13 +230,13 @@ export const BrokerOverview: React.FC = () => {
       </PageSection>
 
       {/* TOP 5 SLOWEST */}
-      <PageSection>
-        <Card isFlat>
+      <PageSection hasBodyWrapper={false}>
+        <Card>
           <CardHeader>
             <CardTitle>Top 5 Slowest Queues</CardTitle>
           </CardHeader>
           <CardBody>
-            <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
+            <ul style={UL_STYLE}>
               {slowest.map(({ q }) => {
                 const inflight = q.stats.inflight ?? 0
                 const size = q.size ?? 0
@@ -202,8 +253,8 @@ export const BrokerOverview: React.FC = () => {
         </Card>
       </PageSection>
 
-      {/* GRID PRINCIPALE PF5 */}
-      <PageSection isFilled>
+      {/* GRID PRINCIPALE */}
+      <PageSection hasBodyWrapper={false} isFilled>
         <Grid hasGutter md={6} lg={4} xl={3}>
           {filtered.map(q => {
             const inflight = q.stats.inflight ?? 0
@@ -218,11 +269,11 @@ export const BrokerOverview: React.FC = () => {
                 ? 'orange'
                 : 'green'
 
-            const h = history[q.name] ?? { queueSize: [], inflight: [], lag: [] }
+            const h = queueHistory[q.name] ?? { queueSize: [], inflight: [], lag: [] }
 
             return (
               <GridItem key={q.name}>
-                <Card isFlat isCompact>
+                <Card isCompact>
                   <CardHeader>
                     <CardTitle>{q.name}</CardTitle>
                   </CardHeader>
@@ -255,18 +306,14 @@ export const BrokerOverview: React.FC = () => {
                     <p><strong>Consumers:</strong> {q.consumers}</p>
                     <p><strong>Memory:</strong> {mem}%</p>
 
-                    <Label color={severity} icon={
-                      severity === 'red'
-                        ? <ExclamationCircleIcon />
-                        : severity === 'orange'
-                        ? <ExclamationTriangleIcon />
-                        : <CheckCircleIcon />
-                    }>
-                      {severity === 'red'
-                        ? 'Critical'
-                        : severity === 'orange'
-                        ? 'Warning'
-                        : 'Healthy'}
+                    <Label color={severity} icon={STATUS_ICON[severity]}>
+                      {STATUS_LABEL[
+                        severity === 'red'
+                          ? 'critical'
+                          : severity === 'orange'
+                          ? 'warning'
+                          : 'connected'
+                      ]}
                     </Label>
                   </CardBody>
                 </Card>

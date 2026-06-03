@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useCallback, useMemo, useState } from "react"
 import { BaseModal } from "./BaseModal"
 import { CopyIcon } from "@patternfly/react-icons"
 import { FormModal } from "./FormModal"
@@ -14,6 +14,11 @@ export const CopyMessageModal: React.FC<CopyMessageModalProps> = ({
 }) => {
   const [id, setId] = useState('')
   const [dest, setDest] = useState('')
+  const handleConfirm = useCallback(() => onConfirm(id, dest), [onConfirm, id, dest])
+  const fields = useMemo(() => [
+    { name: 'id', label: 'Message ID', required: true, value: id, onChange: (_: unknown, value: string) => setId(value) },
+    { name: 'dest', label: 'Destination', required: true, value: dest, onChange: (_: unknown, value: string) => setDest(value) }
+  ], [id, dest])
 
   return (
     <BaseModal
@@ -23,14 +28,9 @@ export const CopyMessageModal: React.FC<CopyMessageModalProps> = ({
       confirmLabel="Copy"
       confirmIcon={<CopyIcon />}
       isConfirmDisabled={!id || !dest}
-      onConfirm={() => onConfirm(id, dest)}
+      onConfirm={handleConfirm}
     >
-      <FormModal
-        fields={[
-          { name: 'id', label: 'Message ID', required: true, value: id, onChange: setId },
-          { name: 'dest', label: 'Destination', required: true, value: dest, onChange: setDest }
-        ]}
-      />
+      <FormModal fields={fields} />
     </BaseModal>
   )
 }

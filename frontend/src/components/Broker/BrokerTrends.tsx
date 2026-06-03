@@ -29,7 +29,7 @@ export const BrokerTrends: React.FC = () => {
 
   if (!brokerName) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
           <Alert variant="danger" title="No broker selected" isInline />
         </CardBody>
@@ -41,7 +41,7 @@ export const BrokerTrends: React.FC = () => {
 
   if (!latest) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>Loading broker trends…</CardBody>
       </Card>
     )
@@ -69,7 +69,7 @@ export const BrokerTrends: React.FC = () => {
       : <CheckCircleIcon />
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardHeader>
         <CardTitle>Broker Trends</CardTitle>
         <Label color={severity} icon={severityIcon} style={{ marginLeft: 'auto' }}>

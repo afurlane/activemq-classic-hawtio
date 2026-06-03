@@ -1,9 +1,14 @@
 import React from 'react'
 import {
-  Modal,
-  Button,
-  ButtonVariant
-} from '@patternfly/react-core'
+	Button,
+	ButtonVariant,
+	ModalFooter,
+	ModalHeader,
+	ModalBody
+} from '@patternfly/react-core';
+import {
+	Modal
+} from '@patternfly/react-core/deprecated';
 
 interface BaseModalProps {
   title: string
@@ -27,12 +32,9 @@ export const BaseModal: React.FC<BaseModalProps> = ({
   isConfirmDisabled,
   onConfirm,
   children
-}) => (
-  <Modal
-    title={title}
-    isOpen={isOpen}
-    onClose={onClose}
-    actions={[
+}) => {
+  const actions = React.useMemo(
+    () => [
       <Button
         key="confirm"
         variant={confirmVariant}
@@ -45,8 +47,15 @@ export const BaseModal: React.FC<BaseModalProps> = ({
       <Button key="cancel" variant={ButtonVariant.secondary} onClick={onClose}>
         Cancel
       </Button>
-    ]}
-  >
-    {children}
-  </Modal>
-)
+    ],
+    [confirmVariant, confirmIcon, isConfirmDisabled, onConfirm, confirmLabel, onClose]
+  )
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>      
+      <ModalHeader title={title} />
+      <ModalBody>{children}</ModalBody>
+      <ModalFooter>{actions}</ModalFooter>
+    </Modal>
+  )
+}

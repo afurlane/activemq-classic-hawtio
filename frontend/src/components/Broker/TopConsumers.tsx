@@ -15,49 +15,45 @@ import {
 } from "@patternfly/react-core"
 
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
-import { useSelectedBrokerName } from "../../hooks/useSelectedBroker"
-import { useTopConsumers } from "../../hooks/useTopConsumers"
+import type { BrokerMetrics } from "../../hooks/useBrokerMetrics"
 
-export const TopConsumers: React.FC = () => {
-  const brokerName = useSelectedBrokerName()
+interface Props {
+  latest: BrokerMetrics
+}
 
-  if (!brokerName) {
+const justifyContentSpaceBetween = { default: 'justifyContentSpaceBetween' } as const
+const consumerCardStyle = { marginBottom: '0.75rem' } as const
+
+export const TopConsumers: React.FC<Props> = ({ latest }) => {
+  const consumers = latest.topConsumers ?? []
+
+  if (!consumers) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
-          <Alert variant="danger" title="No broker selected" isInline />
+          <Alert variant="danger" title="No consumer data available" isInline />
         </CardBody>
       </Card>
     )
   }
 
-  const { data: consumers = [], isLoading, error } = useTopConsumers(brokerName)
-
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardHeader>
         <CardTitle>Top Consumers</CardTitle>
       </CardHeader>
 
       <CardBody>
 
-        {isLoading && (
-          <Alert variant="info" title="Loading consumers…" isInline />
-        )}
-
-        {error && (
-          <Alert variant="danger" title="Failed to load consumers" isInline />
-        )}
-
-        {!isLoading && !error && consumers.length === 0 && (
+        {consumers.length === 0 && (
           <Alert variant="info" title="No consumers found" isInline />
         )}
 
         {consumers.map((c, i) => (
-          <Card key={i} isCompact isFlat style={{ marginBottom: '0.75rem' }}>
+          <Card key={i} isCompact style={consumerCardStyle}>
             <CardBody>
 
-              <Flex justifyContent={{ default: 'justifyContentSpaceBetween' }}>
+              <Flex justifyContent={justifyContentSpaceBetween}>
                 <FlexItem>
                   <strong>{c.clientId}</strong>
                 </FlexItem>
@@ -71,7 +67,7 @@ export const TopConsumers: React.FC = () => {
                 )}
               </Flex>
 
-              <DescriptionList isHorizontal style={{ marginTop: '0.5rem' }}>
+              <DescriptionList isHorizontal className="pf-v5-u-mt-sm">
                 <DescriptionListGroup>
                   <DescriptionListTerm>Destination</DescriptionListTerm>
                   <DescriptionListDescription>

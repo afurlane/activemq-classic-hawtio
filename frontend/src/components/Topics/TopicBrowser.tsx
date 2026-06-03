@@ -1,11 +1,12 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
-  Card, CardBody, Spinner, EmptyState, EmptyStateHeader, EmptyStateBody,
+  Card, CardBody, Spinner, EmptyState, EmptyStateBody,
   Pagination
 } from '@patternfly/react-core'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@patternfly/react-table'
 import { CodeBlock, CodeBlockCode } from '@patternfly/react-core'
 import { useTopicMessages } from '../../hooks/useTopicMessages'
+import { ExclamationCircleIcon } from '@patternfly/react-icons/dist/esm'
 
 interface Props {
   mbean: string 
@@ -14,15 +15,29 @@ interface Props {
 export const TopicBrowser: React.FC<Props> = ({ mbean }) => {
   const [page, setPage] = useState(0)
   const pageSize = 20
+  const handleSetPage = useCallback((_: unknown, newPage: number) => {
+    setPage(newPage - 1)
+  }, [])
 
   const { data, isLoading, error } = useTopicMessages(mbean, page, pageSize)
 
   const messages = data?.messages ?? []
   const total = data?.total ?? 0
 
+  if (!mbean) {
+    return (
+      <Card isCompact>
+        <CardBody>
+          <EmptyState titleText="No topic selected" headingLevel="h4" icon={ExclamationCircleIcon}>
+            <EmptyStateBody>Please select a topic to view its messages.</EmptyStateBody>
+          </EmptyState>
+        </CardBody>
+      </Card>
+    )
+  }
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
 
         {/* PAGINATION TOP */}
@@ -30,20 +45,19 @@ export const TopicBrowser: React.FC<Props> = ({ mbean }) => {
           itemCount={total}
           perPage={pageSize}
           page={page + 1}
-          onSetPage={(_: React.SyntheticEvent, newPage: number) => setPage(newPage - 1)}
+          onSetPage={handleSetPage}
           isCompact
         />
 
         {isLoading && <Spinner size="xl" />}
         {error && (
-          <EmptyState>
-            <EmptyStateHeader titleText="Failed to load messages" />
+          <EmptyState titleText="Failed to load messages" headingLevel="h4" icon={ExclamationCircleIcon}>
             <EmptyStateBody>Try refreshing.</EmptyStateBody>
           </EmptyState>
         )}
         {!isLoading && !error && messages.length === 0 && (
-          <EmptyState>
-            <EmptyStateHeader titleText="No messages" />
+          <EmptyState titleText="No messages" headingLevel="h4" icon={ExclamationCircleIcon}>
+            <EmptyStateBody>There are no messages to display.</EmptyStateBody>
           </EmptyState>
         )}
 
@@ -79,7 +93,7 @@ export const TopicBrowser: React.FC<Props> = ({ mbean }) => {
               itemCount={total}
               perPage={pageSize}
               page={page + 1}
-              onSetPage={(_: React.SyntheticEvent, newPage: number) => setPage(newPage - 1)}
+              onSetPage={handleSetPage}
               isCompact
             />
           </>

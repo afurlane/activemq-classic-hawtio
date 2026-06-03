@@ -40,7 +40,7 @@ export const TopicInfo: React.FC<Props> = ({ attrs }) => {
   ]
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
         <Title headingLevel="h4">Info</Title>
 

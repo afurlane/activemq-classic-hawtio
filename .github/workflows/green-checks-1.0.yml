@@ -1,0 +1,103 @@
+name: Green Checks (1.0)
+
+on:
+  pull_request:
+    branches: [ "1.0" ]
+  push:
+    branches: [ "1.0" ]
+
+jobs:
+  green-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Cache Yarn Classic
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cache/yarn
+            frontend/node_modules
+          key: yarn-classic-${{ hashFiles('frontend/yarn.lock') }}
+          restore-keys: |
+            yarn-classic-
+
+      - name: Cache Yarn Berry
+        uses: actions/cache@v5
+        with:
+          path: |
+            frontend/.yarn/cache
+            frontend/.pnp.cjs
+          key: yarn-berry-${{ hashFiles('frontend/yarn.lock') }}
+          restore-keys: |
+            yarn-berry-
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      # -----------------------------
+      # ECOCODE
+      # -----------------------------
+      - name: Switch to frontend directory
+        run: |
+         cd frontend
+         corepack enable
+         yarn install --immutable
+        env: 
+          PLUGIN_ID: activemq-classic 
+          PLUGIN_SCOPE: activemqClassic 
+          PLUGIN_MODULE: plugin
+
+      - name: Ensure reports directory exists
+        run: mkdir -p reports
+
+      - name: Execute creedengo scan
+        run: |
+         cd frontend
+         npx eslint . -f json -o ../reports/creedengo.json || true
+         cd ..
+        env: 
+          PLUGIN_ID: activemq-classic 
+          PLUGIN_SCOPE: activemqClassic 
+          PLUGIN_MODULE: plugin
+
+      # -----------------------------
+      # OVERALL SCORE
+      # -----------------------------
+      - name: Compute overall score
+        run: node .github/scripts/compute-overall.mjs
+
+      # -----------------------------
+      # BADGES
+      # -----------------------------
+      - name: Generate badges
+        run: node .github/scripts/generate-badge.mjs
+
+      # -----------------------------
+      # COMMENTO PR
+      # -----------------------------
+      - name: Comment PR
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          recreate: true
+          message: |
+            ## 🌱 Green Checks Report
+            **Creedengo:** $(cat reports/creedengo.json | jq -r '.score')
+            **Overall:** $(cat reports/overall.json | jq -r '.score')
+
+      # -----------------------------
+      # RELEASE
+      # -----------------------------
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: green-checks
+          path: |
+            reports/
+            badges/

@@ -22,7 +22,7 @@ export const TopicSubscribers: React.FC<Props> = ({ attrs }) => {
   const subs = attrs.Subscriptions ?? []
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
         <Title headingLevel="h4">Subscribers</Title>
 

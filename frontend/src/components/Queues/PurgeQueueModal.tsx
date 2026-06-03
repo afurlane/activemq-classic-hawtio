@@ -1,6 +1,7 @@
 import React from 'react'
 import { TrashIcon } from '@patternfly/react-icons'
 import { BaseModal } from './BaseModal'
+import { ButtonVariant } from '@patternfly/react-core/dist/esm'
 
 interface PurgeQueueModalProps {
   isOpen: boolean
@@ -21,7 +22,7 @@ export const PurgeQueueModal: React.FC<PurgeQueueModalProps> = ({
     onClose={onClose}
     confirmLabel="Purge"
     confirmIcon={<TrashIcon />}
-    confirmVariant="danger"
+    confirmVariant={ButtonVariant.danger}
     onConfirm={onConfirm}
   >
     <p>

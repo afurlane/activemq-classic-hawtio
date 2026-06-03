@@ -42,7 +42,7 @@ export const TopicAlerts: React.FC<Props> = ({ attrs }) => {
   const alerts = rules.filter(r => r.when)
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
         <Title headingLevel="h4">Alerts</Title>
 

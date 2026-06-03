@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
+import { mutate } from 'swr'
 import {
   PageSection,
-  PageSectionVariants,
   Title,
   Tabs,
   Tab,
@@ -40,6 +40,58 @@ import { BrokerSelector } from './BrokerSelector'
 import { useSelectedBroker } from '../../hooks/useSelectedBroker'
 import { useBrokers } from '../../hooks/useBrokers'
 
+const noPadding = { default: 'noPadding' } as const;
+const alighRight = { default: 'alignEnd' } as const;
+
+const ACTIONS_STYLE = { fontSize: '1.5rem', lineHeight: 1 } as const;
+const ACTIONS_ICON = <span style={ACTIONS_STYLE}>⋮</span>;
+
+const viewToTab = {
+  connectors: 0,
+  queues: 1,
+  topics: 2,
+  broker: 3,
+  overview: 4,
+} as const
+
+
+const tabToView = Object.fromEntries(
+  Object.entries(viewToTab).map(([view, key]) => [key, view])
+) as Record<number, Route['view']>
+
+const viewToUrl = {
+  connectors: buildConnectorsUrl,
+  queues: buildQueuesUrl,
+  topics: buildTopicsUrl,
+  broker: buildBrokerUrl,
+  overview: buildOverviewUrl,
+} as const
+
+const pluginRefreshKeys = new Set([
+  'brokers',
+  'queues',
+  'queue',
+  'queue-history',
+  'queue-messages',
+  'dlq',
+  'topics',
+  'topic-metrics',
+  'topic-messages',
+  'subscriptions',
+  'connectors',
+  'connections',
+  'consumers',
+  'producers',
+  'top-producers',
+])
+
+const onSelect = (_event: React.MouseEvent, eventKey: string | number) => {
+  const key = Number(eventKey)
+  const view = tabToView[key]
+  if (!view) return
+  window.location.hash = viewToUrl[view]()
+}
+
 export const BrokerPanel: React.FC = () => {
   const [route, setRoute] = useState<Route>(() =>
     parseHashRoute(window.location.hash)
@@ -62,42 +114,51 @@ export const BrokerPanel: React.FC = () => {
     return () => window.removeEventListener('hashchange', onHashChange)
   }, [])
 
-  const viewToTab = {
-    connectors: 0,
-    queues: 1,
-    topics: 2,
-    broker: 3,
-    overview: 4,
-  } as const
-
-  const tabToView = Object.fromEntries(
-    Object.entries(viewToTab).map(([view, key]) => [key, view])
-  ) as Record<number, Route['view']>
-
-  const viewToUrl = {
-    connectors: buildConnectorsUrl,
-    queues: buildQueuesUrl,
-    topics: buildTopicsUrl,
-    broker: buildBrokerUrl,
-    overview: buildOverviewUrl,
-  } as const
-
   const activeKey = viewToTab[route.view]
-
-  const onSelect = (_event: React.MouseEvent, eventKey: string | number) => {
-    const key = Number(eventKey)
-    const view = tabToView[key]
-    if (!view) return
-    window.location.hash = viewToUrl[view]()
-  }
+  const [refreshVersion, setRefreshVersion] = useState(0)
 
   const [actionsOpen, setActionsOpen] = useState(false)
+
+  const onToggleClick = useCallback(() => setActionsOpen(prev => !prev), []);
+
+  const renderToggle = useCallback(
+    (toggleRef: any) => (
+      <MenuToggle
+        ref={toggleRef}
+        onClick={onToggleClick}
+        isExpanded={actionsOpen}
+        variant="plain"        
+        icon={ACTIONS_ICON}
+      />
+    ),
+    [actionsOpen, onToggleClick]
+  );
+
+  const onRefresh = useCallback(async () => {
+    await mutate(
+      key => {
+        if (typeof key === 'string') {
+          return pluginRefreshKeys.has(key)
+        }
+        if (!Array.isArray(key)) {
+          return false
+        }
+        if (key[1] === 'disabled') {
+          return false
+        }
+        return typeof key[0] === 'string' && pluginRefreshKeys.has(key[0])
+      },
+      undefined,
+      { revalidate: true }
+    )
+    setRefreshVersion(prev => prev + 1)
+  }, [])
 
   return (
     <>
       {/* HEADER */}
-      <PageSection variant={PageSectionVariants.light} padding={{ default: 'noPadding' }}>
-        <PageSection variant={PageSectionVariants.light}>
+      <PageSection hasBodyWrapper={false}  padding={noPadding}>
+        <PageSection hasBodyWrapper={false} >
           <Breadcrumb>
             <BreadcrumbItem to="#">ActiveMQ</BreadcrumbItem>
             <BreadcrumbItem isActive>
@@ -106,7 +167,7 @@ export const BrokerPanel: React.FC = () => {
           </Breadcrumb>
         </PageSection>
 
-        <PageSection variant={PageSectionVariants.light}>
+        <PageSection hasBodyWrapper={false} >
           <Toolbar>
             <ToolbarContent>
 
@@ -116,7 +177,7 @@ export const BrokerPanel: React.FC = () => {
 
               <ToolbarItem>{statusLabel}</ToolbarItem>
 
-              <ToolbarItem align={{ default: 'alignRight' }}>
+              <ToolbarItem align={alighRight}>
                 <BrokerSelector />
               </ToolbarItem>
 
@@ -124,19 +185,9 @@ export const BrokerPanel: React.FC = () => {
                 <Dropdown
                   isOpen={actionsOpen}
                   onOpenChange={setActionsOpen}
-                  toggle={(toggleRef) => (
-                    <MenuToggle
-                      ref={toggleRef}
-                      onClick={() => setActionsOpen(!actionsOpen)}
-                      isExpanded={actionsOpen}
-                      variant="plain"
-                    >
-                      ⋮
-                    </MenuToggle>
-                  )}
-                >
+                  toggle={renderToggle}>
                   <DropdownList>
-                    <DropdownItem key="refresh" onClick={() => window.location.reload()}>
+                    <DropdownItem key="refresh" onClick={onRefresh}>
                       Refresh All
                     </DropdownItem>
                     <DropdownItem key="docs" to="https://activemq.apache.org/components/classic/">
@@ -160,7 +211,7 @@ export const BrokerPanel: React.FC = () => {
       </PageSection>
 
       {/* MAIN CONTENT */}
-      <PageSection isFilled>
+      <PageSection hasBodyWrapper={false} isFilled key={refreshVersion}>
         {route.view === 'connectors' && <ConnectorsView />}
 
         {route.view === 'queues' && !route.queueName && <QueuesView />}

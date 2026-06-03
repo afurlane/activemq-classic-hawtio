@@ -1,0 +1,16 @@
+{
+  "branches": [
+    {
+      "branch": "master",
+      "release-type": "simple",
+      "package-name": "activemq-classic-hawtio",
+      "bump-minor-pre-major": true
+    },
+    {
+      "branch": "1.0",
+      "release-type": "simple",
+      "package-name": "activemq-classic-hawtio",
+      "bump-minor-pre-major": false
+    }
+  ]
+}

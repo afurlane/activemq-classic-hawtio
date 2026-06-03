@@ -77,7 +77,7 @@ export const QueueDLQ: React.FC<Props> = ({ queue }) => {
   /* ──────────────────────────────────────────────── */
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
         <Title headingLevel="h4">DLQ / Redelivery</Title>
 

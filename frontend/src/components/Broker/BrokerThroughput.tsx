@@ -26,7 +26,7 @@ export const BrokerThroughput: React.FC = () => {
 
   if (!brokerName) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
           <Alert variant="danger" title="No broker selected" isInline />
         </CardBody>
@@ -58,7 +58,7 @@ export const BrokerThroughput: React.FC = () => {
       : <ExclamationCircleIcon />
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardHeader>
         <CardTitle>Broker Throughput (msg/sec)</CardTitle>
         <Label color={severity} icon={severityIcon} style={{ marginLeft: 'auto' }}>

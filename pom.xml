@@ -6,29 +6,47 @@
 
   <groupId>eu.opensoftware.hawtio</groupId>
   <artifactId>activemq-classic-hawtio</artifactId>
-  <version>1.0.0</version>
+  <version>2.0.0</version>
   <packaging>jar</packaging>
 
   <properties>
-    <!-- module info -->
+    <!-- Plugin metadata -->
     <plugin.id>activemq-classic</plugin.id>
     <plugin.scope>activemqClassic</plugin.scope>
     <plugin.module>plugin</plugin.module>
 
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.build.resourcesEncoding>UTF-8 </project.build.resourcesEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <encoding>UTF-8</encoding>
+    <!-- Java -->
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+    <!-- Dependency versions -->
+    <hawtio.plugin.api.version>5.2.0</hawtio.plugin.api.version>
+    <jakarta.servlet.version>5.0.0</jakarta.servlet.version>
+    <jakarta.servlet-api61.version>6.1.0</jakarta.servlet-api61.version>
+
+    <slf4j.version>2.0.11</slf4j.version>
+
+    <!-- Frontend -->
     <node.version>v20.19.0</node.version>
-    <yarn.version>v1.22.19</yarn.version>
+    <yarn.version>4.15.0</yarn.version> <!-- Yarn Berry -->
 
-    <!-- Da hawtio project pom.xml -->
-    <slf4j-version>2.0.11</slf4j-version>
-
+    <!-- Maven plugins -->
+    <maven.resources.plugin.version>3.5.0</maven.resources.plugin.version>
+    <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.hawt</groupId>
+        <artifactId>hawtio-bom</artifactId>
+        <version>${hawtio.plugin.api.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
 
@@ -36,7 +54,7 @@
     <dependency>
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
-      <version>5.0.0</version>
+      <version>${jakarta.servlet.version}</version>
       <scope>provided</scope>
     </dependency>
 
@@ -44,13 +62,13 @@
     <dependency>
       <groupId>io.hawt</groupId>
       <artifactId>hawtio-plugin-mbean</artifactId>
-      <version>4.6.2</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>${slf4j-version}</version>
+      <version>${slf4j.version}</version>
       <scope>provided</scope>
     </dependency>
 
@@ -72,57 +90,96 @@
         </includes>
       </resource>
     </resources>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>3.1.0</version>
+          <executions>
+            <execution>
+              <id>enable-corepack</id>
+              <phase>generate-resources</phase>
+              <goals>
+                <goal>exec</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>yarn-install</id>
+              <phase>generate-resources</phase>
+              <goals>
+                <goal>exec</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>yarn-build</id>
+              <phase>generate-resources</phase>
+              <goals>
+                <goal>exec</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
-
-      <!-- Build frontend -->
       <plugin>
-        <groupId>com.github.eirslett</groupId>
-        <artifactId>frontend-maven-plugin</artifactId>
-        <version>2.0.0</version>
-
-        <configuration>
-          <workingDirectory>${project.basedir}/frontend</workingDirectory>
-          <environmentVariables>
-            <PLUGIN_ID>${plugin.id}</PLUGIN_ID>
-            <PLUGIN_SCOPE>${plugin.scope}</PLUGIN_SCOPE>
-            <PLUGIN_MODULE>${plugin.module}</PLUGIN_MODULE>
-          </environmentVariables>
-        </configuration>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.1.0</version>
 
         <executions>
 
+          <!-- Enable corepack-->
           <execution>
-            <id>install-node-and-yarn</id>
+            <id>enable-corepack</id>
+            <phase>generate-resources</phase>
             <goals>
-              <goal>install-node-and-yarn</goal>
+              <goal>exec</goal>
             </goals>
             <configuration>
-              <nodeVersion>${node.version}</nodeVersion>
-              <yarnVersion>${yarn.version}</yarnVersion>
+              <workingDirectory>${project.basedir}/frontend</workingDirectory>
+              <executable>corepack</executable>
+              <arguments>
+                <argument>enable</argument>
+              </arguments>
             </configuration>
           </execution>
 
+          <!-- Install FE deps -->
           <execution>
             <id>yarn-install</id>
+            <phase>generate-resources</phase>
             <goals>
-              <goal>yarn</goal>
+              <goal>exec</goal>
             </goals>
             <configuration>
-              <arguments>install</arguments>
-              <arguments>--frozen-lockfile</arguments>
-              <arguments>--immutable</arguments>
-              <arguments>--immutable-cache</arguments>
+              <workingDirectory>${project.basedir}/frontend</workingDirectory>
+              <executable>yarn</executable>
+              <arguments>
+                <argument>install</argument>
+                <argument>--immutable</argument>
+              </arguments>
             </configuration>
           </execution>
 
+          <!-- Build FE -->
           <execution>
             <id>yarn-build</id>
             <phase>generate-resources</phase>
             <goals>
-              <goal>yarn</goal>
+              <goal>exec</goal>
             </goals>
             <configuration>
-              <arguments>build</arguments>
+              <workingDirectory>${project.basedir}/frontend</workingDirectory>
+              <environmentVariables>
+                <PLUGIN_SCOPE>${plugin.scope}</PLUGIN_SCOPE>
+                <PLUGIN_MODULE>${plugin.module}</PLUGIN_MODULE>
+              </environmentVariables>
+              <executable>yarn</executable>
+              <arguments>
+                <argument>build</argument>
+              </arguments>
             </configuration>
           </execution>
 
@@ -132,7 +189,7 @@
       <!-- Copia plugin FE nel WAR -->
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>3.4.0</version>
+        <version>${maven.resources.plugin.version}</version>
         <executions>
 
           <!-- Copia plugin FE nel WAR -->
@@ -177,7 +234,6 @@
                   <filtering>true</filtering>
                 </resource>
               </resources>
-              <overwrite>true</overwrite>
             </configuration>
           </execution>
 
@@ -187,7 +243,7 @@
       <!-- WAR plugin -->
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
-        <version>3.5.1</version>
+        <version>${maven.war.plugin.version}</version>
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
         </configuration>

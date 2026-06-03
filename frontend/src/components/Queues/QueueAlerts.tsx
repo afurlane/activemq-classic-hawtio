@@ -35,7 +35,7 @@ export const QueueAlerts: React.FC<Props> = ({ queue, history }) => {
   const alerts = useMemo(() => computeQueueAlerts(queue, history), [queue, history])
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
         <Title headingLevel="h4">Alerts</Title>
 

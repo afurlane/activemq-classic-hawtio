@@ -49,11 +49,11 @@ export const QueueConsumers: React.FC<Props> = ({ queue, history }) => {
 
   const trendIcon =
     dispatchTrend === 'up' ? (
-      <ArrowUpIcon color="var(--pf-v5-global--success-color--100)" />
+      <ArrowUpIcon color="var(--pf-t--temp--dev--tbd)"/* CODEMODS: original v5 color was --pf-v5-global--success-color--100 */ />
     ) : dispatchTrend === 'down' ? (
-      <ArrowDownIcon color="var(--pf-v5-global--danger-color--100)" />
+      <ArrowDownIcon color="var(--pf-t--temp--dev--tbd)"/* CODEMODS: original v5 color was --pf-v5-global--danger-color--100 */ />
     ) : (
-      <MinusIcon color="var(--pf-v5-global--palette--black-500)" />
+      <MinusIcon color="var(--pf-t--temp--dev--tbd)"/* CODEMODS: original v5 color was --pf-v5-global--palette--black-500 */ />
     )
 
   /* ────────────────────────────────────────────────
@@ -79,7 +79,7 @@ export const QueueConsumers: React.FC<Props> = ({ queue, history }) => {
   /* ──────────────────────────────────────────────── */
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
         <Title headingLevel="h4">Consumers</Title>
 

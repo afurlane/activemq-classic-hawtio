@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
   PageSection,
   PageSectionVariants,
@@ -9,7 +9,6 @@ import {
   Label,
   Alert,
   EmptyState,
-  EmptyStateHeader,
   EmptyStateBody,
   Toolbar,
   ToolbarContent,
@@ -35,7 +34,8 @@ import {
   CheckCircleIcon,
   PauseCircleIcon,
   BanIcon,
-  SyncIcon
+  SyncIcon,
+  ExclamationCircleIcon
 } from '@patternfly/react-icons'
 
 import { buildQueueUrl } from '../../router/router'
@@ -43,20 +43,13 @@ import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
 import { useQueues } from '../../hooks/useQueues'
 import { Queue } from '../../types/domain'
 
+const toolbarStyle: React.CSSProperties = { marginTop: '1rem' }
+const rightAlignedToolbarGroup = { default: 'alignEnd' } as const
+
 export const QueuesView: React.FC = () => {
   const brokerName = useSelectedBrokerName()
 
-  if (!brokerName) {
-    return (
-      <Card isFlat isCompact>
-        <CardBody>
-          <Alert variant="danger" title="No broker selected" isInline />
-        </CardBody>
-      </Card>
-    )
-  }
-
-  // SWR: carica le queue automaticamente
+    // SWR: carica le queue automaticamente
   const {
     data: queues = [],
     error,
@@ -72,6 +65,84 @@ export const QueuesView: React.FC = () => {
   // SORT UI STATE
   const [sortIndex, setSortIndex] = useState<number>(0)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+
+  const handleFilterTextChange = useCallback(
+    (_event: React.FormEvent<HTMLInputElement>, value: string) => {
+      setFilterText(value)
+    },
+    []
+  )
+
+  const handleStateSelect = useCallback(
+    (_event?: React.MouseEvent, value?: string | number) => {
+      setStateFilter(value === undefined ? null : String(value))
+      setIsStateOpen(false)
+    },
+    []
+  )
+
+  const handleStateToggleClick = useCallback(() => {
+    setIsStateOpen(prev => !prev)
+  }, [])
+
+  const handleRefreshClick = useCallback(() => {
+    void mutate()
+  }, [mutate])
+
+  const handleDetailsClick = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      const queueName = event.currentTarget.dataset.queueName
+      if (queueName) {
+        window.location.hash = buildQueueUrl(queueName)
+      }
+    },
+    []
+  )
+
+  const sortBy = React.useMemo(
+    () => ({ index: sortIndex, direction: sortDirection }),
+    [sortIndex, sortDirection]
+  )
+
+  const onSort = useCallback(
+    (_: React.MouseEvent, index: number, direction: 'asc' | 'desc') => {
+      setSortIndex(index)
+      setSortDirection(direction)
+    },
+    []
+  )
+
+  const nameColumnSort = React.useMemo(
+    () => ({
+      sortBy,
+      onSort,
+      columnIndex: 0
+    }),
+    [sortBy, onSort]
+  )
+
+  const renderStateToggle = useCallback(
+    (toggleRef: React.Ref<HTMLButtonElement>) => (
+      <MenuToggle
+        ref={toggleRef}
+        onClick={handleStateToggleClick}
+        isExpanded={isStateOpen}
+      >
+        {stateFilter ?? 'Filter by state'}
+      </MenuToggle>
+    ),
+    [handleStateToggleClick, isStateOpen, stateFilter]
+  )
+
+  if (!brokerName) {
+    return (
+      <Card isCompact>
+        <CardBody>
+          <Alert variant="danger" title="No broker selected" isInline />
+        </CardBody>
+      </Card>
+    )
+  }
 
   // FILTERING
   const filtered = queues.filter(q => {
@@ -111,11 +182,11 @@ export const QueuesView: React.FC = () => {
   }
 
   return (
-    <PageSection variant={PageSectionVariants.light}>
+    <PageSection hasBodyWrapper={false} variant={PageSectionVariants.default}>
       <Title headingLevel="h2">Queues</Title>
 
       {/* TOOLBAR */}
-      <Toolbar style={{ marginTop: '1rem' }}>
+      <Toolbar style={toolbarStyle}>
         <ToolbarContent>
 
           {/* Left side: filters */}
@@ -126,7 +197,7 @@ export const QueuesView: React.FC = () => {
               <TextInput
                 id="filter-text"
                 value={filterText}
-                onChange={(_, v) => setFilterText(v)}
+                onChange={handleFilterTextChange}
                 placeholder="Filter by name"
               />
             </ToolbarItem>
@@ -137,19 +208,8 @@ export const QueuesView: React.FC = () => {
                 isOpen={isStateOpen}
                 onOpenChange={setIsStateOpen}
                 selected={stateFilter}
-                onSelect={(_, v) => {
-                  setStateFilter(v as string)
-                  setIsStateOpen(false)
-                }}
-                toggle={(toggleRef) => (
-                  <MenuToggle
-                    ref={toggleRef}
-                    onClick={() => setIsStateOpen(!isStateOpen)}
-                    isExpanded={isStateOpen}
-                  >
-                    {stateFilter ?? 'Filter by state'}
-                  </MenuToggle>
-                )}
+                onSelect={handleStateSelect}
+                toggle={renderStateToggle}
               >
                 <MenuItem itemId={null}>All</MenuItem>
                 <MenuItem itemId="running">Running</MenuItem>
@@ -160,15 +220,13 @@ export const QueuesView: React.FC = () => {
 
             {/* Refresh */}
             <ToolbarItem>
-              <Button variant="plain" onClick={() => mutate()}>
-                <SyncIcon />
-              </Button>
+              <Button icon={<SyncIcon />} variant="plain" onClick={handleRefreshClick} />
             </ToolbarItem>
 
           </ToolbarGroup>
 
           {/* Right side: actions */}
-          <ToolbarGroup align={{ default: 'alignRight' }}>
+          <ToolbarGroup align={rightAlignedToolbarGroup}>
             <ToolbarItem>
               <Button variant="primary">Create Queue</Button>
             </ToolbarItem>
@@ -177,7 +235,7 @@ export const QueuesView: React.FC = () => {
         </ToolbarContent>
       </Toolbar>
 
-      <Card isFlat isCompact style={{ marginTop: '1rem' }}>
+      <Card isCompact className="pf-v5-u-mt-md">
         <CardBody>
 
           {/* ERROR */}
@@ -196,11 +254,7 @@ export const QueuesView: React.FC = () => {
 
           {/* EMPTY STATE */}
           {!isLoading && sorted.length === 0 && (
-            <EmptyState>
-              <EmptyStateHeader
-                titleText="No queues found"
-                headingLevel="h4"
-              />
+            <EmptyState titleText="No queues found" headingLevel="h4" icon={ExclamationCircleIcon}>
               <EmptyStateBody>
                 Try adjusting filters or refreshing.
               </EmptyStateBody>
@@ -213,14 +267,7 @@ export const QueuesView: React.FC = () => {
               <Thead>
                 <Tr>
                   <Th
-                    sort={{
-                      sortBy: { index: sortIndex, direction: sortDirection },
-                      onSort: (_, index, direction) => {
-                        setSortIndex(index)
-                        setSortDirection(direction)
-                      },
-                      columnIndex: 0
-                    }}
+                    sort={nameColumnSort}
                   >
                     Name
                   </Th>
@@ -236,20 +283,22 @@ export const QueuesView: React.FC = () => {
               <Tbody>
                 {sorted.map(q => (
                   <Tr key={q.mbean}>
-                    <Td>{q.name}</Td>
-                    <Td>{q.size}</Td>
-                    <Td>{q.stats.enqueue}</Td>
-                    <Td>{q.stats.dequeue}</Td>
-                    <Td>{q.consumers}</Td>
-                    <Td>{renderState(q)}</Td>
+                    <Td dataLabel="Name">{q.name}</Td>
+                    <Td dataLabel="Size">{q.size}</Td>
+                    <Td dataLabel="Enq">{q.stats.enqueue}</Td>
+                    <Td dataLabel="Deq">{q.stats.dequeue}</Td>
+                    <Td dataLabel="Consumers">{q.consumers}</Td>
+                    <Td dataLabel="State">{renderState(q)}</Td>
                     <Td>
                       <Button
                         variant="secondary"
-                        onClick={() => (window.location.hash = buildQueueUrl(q.name))}
+                        data-queue-name={q.name}
+                        onClick={handleDetailsClick}
                       >
                         Details
                       </Button>
                     </Td>
+                    <Td modifier="fitContent" />
                   </Tr>
                 ))}
               </Tbody>

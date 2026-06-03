@@ -1,14 +1,19 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
-  Card,
-  CardBody,
-  Title,
-  Button,
-  ButtonVariant,
-  Modal,
-  Alert,
-  Spinner
-} from '@patternfly/react-core'
+	Card,
+	CardBody,
+	Title,
+	Button,
+	ButtonVariant,
+	ModalHeader,
+	ModalBody,
+	ModalFooter,
+	Alert,
+	Spinner
+} from '@patternfly/react-core';
+import {
+	Modal
+} from '@patternfly/react-core/deprecated';
 
 import { activemq, getBrokerMBean } from '../../services/activemq/ActiveMQClassicService'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
@@ -24,31 +29,12 @@ export const TopicDelete: React.FC<Props> = ({ mbean }) => {
   const [success, setSuccess] = useState(false)
 
   const brokerName = useSelectedBrokerName()
-
-  if (!brokerName) {
-    return (
-      <Card isFlat isCompact>
-        <CardBody>
-          <Alert variant="danger" title="No broker selected" isInline />
-        </CardBody>
-      </Card>
-    )
-  }
-
   const match = /destinationName=([^,]+)/.exec(mbean)
   const topicName = match?.[1]
 
-  if (!topicName) {
-    return (
-      <Card isFlat isCompact>
-        <CardBody>
-          <Alert variant="danger" title="Invalid topic MBean" isInline />
-        </CardBody>
-      </Card>
-    )
-  }
+  const del = useCallback(async () => {
+    if (!brokerName || !topicName) return
 
-  const del = async () => {
     setIsDeleting(true)
     setError(null)
     setSuccess(false)
@@ -62,10 +48,33 @@ export const TopicDelete: React.FC<Props> = ({ mbean }) => {
     } finally {
       setIsDeleting(false)
     }
+  }, [brokerName, topicName])
+
+  const openDeleteModal = useCallback(() => setIsOpen(true), [])
+  const closeDeleteModal = useCallback(() => setIsOpen(false), [])
+
+  if (!brokerName) {
+    return (
+      <Card isCompact>
+        <CardBody>
+          <Alert variant="danger" title="No broker selected" isInline />
+        </CardBody>
+      </Card>
+    )
+  }
+
+  if (!topicName) {
+    return (
+      <Card isCompact>
+        <CardBody>
+          <Alert variant="danger" title="Invalid topic MBean" isInline />
+        </CardBody>
+      </Card>
+    )
   }
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
         <Title headingLevel="h4">Delete Topic</Title>
 
@@ -78,47 +87,40 @@ export const TopicDelete: React.FC<Props> = ({ mbean }) => {
         )}
 
         {error && (
-          <Alert
-            variant="danger"
-            title="Failed to delete topic"
-            isInline
-          >
+          <Alert variant="danger" title="Failed to delete topic" isInline>
             {error}
           </Alert>
         )}
 
-        <Button
-          variant={ButtonVariant.danger}
-          onClick={() => setIsOpen(true)}
-        >
+        <Button variant={ButtonVariant.danger} onClick={openDeleteModal}>
           Delete topic
         </Button>
 
-        <Modal
-          title="Confirm deletion"
-          isOpen={isOpen}
-          onClose={() => setIsOpen(false)}
-          actions={[
+        <Modal isOpen={isOpen} onClose={closeDeleteModal} variant="small">
+          <ModalHeader title="Confirm deletion" />
+
+          <ModalBody>
+            This action will permanently delete the topic <b>{topicName}</b>.
+            This cannot be undone.
+          </ModalBody>
+
+          <ModalFooter>
             <Button
-              key="confirm"
               variant={ButtonVariant.danger}
               isDisabled={isDeleting}
               onClick={del}
             >
               {isDeleting ? <Spinner size="sm" /> : 'Yes, delete'}
-            </Button>,
+            </Button>
+
             <Button
-              key="cancel"
               variant={ButtonVariant.secondary}
               isDisabled={isDeleting}
-              onClick={() => setIsOpen(false)}
+              onClick={closeDeleteModal}
             >
               Cancel
             </Button>
-          ]}
-        >
-          This action will permanently delete the topic <b>{topicName}</b>.
-          This cannot be undone.
+          </ModalFooter>
         </Modal>
       </CardBody>
     </Card>
