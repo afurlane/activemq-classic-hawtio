@@ -5,9 +5,9 @@ import {
   Pagination,
   Spinner,
   EmptyState,
-  EmptyStateHeader,
   EmptyStateBody
 } from '@patternfly/react-core'
+import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 import { Queue, Message } from '../../types/domain'
 import { useQueueMessages } from '../../hooks/useQueueMessages'
@@ -101,7 +101,7 @@ export const QueueBrowser: React.FC<Props> = ({ queue }) => {
 
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
         <RefreshToolbar
           autoRefresh={autoRefresh}
@@ -121,11 +121,7 @@ export const QueueBrowser: React.FC<Props> = ({ queue }) => {
 
         {/* ERROR */}
         {error && (
-          <EmptyState>
-            <EmptyStateHeader
-              titleText="Failed to load messages"
-              headingLevel="h4"
-            />
+          <EmptyState titleText="Failed to load messages" headingLevel="h4" icon={ExclamationCircleIcon}>
             <EmptyStateBody>
               Try refreshing or navigating to another page.
             </EmptyStateBody>
@@ -134,11 +130,7 @@ export const QueueBrowser: React.FC<Props> = ({ queue }) => {
 
         {/* EMPTY STATE */}
         {!isLoading && !error && messages.length === 0 && (
-          <EmptyState>
-            <EmptyStateHeader
-              titleText="No messages in this page"
-              headingLevel="h4"
-            />
+          <EmptyState titleText="No messages in this page" headingLevel="h4" icon={ExclamationCircleIcon}>
             <EmptyStateBody>
               Try navigating to another page or wait for new messages.
             </EmptyStateBody>

@@ -28,7 +28,7 @@ interface Props {
 export const BrokerAlerts: React.FC<Props> = ({ latest, history }) => {
   if (!latest || !history) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
           <Alert variant="info" title="Loading alerts…" isInline />
         </CardBody>
@@ -63,7 +63,7 @@ export const BrokerAlerts: React.FC<Props> = ({ latest, history }) => {
   const severityIcon = ICONS[severity]
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardHeader>
         <CardTitle>Broker Alerts</CardTitle>
         <Label color={severity} icon={severityIcon} style={LABEL_STYLE}>

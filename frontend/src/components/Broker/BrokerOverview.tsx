@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import {
   PageSection,
-  PageSectionVariants,
   Title,
   Toolbar,
   ToolbarContent,
@@ -108,8 +107,8 @@ export const BrokerOverview: React.FC = () => {
 
   if (!brokerName) {
     return (
-      <PageSection>
-        <Card isFlat isCompact>
+      <PageSection hasBodyWrapper={false}>
+        <Card isCompact>
           <CardBody>
             <Alert variant="danger" title="No broker selected" isInline />
           </CardBody>
@@ -120,7 +119,7 @@ export const BrokerOverview: React.FC = () => {
 
   if (isLoading || metricsLoading || !latest) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Title headingLevel="h3">Loading broker overview…</Title>
       </PageSection>
     )
@@ -128,7 +127,7 @@ export const BrokerOverview: React.FC = () => {
 
   if (error) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Alert variant="danger" title="Failed to load broker data" isInline />
       </PageSection>
     )
@@ -161,7 +160,7 @@ export const BrokerOverview: React.FC = () => {
   return (
     <>
       {/* HEADER */}
-      <PageSection variant={PageSectionVariants.light}>
+      <PageSection hasBodyWrapper={false} >
         <Flex alignItems={FLEX_ALIGN} justifyContent={FLEX_JUSTIFY}>
           <FlexItem>
             <Title headingLevel="h2">Broker Overview</Title>
@@ -179,8 +178,8 @@ export const BrokerOverview: React.FC = () => {
       </PageSection>
 
       {/* TRENDS */}
-      <PageSection>
-        <Card isFlat>
+      <PageSection hasBodyWrapper={false}>
+        <Card>
           <CardHeader>
             <CardTitle>Broker Trends</CardTitle>
           </CardHeader>
@@ -191,7 +190,7 @@ export const BrokerOverview: React.FC = () => {
       </PageSection>
 
       {/* FILTRI */}
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Toolbar>
           <ToolbarContent>
             <ToolbarGroup>
@@ -231,8 +230,8 @@ export const BrokerOverview: React.FC = () => {
       </PageSection>
 
       {/* TOP 5 SLOWEST */}
-      <PageSection>
-        <Card isFlat>
+      <PageSection hasBodyWrapper={false}>
+        <Card>
           <CardHeader>
             <CardTitle>Top 5 Slowest Queues</CardTitle>
           </CardHeader>
@@ -255,7 +254,7 @@ export const BrokerOverview: React.FC = () => {
       </PageSection>
 
       {/* GRID PRINCIPALE */}
-      <PageSection isFilled>
+      <PageSection hasBodyWrapper={false} isFilled>
         <Grid hasGutter md={6} lg={4} xl={3}>
           {filtered.map(q => {
             const inflight = q.stats.inflight ?? 0
@@ -274,7 +273,7 @@ export const BrokerOverview: React.FC = () => {
 
             return (
               <GridItem key={q.name}>
-                <Card isFlat isCompact>
+                <Card isCompact>
                   <CardHeader>
                     <CardTitle>{q.name}</CardTitle>
                   </CardHeader>

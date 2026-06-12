@@ -1,14 +1,19 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
-  Card,
-  CardBody,
-  Title,
-  Button,
-  ButtonVariant,
-  Modal,
-  Alert,
-  Spinner
-} from '@patternfly/react-core'
+	Card,
+	CardBody,
+	Title,
+	Button,
+	ButtonVariant,
+	ModalHeader,
+	ModalBody,
+	ModalFooter,
+	Alert,
+	Spinner
+} from '@patternfly/react-core';
+import {
+	Modal
+} from '@patternfly/react-core/deprecated';
 
 import { activemq, getBrokerMBean } from '../../services/activemq/ActiveMQClassicService'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
@@ -28,9 +33,7 @@ export const TopicDelete: React.FC<Props> = ({ mbean }) => {
   const topicName = match?.[1]
 
   const del = useCallback(async () => {
-    if (!brokerName || !topicName) {
-      return
-    }
+    if (!brokerName || !topicName) return
 
     setIsDeleting(true)
     setError(null)
@@ -47,39 +50,12 @@ export const TopicDelete: React.FC<Props> = ({ mbean }) => {
     }
   }, [brokerName, topicName])
 
-  const openDeleteModal = useCallback(() => {
-    setIsOpen(true)
-  }, [])
-
-  const closeDeleteModal = useCallback(() => {
-    setIsOpen(false)
-  }, [])
-
-  const modalActions = useMemo(
-    () => [
-      <Button
-        key="confirm"
-        variant={ButtonVariant.danger}
-        isDisabled={isDeleting}
-        onClick={del}
-      >
-        {isDeleting ? <Spinner size="sm" /> : 'Yes, delete'}
-      </Button>,
-      <Button
-        key="cancel"
-        variant={ButtonVariant.secondary}
-        isDisabled={isDeleting}
-        onClick={closeDeleteModal}
-      >
-        Cancel
-      </Button>
-    ],
-    [closeDeleteModal, del, isDeleting]
-  )
+  const openDeleteModal = useCallback(() => setIsOpen(true), [])
+  const closeDeleteModal = useCallback(() => setIsOpen(false), [])
 
   if (!brokerName) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
           <Alert variant="danger" title="No broker selected" isInline />
         </CardBody>
@@ -89,7 +65,7 @@ export const TopicDelete: React.FC<Props> = ({ mbean }) => {
 
   if (!topicName) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
           <Alert variant="danger" title="Invalid topic MBean" isInline />
         </CardBody>
@@ -98,7 +74,7 @@ export const TopicDelete: React.FC<Props> = ({ mbean }) => {
   }
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
         <Title headingLevel="h4">Delete Topic</Title>
 
@@ -111,30 +87,40 @@ export const TopicDelete: React.FC<Props> = ({ mbean }) => {
         )}
 
         {error && (
-          <Alert
-            variant="danger"
-            title="Failed to delete topic"
-            isInline
-          >
+          <Alert variant="danger" title="Failed to delete topic" isInline>
             {error}
           </Alert>
         )}
 
-        <Button
-          variant={ButtonVariant.danger}
-          onClick={openDeleteModal}
-        >
+        <Button variant={ButtonVariant.danger} onClick={openDeleteModal}>
           Delete topic
         </Button>
 
-        <Modal
-          title="Confirm deletion"
-          isOpen={isOpen}
-          onClose={closeDeleteModal}
-          actions={modalActions}
-        >
-          This action will permanently delete the topic <b>{topicName}</b>.
-          This cannot be undone.
+        <Modal isOpen={isOpen} onClose={closeDeleteModal} variant="small">
+          <ModalHeader title="Confirm deletion" />
+
+          <ModalBody>
+            This action will permanently delete the topic <b>{topicName}</b>.
+            This cannot be undone.
+          </ModalBody>
+
+          <ModalFooter>
+            <Button
+              variant={ButtonVariant.danger}
+              isDisabled={isDeleting}
+              onClick={del}
+            >
+              {isDeleting ? <Spinner size="sm" /> : 'Yes, delete'}
+            </Button>
+
+            <Button
+              variant={ButtonVariant.secondary}
+              isDisabled={isDeleting}
+              onClick={closeDeleteModal}
+            >
+              Cancel
+            </Button>
+          </ModalFooter>
         </Modal>
       </CardBody>
     </Card>

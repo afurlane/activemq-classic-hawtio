@@ -8,7 +8,7 @@ import {
 
 export const TopicSendMessage: React.FC = () => {
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
         <Title headingLevel="h4">Send Message</Title>
 

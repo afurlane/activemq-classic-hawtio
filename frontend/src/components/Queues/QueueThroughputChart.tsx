@@ -10,7 +10,7 @@ import {
   ChartLine,
   ChartAxis,
   ChartVoronoiContainer
-} from '@patternfly/react-charts'
+} from '@patternfly/react-charts/victory'
 
 import { Queue } from '../../types/domain'
 import { ChartColors } from '../../themes/charts'
@@ -49,7 +49,7 @@ export const QueueThroughputChart: React.FC<{ history: Queue[], intervalMs?: num
   if (!data) return null
 
   return (
-    <Card isFlat className="pf-v5-u-mt-lg">
+    <Card className="pf-v5-u-mt-lg">
       <CardBody>
         <Title headingLevel="h4" className="pf-v5-u-mb-md">
           Throughput Over Time
