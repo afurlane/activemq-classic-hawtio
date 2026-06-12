@@ -1,4 +1,4 @@
-import { Chart, ChartAxis, ChartGroup, ChartLine, ChartVoronoiContainer } from "@patternfly/react-charts"
+import { Chart, ChartAxis, ChartGroup, ChartLine, ChartVoronoiContainer } from "@patternfly/react-charts/victory"
 import { TopicMetricsHistory } from "src/hooks/useTopicMetrics"
 
 const noDataTextStyle = { opacity: 0.6 }
@@ -21,17 +21,17 @@ export const TopicTrends: React.FC<{ history: TopicMetricsHistory }> = ({ histor
     {
       key: 'enqueueRate',
       label: 'Enqueue',
-      style: { data: { stroke: 'var(--pf-v5-global--primary-color--100)', strokeWidth: 2 } }
+      style: { data: { stroke: 'var(--pf-global--primary-color--100)', strokeWidth: 2 } }
     },
     {
       key: 'dequeueRate',
       label: 'Dequeue',
-      style: { data: { stroke: 'var(--pf-v5-global--success-color--100)', strokeWidth: 2 } }
+      style: { data: { stroke: 'var(--pf-global--success-color--100)', strokeWidth: 2 } }
     },
     {
       key: 'dispatchRate',
       label: 'Dispatch',
-      style: { data: { stroke: 'var(--pf-v5-global--warning-color--100)', strokeWidth: 2 } }
+      style: { data: { stroke: 'var(--pf-global--warning-color--100)', strokeWidth: 2 } }
     }
   ] as const
 

@@ -51,7 +51,7 @@ export const TopicInfo: React.FC<{ latest: TopicMetricsLatest }> = ({ latest }) 
   ]
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
         <Title headingLevel="h4">Info</Title>
 

@@ -31,7 +31,7 @@ interface Props {
 export const BrokerTrends: React.FC<Props> = ({ latest, history }) => {
   if (!latest || !history) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
           <Alert variant="info" title="Loading broker trends…" isInline />
         </CardBody>
@@ -62,7 +62,7 @@ export const BrokerTrends: React.FC<Props> = ({ latest, history }) => {
       : <CheckCircleIcon />
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardHeader>
         <CardTitle>Broker Trends</CardTitle>
         <Label color={severity} icon={severityIcon} className="pf-v5-u-ml-auto">

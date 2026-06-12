@@ -9,7 +9,6 @@ module.exports = {
   entry: './src/index.ts',
   mode: 'production',
 
-  // ⭐ NECESSARIO per generare i sourcemap
   devtool: 'source-map',
 
   output: {
@@ -26,6 +25,9 @@ module.exports = {
     alias: {
       src: path.resolve(__dirname, 'src'),
     },
+    fallback: {
+      url: false,
+    },
   },
 
   module: {
@@ -36,7 +38,6 @@ module.exports = {
         use: {
           loader: 'swc-loader',
           options: {
-            // ⭐ NECESSARIO per generare i sourcemap
             sourceMaps: true,
             jsc: {
               parser: {
@@ -45,8 +46,8 @@ module.exports = {
                 },
               transform: {
                  react: {
-                   runtime: "automatic", // ⭐ NEW JSX TRANSFORM 
-                   importSource: "react", // default
+                   runtime: "automatic",
+                   importSource: "react",
                    development: false 
                  },
               }

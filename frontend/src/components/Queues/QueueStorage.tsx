@@ -74,7 +74,7 @@ export const QueueStorage: React.FC<Props> = ({ queue }) => {
   ]
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
         <Title headingLevel="h4">Storage</Title>
 

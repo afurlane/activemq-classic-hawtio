@@ -82,16 +82,16 @@ export const QueueAttributes: React.FC<Props> = ({ queue }) => {
     const handleToggle = React.useCallback(() => onToggle(id), [id])
 
     return (
-      <AccordionItem>
+      <AccordionItem isExpanded={expanded === id}>
         <AccordionToggle
           onClick={handleToggle}
-          isExpanded={expanded === id}
+          
           id={id}
         >
           {title}
         </AccordionToggle>
 
-        <AccordionContent isHidden={expanded !== id}>
+        <AccordionContent >
           <DescriptionList isHorizontal>
             {rows.map((r, i) => (
               <Row key={i} label={r.label} value={r.value} />
@@ -146,7 +146,7 @@ export const QueueAttributes: React.FC<Props> = ({ queue }) => {
   ]
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
         <Accordion asDefinitionList>
           {sections.map(s => (

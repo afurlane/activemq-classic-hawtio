@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 This project adheres to the Conventional Commits specification and uses
 automated release generation via GitHub Actions.
 
+## [1.2.1](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.2.0...v1.2.1) (2026-05-25)
+
+
+### Bug Fixes
+
+* [#30](https://github.com/afurlane/activemq-classic-hawtio/issues/30) - Unable to view message body in QueueBrowser due to large message size ([bce70ee](https://github.com/afurlane/activemq-classic-hawtio/commit/bce70eeafc7568548b126bb463c14d7f1c820124))
+
 ## [1.2.0](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.1.0...v1.2.0) (2026-05-22)
 
 

@@ -16,10 +16,7 @@ export const RemoveMessageModal: React.FC<RemoveMessageModalProps> = ({
   const [id, setId] = useState('')
   const handleConfirm = useCallback(() => onConfirm(id), [onConfirm, id])
   const handleIdChange = useCallback((_: unknown, v: string) => setId(v), [])
-  const fields = useMemo(
-    () => [{ name: 'id', label: 'Message ID', required: true, value: id, onChange: handleIdChange }],
-    [id, handleIdChange]
-  )
+  const fields = useMemo(() => [{ name: 'id', label: 'Message ID', required: true, value: id, onChange: handleIdChange }], [id, handleIdChange])
 
   return (
     <BaseModal

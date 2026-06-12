@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import {
   PageSection,
-  PageSectionVariants,
   Title,
   Card,
   CardHeader,
@@ -64,8 +63,8 @@ export const BrokerDashboard: React.FC = () => {
   // NO BROKER SELECTED
   if (!brokerName) {
     return (
-      <PageSection>
-        <Card isFlat isCompact>
+      <PageSection hasBodyWrapper={false}>
+        <Card isCompact>
           <CardBody>
             <Alert variant="danger" title="No broker selected" isInline />
           </CardBody>
@@ -80,7 +79,7 @@ export const BrokerDashboard: React.FC = () => {
   // LOADING METRICS
   if (metricsLoading || !latest) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Title headingLevel="h3">Loading broker metrics…</Title>
       </PageSection>
     )
@@ -89,7 +88,7 @@ export const BrokerDashboard: React.FC = () => {
   return (
     <>
       {/* HEADER */}
-      <PageSection variant={PageSectionVariants.light}>
+      <PageSection hasBodyWrapper={false} >
         <Flex
           alignItems={FLEX_ALIGN}
           justifyContent={FLEX_JUSTIFY}
@@ -106,7 +105,7 @@ export const BrokerDashboard: React.FC = () => {
       </PageSection>
 
       {/* REFRESH CONTROLS */}
-      <PageSection variant={PageSectionVariants.light}>
+      <PageSection hasBodyWrapper={false} >
         <RefreshToolbar
           autoRefresh={autoRefresh}
           onToggle={handleToggle}
@@ -117,11 +116,11 @@ export const BrokerDashboard: React.FC = () => {
       </PageSection>
 
       {/* MAIN GRID */}
-      <PageSection isFilled>
+      <PageSection hasBodyWrapper={false} isFilled>
         <Grid hasGutter md={6} lg={4} xl={3}>
 
           <GridItem>
-            <Card isFlat>
+            <Card>
               <CardHeader><CardTitle>Trends</CardTitle></CardHeader>
               <CardBody>
                 <BrokerTrends latest={latest} history={history} />
@@ -130,7 +129,7 @@ export const BrokerDashboard: React.FC = () => {
           </GridItem>
 
           <GridItem>
-            <Card isFlat>
+            <Card>
               <CardHeader><CardTitle>Throughput</CardTitle></CardHeader>
               <CardBody>
                 <BrokerThroughput latest={latest} history={history} />
@@ -139,7 +138,7 @@ export const BrokerDashboard: React.FC = () => {
           </GridItem>
 
           <GridItem>
-            <Card isFlat>
+            <Card>
               <CardHeader><CardTitle>Storage</CardTitle></CardHeader>
               <CardBody>
                 <BrokerStorage latest={latest} />
@@ -148,7 +147,7 @@ export const BrokerDashboard: React.FC = () => {
           </GridItem>
 
           <GridItem>
-            <Card isFlat>
+            <Card>
               <CardHeader><CardTitle>Alerts</CardTitle></CardHeader>
               <CardBody>
                 <BrokerAlerts latest={latest} history={history} />
@@ -157,7 +156,7 @@ export const BrokerDashboard: React.FC = () => {
           </GridItem>
 
           <GridItem>
-            <Card isFlat>
+            <Card>
               <CardHeader><CardTitle>Top Consumers</CardTitle></CardHeader>
               <CardBody>
                 <TopConsumers latest={latest} />
@@ -166,7 +165,7 @@ export const BrokerDashboard: React.FC = () => {
           </GridItem>
 
           <GridItem>
-            <Card isFlat>
+            <Card>
               <CardHeader><CardTitle>Top Producers</CardTitle></CardHeader>
               <CardBody>
                 <TopProducers latest={latest} />

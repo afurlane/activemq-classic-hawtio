@@ -1,6 +1,7 @@
 import React from 'react'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { BaseModal } from './BaseModal'
+import { ButtonVariant } from '@patternfly/react-core/dist/esm'
 
 interface DeleteQueueModalProps {
   isOpen: boolean
@@ -21,7 +22,7 @@ export const DeleteQueueModal: React.FC<DeleteQueueModalProps> = ({
     onClose={onClose}
     confirmLabel="Delete"
     confirmIcon={<ExclamationTriangleIcon />}
-    confirmVariant="danger"
+    confirmVariant={ButtonVariant.danger}
     onConfirm={onConfirm}
   >
     <p>
