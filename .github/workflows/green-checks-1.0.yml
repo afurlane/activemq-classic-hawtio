@@ -44,10 +44,9 @@ jobs:
       # ECOCODE
       # -----------------------------
       - name: Switch to frontend directory
+        working-directory: frontend
         run: |
-         cd frontend
-         corepack enable
-         yarn install --immutable
+         yarn install --frozen-lockfile --immutable --immutable-cache
         env: 
           PLUGIN_ID: activemq-classic 
           PLUGIN_SCOPE: activemqClassic 
@@ -57,10 +56,9 @@ jobs:
         run: mkdir -p reports
 
       - name: Execute creedengo scan
+        working-directory: frontend
         run: |
-         cd frontend
          npx eslint . -f json -o ../reports/creedengo.json || true
-         cd ..
         env: 
           PLUGIN_ID: activemq-classic 
           PLUGIN_SCOPE: activemqClassic 
@@ -79,6 +77,15 @@ jobs:
         run: node .github/scripts/generate-badge.mjs
 
       # -----------------------------
+      # EXTRACT SCORES
+      # -----------------------------
+      - name: Extract scores
+        id: scores
+        run: |
+          echo "CREEDENGO=$(jq -r '.creedengo' reports/overall.json)" >> $GITHUB_ENV
+          echo "TOTAL=$(jq -r '.total' reports/overall.json)" >> $GITHUB_ENV
+      
+      # -----------------------------
       # COMMENTO PR
       # -----------------------------
       - name: Comment PR
@@ -88,9 +95,9 @@ jobs:
           recreate: true
           message: |
             ## 🌱 Green Checks Report
-            **Creedengo:** $(cat reports/creedengo.json | jq -r '.score')
-            **Overall:** $(cat reports/overall.json | jq -r '.score')
-
+            **Creedengo:** ${{ env.CREEDENGO }}
+            **Overall:** ${{ env.TOTAL }}
+            
       # -----------------------------
       # RELEASE
       # -----------------------------
