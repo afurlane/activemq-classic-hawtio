@@ -5,7 +5,7 @@
       "branch": "master",
       "release-type": "simple",
       "package-name": "activemq-classic-hawtio",
-      "bump-minor-pre-major": true
+      "bump-minor-pre-major": false
     },
     {
       "branch": "1.0",
