@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 This project adheres to the Conventional Commits specification and uses
 automated release generation via GitHub Actions.
 
+## [2.0.0](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.2.1...v2.0.0) (2026-06-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* Initiating major version 2.0.0 release with breaking changes
+
+### Features
+
+* major version bump to 2.0.0 ([aa6c881](https://github.com/afurlane/activemq-classic-hawtio/commit/aa6c8810cdb95a0dd90d2ec44d05871a1698dd62))
+* refactor code structure for improved readability and maintainability ([0992597](https://github.com/afurlane/activemq-classic-hawtio/commit/0992597ffbfa89098e818d816e48f63e65490c95))
+* update green checks workflow ([#51](https://github.com/afurlane/activemq-classic-hawtio/issues/51)) ([327b3d7](https://github.com/afurlane/activemq-classic-hawtio/commit/327b3d755970e4a7122f8328faa1dc9e5c040ce7))
+
+
+### Bug Fixes
+
+* set bump-minor-pre-major to false for master branch ([#61](https://github.com/afurlane/activemq-classic-hawtio/issues/61)) ([44b2cfa](https://github.com/afurlane/activemq-classic-hawtio/commit/44b2cfa69ff105bbce133a79b6bb9ac1c10bcf36))
+* update Hawtio version in README to 5 ([#64](https://github.com/afurlane/activemq-classic-hawtio/issues/64)) ([d455642](https://github.com/afurlane/activemq-classic-hawtio/commit/d455642540fd3fa0c8b49ef05481a4da65b0dfe9))
+* update workflow names and references for consistency ([#57](https://github.com/afurlane/activemq-classic-hawtio/issues/57)) ([e336a1c](https://github.com/afurlane/activemq-classic-hawtio/commit/e336a1ced9688ab1f24bdd03a8c9e1273ffa9e7e))
+
 ## [1.2.1](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.2.0...v1.2.1) (2026-05-25)
 
 
