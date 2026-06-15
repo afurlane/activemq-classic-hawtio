@@ -29,7 +29,7 @@ interface Props {
 
 export const MetricsView: React.FC<Props> = ({ title, items }) => {
   return (
-    <Card isFlat className="pf-v5-u-mb-md">
+    <Card className="pf-v5-u-mb-md">
       <CardHeader>
         <CardTitle className="pf-v5-u-font-size-md">{title}</CardTitle>
       </CardHeader>
@@ -40,7 +40,6 @@ export const MetricsView: React.FC<Props> = ({ title, items }) => {
             <GridItem key={i} span={2}>
               <Card
                 isCompact
-                isFlat
                 className="pf-v5-u-border-left pf-v5-u-border-color-200 pf-v5-u-p-sm"
               >
                 <CardBody className="pf-v5-u-p-0">

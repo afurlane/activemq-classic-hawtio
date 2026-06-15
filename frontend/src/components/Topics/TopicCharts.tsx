@@ -1,11 +1,11 @@
 import React from 'react'
 import {
-  Chart,
-  ChartAxis,
-  ChartGroup,
-  ChartLine,
-  ChartVoronoiContainer
-} from '@patternfly/react-charts'
+	Chart,
+	ChartAxis,
+	ChartGroup,
+	ChartLine,
+	ChartVoronoiContainer
+} from '@patternfly/react-charts/victory';
 
 import { ActiveMQTopicAttributes } from '../../types/activemq'
 
@@ -17,19 +17,19 @@ const chartLabelAccessor = ({ datum }: { datum: { y: number } }) => `${datum.y}`
 const metricLineStyles = {
   enqueue: {
     data: {
-      stroke: 'var(--pf-v5-global--primary-color--100)',
+      stroke: "var(--pf-t--temp--dev--tbd)"/* CODEMODS: original v5 color was --pf-v5-global--primary-color--100 */,
       strokeWidth: 2
     }
   },
   dequeue: {
     data: {
-      stroke: 'var(--pf-v5-global--success-color--100)',
+      stroke: "var(--pf-t--temp--dev--tbd)"/* CODEMODS: original v5 color was --pf-v5-global--success-color--100 */,
       strokeWidth: 2
     }
   },
   dispatch: {
     data: {
-      stroke: 'var(--pf-v5-global--warning-color--100)',
+      stroke: "var(--pf-t--temp--dev--tbd)"/* CODEMODS: original v5 color was --pf-v5-global--warning-color--100 */,
       strokeWidth: 2
     }
   }

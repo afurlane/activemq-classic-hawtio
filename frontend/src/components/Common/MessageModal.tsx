@@ -1,15 +1,21 @@
 import {
-  Modal,
-  ExpandableSection,
-  DescriptionList,
-  DescriptionListGroup,
-  DescriptionListTerm,
-  DescriptionListDescription,
-  CodeBlock,
-  CodeBlockCode,
-  ClipboardCopyButton,
-  CodeBlockAction
+	ModalHeader,
+	ModalBody,
+	ModalFooter,
+	ExpandableSection,
+	DescriptionList,
+	DescriptionListGroup,
+	DescriptionListTerm,
+	DescriptionListDescription,
+	CodeBlock,
+	CodeBlockCode,
+	ClipboardCopyButton,
+	CodeBlockAction,
+	Button
 } from '@patternfly/react-core';
+import {
+	Modal
+} from '@patternfly/react-core/deprecated';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Message } from '../../types/domain';
 import { formatBody } from '../../utils/bodyFormatter';
@@ -26,28 +32,28 @@ export interface MessageModalProps {
 
 export const MessageModal: React.FC<MessageModalProps> = ({ message, isOpen, onClose }) => {
   const { modalScroll, bodyScroll, sectionScroll } = useScrollStyles();
-  const headerRef = useRef<HTMLSpanElement>(null)
-  const { text, html, lang } = formatBody(message?.body ?? '')
-  const bodyHtml = useMemo(() => ({ __html: html }), [html])
+  const headerRef = useRef<HTMLHeadingElement>(null);
+
+  const { text, html, lang } = formatBody(message?.body ?? '');
+  const bodyHtml = useMemo(() => ({ __html: html }), [html]);
 
   const handleCopyClick = useCallback(() => {
-    navigator.clipboard.writeText(text)
-  }, [text])
+    navigator.clipboard.writeText(text);
+  }, [text]);
 
   const handleDownloadClick = useCallback(() => {
     if (!message) return;
 
-    const blob = new Blob(
-      [JSON.stringify(message, null, 2)],
-      { type: 'application/json;charset=utf-8' }
-    );
+    const blob = new Blob([JSON.stringify(message, null, 2)], {
+      type: 'application/json;charset=utf-8'
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `message-${message.id ?? 'details'}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [message])
+  }, [message]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -55,16 +61,15 @@ export const MessageModal: React.FC<MessageModalProps> = ({ message, isOpen, onC
     const id = setTimeout(() => {
       requestAnimationFrame(() => {
         headerRef.current?.focus();
-        
       });
     }, 50);
 
     return () => clearTimeout(id);
   }, [isOpen]);
 
-  if (!isOpen || !message) return null
+  if (!isOpen || !message) return null;
 
-  const actions = (
+  const copyAction = (
     <CodeBlockAction>
       <ClipboardCopyButton
         id="copy-body-button"
@@ -75,23 +80,21 @@ export const MessageModal: React.FC<MessageModalProps> = ({ message, isOpen, onC
         Copy
       </ClipboardCopyButton>
     </CodeBlockAction>
-  )
+  );
 
   return (
-    <Modal
-      title={<span ref={headerRef} tabIndex={-1}>Message Details</span>}
-      isOpen={isOpen}
-      onClose={onClose}
-      variant="large"
-    >
-      <div style={modalScroll}>
+    <Modal isOpen={isOpen} onClose={onClose} variant="large">
+      <ModalHeader>
+        <h2 ref={headerRef} tabIndex={-1}>Message Details</h2>
+      </ModalHeader>
 
+      <ModalBody style={modalScroll}>
         {/* BODY */}
         <div>
           <h3 style={bodyHeadingStyle}>Body</h3>
-          <CodeBlock actions={actions} style={bodyScroll}>
+          <CodeBlock actions={copyAction} style={bodyScroll}>
             <CodeBlockCode id="message-body" lang={lang} className={`language-${lang}`}>
-              <span key={lang} dangerouslySetInnerHTML={bodyHtml}/>
+              <span dangerouslySetInnerHTML={bodyHtml} />
             </CodeBlockCode>
           </CodeBlock>
         </div>
@@ -141,15 +144,18 @@ export const MessageModal: React.FC<MessageModalProps> = ({ message, isOpen, onC
             </DescriptionList>
           </div>
         </ExpandableSection>
-        
-        {/* DOWNLOAD MESSAGE */}
+
+        {/* DOWNLOAD */}
         <div style={downloadSectionStyle}>
-          <button className="pf-v5-c-button pf-m-secondary" onClick={handleDownloadClick}>
+          <Button variant="secondary" onClick={handleDownloadClick}>
             Download Message
-          </button>
+          </Button>
         </div>
-        
-      </div>
+      </ModalBody>
+
+      <ModalFooter>
+        <Button variant="primary" onClick={onClose}>Close</Button>
+      </ModalFooter>
     </Modal>
-  )
-}
+  );
+};

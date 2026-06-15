@@ -13,7 +13,7 @@ export const TopicProducers: React.FC<{ latest: TopicMetricsLatest }> = ({ lates
   const count = latest.producers
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
         <Title headingLevel="h4">Producers</Title>
 

@@ -30,7 +30,7 @@ const labelStyle = { marginLeft: 'auto' }
 export const BrokerThroughput: React.FC<Props> = ({ latest, history }) => {
   if (!latest || !history) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
           <Alert variant="danger" title="No throughput data available" isInline />
         </CardBody>
@@ -66,7 +66,7 @@ export const BrokerThroughput: React.FC<Props> = ({ latest, history }) => {
       : <ExclamationCircleIcon />
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardHeader>
         <CardTitle>Broker Throughput (msg/sec)</CardTitle>
         <Label color={severity} icon={severityIcon} style={labelStyle}>

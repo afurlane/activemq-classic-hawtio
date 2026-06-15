@@ -16,8 +16,8 @@ export const CopyMessageModal: React.FC<CopyMessageModalProps> = ({
   const [dest, setDest] = useState('')
   const handleConfirm = useCallback(() => onConfirm(id, dest), [onConfirm, id, dest])
   const fields = useMemo(() => [
-    { name: 'id', label: 'Message ID', required: true, value: id, onChange: setId },
-    { name: 'dest', label: 'Destination', required: true, value: dest, onChange: setDest }
+    { name: 'id', label: 'Message ID', required: true, value: id, onChange: (_: unknown, value: string) => setId(value) },
+    { name: 'dest', label: 'Destination', required: true, value: dest, onChange: (_: unknown, value: string) => setDest(value) }
   ], [id, dest])
 
   return (

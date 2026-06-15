@@ -1,9 +1,14 @@
 import React from 'react'
 import {
-  Modal,
-  Button,
-  ButtonVariant
-} from '@patternfly/react-core'
+	Button,
+	ButtonVariant,
+	ModalFooter,
+	ModalHeader,
+	ModalBody
+} from '@patternfly/react-core';
+import {
+	Modal
+} from '@patternfly/react-core/deprecated';
 
 interface BaseModalProps {
   title: string
@@ -47,8 +52,10 @@ export const BaseModal: React.FC<BaseModalProps> = ({
   )
 
   return (
-    <Modal title={title} isOpen={isOpen} onClose={onClose} actions={actions}>
-      {children}
+    <Modal isOpen={isOpen} onClose={onClose}>      
+      <ModalHeader title={title} />
+      <ModalBody>{children}</ModalBody>
+      <ModalFooter>{actions}</ModalFooter>
     </Modal>
   )
 }

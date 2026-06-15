@@ -9,7 +9,6 @@ import {
   Label,
   Alert,
   EmptyState,
-  EmptyStateHeader,
   EmptyStateBody,
   Toolbar,
   ToolbarContent,
@@ -35,7 +34,8 @@ import {
   CheckCircleIcon,
   PauseCircleIcon,
   BanIcon,
-  SyncIcon
+  SyncIcon,
+  ExclamationCircleIcon
 } from '@patternfly/react-icons'
 
 import { buildQueueUrl } from '../../router/router'
@@ -44,7 +44,7 @@ import { useQueues } from '../../hooks/useQueues'
 import { Queue } from '../../types/domain'
 
 const toolbarStyle: React.CSSProperties = { marginTop: '1rem' }
-const rightAlignedToolbarGroup = { default: 'alignRight' } as const
+const rightAlignedToolbarGroup = { default: 'alignEnd' } as const
 
 export const QueuesView: React.FC = () => {
   const brokerName = useSelectedBrokerName()
@@ -136,7 +136,7 @@ export const QueuesView: React.FC = () => {
 
   if (!brokerName) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
           <Alert variant="danger" title="No broker selected" isInline />
         </CardBody>
@@ -182,7 +182,7 @@ export const QueuesView: React.FC = () => {
   }
 
   return (
-    <PageSection variant={PageSectionVariants.light}>
+    <PageSection hasBodyWrapper={false} variant={PageSectionVariants.default}>
       <Title headingLevel="h2">Queues</Title>
 
       {/* TOOLBAR */}
@@ -220,9 +220,7 @@ export const QueuesView: React.FC = () => {
 
             {/* Refresh */}
             <ToolbarItem>
-              <Button variant="plain" onClick={handleRefreshClick}>
-                <SyncIcon />
-              </Button>
+              <Button icon={<SyncIcon />} variant="plain" onClick={handleRefreshClick} />
             </ToolbarItem>
 
           </ToolbarGroup>
@@ -237,7 +235,7 @@ export const QueuesView: React.FC = () => {
         </ToolbarContent>
       </Toolbar>
 
-      <Card isFlat isCompact className="pf-v5-u-mt-md">
+      <Card isCompact className="pf-v5-u-mt-md">
         <CardBody>
 
           {/* ERROR */}
@@ -256,11 +254,7 @@ export const QueuesView: React.FC = () => {
 
           {/* EMPTY STATE */}
           {!isLoading && sorted.length === 0 && (
-            <EmptyState>
-              <EmptyStateHeader
-                titleText="No queues found"
-                headingLevel="h4"
-              />
+            <EmptyState titleText="No queues found" headingLevel="h4" icon={ExclamationCircleIcon}>
               <EmptyStateBody>
                 Try adjusting filters or refreshing.
               </EmptyStateBody>

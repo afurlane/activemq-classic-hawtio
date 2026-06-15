@@ -1,11 +1,12 @@
 import React, { useCallback, useState } from 'react'
 import {
-  Card, CardBody, Spinner, EmptyState, EmptyStateHeader, EmptyStateBody,
+  Card, CardBody, Spinner, EmptyState, EmptyStateBody,
   Pagination
 } from '@patternfly/react-core'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@patternfly/react-table'
 import { CodeBlock, CodeBlockCode } from '@patternfly/react-core'
 import { useTopicMessages } from '../../hooks/useTopicMessages'
+import { ExclamationCircleIcon } from '@patternfly/react-icons/dist/esm'
 
 interface Props {
   mbean: string 
@@ -25,10 +26,10 @@ export const TopicBrowser: React.FC<Props> = ({ mbean }) => {
 
   if (!mbean) {
     return (
-      <Card isFlat isCompact>
+      <Card isCompact>
         <CardBody>
-          <EmptyState>
-            <EmptyStateHeader titleText="No topic selected" />
+          <EmptyState titleText="No topic selected" headingLevel="h4" icon={ExclamationCircleIcon}>
+            <EmptyStateBody>Please select a topic to view its messages.</EmptyStateBody>
           </EmptyState>
         </CardBody>
       </Card>
@@ -36,7 +37,7 @@ export const TopicBrowser: React.FC<Props> = ({ mbean }) => {
   }
 
   return (
-    <Card isFlat isCompact>
+    <Card isCompact>
       <CardBody>
 
         {/* PAGINATION TOP */}
@@ -50,14 +51,13 @@ export const TopicBrowser: React.FC<Props> = ({ mbean }) => {
 
         {isLoading && <Spinner size="xl" />}
         {error && (
-          <EmptyState>
-            <EmptyStateHeader titleText="Failed to load messages" />
+          <EmptyState titleText="Failed to load messages" headingLevel="h4" icon={ExclamationCircleIcon}>
             <EmptyStateBody>Try refreshing.</EmptyStateBody>
           </EmptyState>
         )}
         {!isLoading && !error && messages.length === 0 && (
-          <EmptyState>
-            <EmptyStateHeader titleText="No messages" />
+          <EmptyState titleText="No messages" headingLevel="h4" icon={ExclamationCircleIcon}>
+            <EmptyStateBody>There are no messages to display.</EmptyStateBody>
           </EmptyState>
         )}
 
