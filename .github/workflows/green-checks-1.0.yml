@@ -1,4 +1,4 @@
-name: Green Checks (1.0)
+name: Green Checks 1.0
 
 on:
   pull_request:
