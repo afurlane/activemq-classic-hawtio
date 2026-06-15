@@ -1,8 +1,8 @@
-name: Release (1.0)
+name: Release 1.0
 
 on:
   workflow_run:
-    workflows: ["Green Checks"]
+    workflows: ["Green Checks 1.0"]
     types:
       - completed
 
@@ -13,8 +13,7 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.ref == 'refs/heads/1.0' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == '1.0' }}
 
     steps:
       - name: Checkout
