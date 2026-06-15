@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 This project adheres to the Conventional Commits specification and uses
 automated release generation via GitHub Actions.
 
+## [1.3.0](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.2.1...v1.3.0) (2026-06-15)
+
+
+### Features
+
+* refactor code structure for improved readability and maintainability ([0992597](https://github.com/afurlane/activemq-classic-hawtio/commit/0992597ffbfa89098e818d816e48f63e65490c95))
+
 ## [1.2.1](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.2.0...v1.2.1) (2026-05-25)
 
 
