@@ -1,6 +1,6 @@
 # ActiveMQ Classic 6 – Hawtio Plugin
 
-A modern, fast, and modular management console for **ActiveMQ Classic 6**, delivered as a fully self‑contained **Hawtio 4 federated plugin** running on **Jetty 11 / Jakarta EE**. 
+A modern, fast, and modular management console for **ActiveMQ Classic 6**, delivered as a fully self‑contained **Hawtio 5 federated plugin** running on **Jetty 11 / Jakarta EE**. 
 
 ![Build](https://github.com/afurlane/activemq-classic-hawtio/actions/workflows/build.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue)
