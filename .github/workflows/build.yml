@@ -59,3 +59,51 @@ jobs:
         with:
           name: activemq-classic-plugin
           path: target/*.jar
+
+  sonar-analysis:
+    name: SonarQube Quality Scan
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ needs.build.result == 'success' }}
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha || github.ref_name }}
+          fetch-depth: 0
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Download SonarScanner CLI
+        run: |
+          curl -sSLo sonar.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-8.0.1.6346-linux-x64.zip
+          unzip sonar.zip
+          mv sonar-scanner-* sonar-scanner
+          echo "$PWD/sonar-scanner/bin" >> $GITHUB_PATH
+
+      - name: Install frontend deps
+        run: |
+          cd frontend
+          yarn install --frozen-lockfile
+
+      - name: Build backend (Java)
+        run: mvn -B clean compile        
+
+      - name: Run SonarQube Analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_URL: ${{ secrets.SONAR_URL }}
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=activemq-classic-hawtio \
+            -Dsonar.projectName="ActiveMQ Classic Hawtio Plugin" \
+            -Dsonar.sources=src/main/java,frontend/src \
+            -Dsonar.java.binaries=target/classes \
+            -Dsonar.branch.name=${{ github.ref_name }} \
+            -Dsonar.host.url=$SONAR_URL \
+            -Dsonar.login=$SONAR_TOKEN
