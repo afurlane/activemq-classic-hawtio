@@ -71,7 +71,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha || github.ref_name }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -104,6 +104,6 @@ jobs:
             -Dsonar.projectName="ActiveMQ Classic Hawtio Plugin" \
             -Dsonar.sources=src/main/java,frontend/src \
             -Dsonar.java.binaries=target/classes \
-            -Dsonar.branch.name=${{ github.ref_name }} \
+            -Dsonar.branch.name=${{ github.head_ref || github.ref_name }} \
             -Dsonar.host.url=$SONAR_URL \
             -Dsonar.login=$SONAR_TOKEN
