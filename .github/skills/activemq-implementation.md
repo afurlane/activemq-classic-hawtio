@@ -1,127 +1,106 @@
-# Operational Skill — What Copilot Must Update When Implementing Features
-This skill defines how Copilot must update the repository when implementing new features or modifying existing ones.
-It does not describe JMX internals; it describes the workflow and file responsibilities inside this project.
+# Operational Skill — Strict Implementation And PR Checklist
+This skill defines the mandatory implementation workflow and review checklist for this repository.
+It is focused on real project structure and responsibilities, not hypothetical architecture.
 
-## General Rules
-Copilot must follow the repository’s architecture as defined in Architecture.md.
-All changes must respect the existing folder structure.
-No new top‑level directories may be created.
-No refactoring of unrelated components unless explicitly requested.
-All new features must integrate with:
-- backend Java (JMX → REST)
-- frontend React/TSX (Hawtio federated plugin)
-- API documentation (API.md)
-- domain types (frontend/src/app/activemq/types)
-- operations (frontend/src/app/activemq/services/activemq/operations)
+## Scope
+- Backend is limited to plugin bootstrap and static-asset servlet responsibilities.
+- Frontend implements broker interaction through Jolokia service operations.
+- This repository currently does not implement a Java REST controller/service layer.
 
-## Backend Update Rules
-When implementing a new feature:
+## Mandatory Architecture Rules (MUST)
+- Follow current repository structure exactly.
+- Do not create new top-level directories.
+- Do not refactor unrelated modules unless explicitly requested.
+- Use the existing React + TypeScript + PatternFly stack.
+- Keep hash-based routing behavior compatible.
 
-### Java Backend
-Update files under: src/main/java/eu/opensoftware/activemqclassic
-Copilot must:
-- Add or extend a Java service class for JMX access.
-- Add or extend a REST controller exposing the new operations.
-- Use existing patterns from:
-  - ActiveMQClassicPluginServlet
-  - existing service classes
-- Return DTOs only; no business logic in controllers.
+## Backend Rules (MUST)
+- Java changes must stay under `src/main/java/eu/opensoftware`.
+- Do not introduce Java REST controllers/services unless explicitly requested.
+- Preserve plugin bootstrap and servlet lifecycle behavior.
+- Preserve plugin metadata loading from `plugin.properties`.
 
-### JMX Access
-Copilot must:
-- Use the ObjectName patterns defined in skills/activemq-jmx.md.
-- Use Jolokia-compatible operations (string-based invocation).
-- Never invent JMX methods; only use those listed in the JMX skill.
+## Frontend Rules (MUST)
+- Frontend changes must stay under `frontend/src`.
+- Use functional components and hooks only.
+- Keep area-based organization (`Broker`, `Queues`, `Topics`, `Connectors`, `Common`).
+- Do not introduce global state frameworks.
 
-## REST API Update Rules
-REST endpoints must be added under: src/main/java/eu/opensoftware/activemqclassic/api
+## Jolokia Service Boundary (MUST)
+- All Jolokia calls must live in `frontend/src/services/activemq/operations`.
+- Hooks and components must not call `jolokiaService` directly.
+- New operations must be exposed via `ActiveMQClassicService`.
+- JMX operation signatures must match ActiveMQ Classic behavior.
 
-Copilot must:
-- Follow existing naming conventions (/api/activemq/...).
-- Document all new endpoints in API.md.
-- Ensure JSON responses match the domain types in the frontend.
+## Typing And Mapping Rules (MUST)
+- Map raw ActiveMQ/Jolokia payloads into domain objects before rendering.
+- Domain interfaces belong in `frontend/src/types/domain`.
+- ActiveMQ raw attribute contracts belong in `frontend/src/types/activemq.ts`.
+- Avoid introducing new `any` return types when concrete types are possible.
 
-## Frontend Update Rules
-Frontend lives under: frontend/src/app/activemq
-Copilot must update:
+## SWR Data Rules (MUST)
+- Add async data access through hooks under `frontend/src/hooks`.
+- Use deterministic SWR keys.
+- Keep refresh defaults aligned with existing patterns (5s or 10s unless justified).
+- Ensure relevant keys are refreshable from the global refresh action.
 
-### Domain Types
-frontend/src/app/activemq/types/domain/*.ts
-- Add new TypeScript interfaces for new REST responses.
-- Keep naming consistent with existing domain types.
+## UI Rules (MUST)
+- Use PatternFly components and utility conventions.
+- Keep loading/error/empty states explicit.
+- Use modals/confirmations for destructive actions.
+- Keep custom CSS minimal and only for unavoidable edge cases.
 
-### Service Layer
-frontend/src/app/activemq/services/activemq/operations/*.ts
-- Add functions that call the new REST endpoints.
-- Use existing patterns (queues.ts, topics.ts, etc.).
+## Routing Rules (MUST)
+- Any new route must be added to parse + builder helpers in `frontend/src/router/router.ts`.
+- Use encoded queue/topic route params.
+- Maintain backwards-compatible defaults.
 
-### Hooks
-frontend/src/app/activemq/hooks
-- Add or update hooks (useXxx.ts) to fetch new data.
-- Hooks must use the service layer, not fetch directly.
+## Documentation Rules (MUST)
+- Update `API.md` for new/changed operations and behavior.
+- Update `Architecture.md` when boundaries or flow change.
+- Update `frontend/src/help.md` for user-facing feature changes.
+- Update `CHANGELOG.md` for delivered feature/fix work.
 
-### Components
-frontend/src/app/activemq/components
-- Add new components or extend existing ones.
-- Follow the existing UI structure:
-  - QueueDetailsPage.tsx
-  - TopicDetailsPage.tsx
-  - BrokerPanel.tsx
-- New tabs must be added inside the relevant DetailsPage.
+## Build And Dependency Rules (MUST)
+- Preserve Yarn Berry immutability (`yarn install --immutable`).
+- Preserve Maven frontend integration in `pom.xml`.
+- Do not add heavy dependencies if the existing stack can cover the feature.
 
-### Modals
-If the feature requires user actions (e.g., remove group): frontend/src/app/activemq/components/Queues/RemoveMessageGroupModal.tsx
-Copilot must:
-- Follow existing modal patterns.
-- Use confirmation dialogs.
-- Use the service layer for actions.
+## Branch And Release Rules (MUST)
+- Apply compatible changes to both `master` and `1.0`.
+- For `master`-only changes, document compatibility rationale explicitly.
+- For PatternFly-version-sensitive fixes, evaluate and apply per-branch as applicable.
 
-## Documentation Update Rules
-Copilot must update:
+## Git Remote Rules (MUST)
+- Use `github` as the primary remote of reference for normal development workflows.
+- Treat `origin` as a backup remote.
+- Prefer `github` for fetch/pull/push and branch tracking unless explicitly instructed otherwise.
+- Use `origin` only for backup synchronization tasks.
 
-### API.md
-- Add new endpoints.
-- Add request/response examples.
-- Add error cases if relevant.
+## PR Checklist (MUST PASS)
+- [ ] Change is scoped to requested behavior only.
+- [ ] No direct Jolokia access from components/hooks.
+- [ ] Domain mapping updated for new payload shapes.
+- [ ] SWR key/refresh behavior is stable and consistent.
+- [ ] Route parser/builders updated if navigation changed.
+- [ ] Loading/error/empty states handled.
+- [ ] Documentation updated (`API.md`, `help.md`, `CHANGELOG.md`, `Architecture.md` if needed).
+- [ ] Build/test/lint expectations preserved.
+- [ ] Branch applicability (`master` and `1.0`) evaluated and documented.
+- [ ] Git remote usage follows policy (`github` primary, `origin` backup).
 
-### help.md
-- Add user-facing documentation for new UI features.
-
-### CHANGELOG.md
-- Add an entry under “Added” or “Changed”.
-
-## Style & Consistency Rules
-- Follow STYLEGUIDE.md for frontend.
-- Follow existing Java formatting conventions.
-- No TODO placeholders.
-- No speculative abstractions.
-- No unused code.
+## Review Heuristics (SHOULD)
+- Keep files small and explicit.
+- Prefer additive changes over rewrites.
+- Avoid speculative abstractions.
+- Preserve naming and folder conventions used by neighboring code.
 
 ## Forbidden Actions
-Copilot must NOT:
-- Modify unrelated components.
-- Change the plugin bootstrap.
-- Introduce new frameworks or libraries.
-- Change routing structure.
-- Change JMX model.
-- Change REST base paths.
-- Create new top-level folders.
+- Do not alter ActiveMQ JMX model assumptions.
+- Do not introduce unrelated architectural rewrites.
+- Do not change routing strategy from hash-based.
+- Do not modify unrelated features while implementing a targeted request.
 
-## Implementation Workflow (Mandatory Sequence)
-When implementing a feature (e.g., Message Groups):
-- Backend JMX service
-- REST controller
-- API.md update
-- Domain types
-- Service layer operations
-- Hooks
-- UI components
-- Modals (if needed)
-- help.md update
-- CHANGELOG.md update
-Copilot must follow this sequence unless explicitly instructed otherwise.
-
-## External References
-Copilot may reference only the following external source:
-- ActiveMQ Classic JMX implementation (source code path listed in copilot-instructions.md)
-No other external links are allowed.
+## External Reference Scope
+Allowed external reference:
+- ActiveMQ Classic JMX implementation (as listed in project instructions).
