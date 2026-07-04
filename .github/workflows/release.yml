@@ -18,9 +18,36 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Detect releasable commits
+        id: releasable
+        run: |
+          git fetch --tags --force
+          LAST_TAG=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)
+
+          if [[ -n "$LAST_TAG" ]]; then
+            RANGE="$LAST_TAG..HEAD"
+          else
+            RANGE="HEAD"
+          fi
+
+          echo "Using commit range: $RANGE"
+          git log --format=%s "$RANGE" | cat
+
+          if git log --format=%s "$RANGE" | grep -Eq '^(feat|fix|perf|revert|deps)(\(.+\))?(!)?:'; then
+            echo "has_releasable=true" >> "$GITHUB_OUTPUT"
+            echo "Releasable commits found."
+          else
+            echo "has_releasable=false" >> "$GITHUB_OUTPUT"
+            echo "No releasable commits found since latest tag; skipping release-please."
+          fi
 
       - name: Release Please
         id: release
+        if: ${{ steps.releasable.outputs.has_releasable == 'true' }}
         uses: googleapis/release-please-action@v5
         with:
           release-type: simple
@@ -136,7 +163,7 @@ jobs:
           ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
@@ -166,6 +193,7 @@ jobs:
             -Dsonar.projectName="ActiveMQ Classic Hawtio Plugin" \
             -Dsonar.sources=src/main/java,frontend/src \
             -Dsonar.java.binaries=target/classes \
+            -Dsonar.scanner.javaExePath="$JAVA_HOME/bin/java" \
             -Dsonar.branch.name=${{ github.event.workflow_run.head_branch }} \
             -Dsonar.host.url=$SONAR_URL \
-            -Dsonar.login=$SONAR_TOKEN
+            -Dsonar.token=$SONAR_TOKEN
