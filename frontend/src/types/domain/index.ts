@@ -7,6 +7,8 @@ export { mapSubscription } from './subscription'
 export type { Queue } from './queue'
 export { mapQueue } from './queue'
 
+export type { QueueMessageGroup, QueueMessageGroupsInfo } from './messageGroup'
+
 export type { Topic } from './topic'
 export { mapTopic } from './topic'
 
