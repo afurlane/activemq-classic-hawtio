@@ -26,8 +26,8 @@ export const DeleteQueueModal: React.FC<DeleteQueueModalProps> = ({
     onConfirm={onConfirm}
   >
     <p>
-      This will permanently delete the queue <strong>{queueName}</strong>  
-      and all of its messages.  
+      This will permanently delete the queue <strong>{queueName}</strong>{' '}
+      and all of its messages.{' '}
       This action cannot be undone.
     </p>
   </BaseModal>

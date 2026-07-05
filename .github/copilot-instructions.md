@@ -74,6 +74,25 @@ The goal is consistency, correctness, and alignment with the plugin architecture
 - Do not introduce heavy external libraries for features that can be implemented with existing stack.
 
 ## Release And Branch Rules
+- Every issue in this codebase, including CI-related issues, must be worked on a dedicated branch.
+- Dedicated work branches must use the `feature/` prefix.
+- Branch naming convention for issue work:
+	- `master` target: `feature/<issue-number>-<short-description>` (example: `feature/69-message-groups`)
+	- `1.0` target: `feature/<issue-number>-<short-description>-1.0` (example: `feature/69-message-groups-1.0`)
+	- CI tasks without an issue number should still use a `feature/` branch with a descriptive slug (example: `feature/ci-fix-green-checks`)
+- Mandatory pre-work branch verification:
+	- Before making any code or doc change, verify the current branch name and target line.
+	- If the current branch is not the intended target branch for the task, switch first to the correct branch (or create it from the correct baseline) and only then start editing.
+	- A branch ending with `-1.0` must be based on the `1.0` release branch (not on `master`).
+	- Validate branch ancestry explicitly (for example with `git merge-base --is-ancestor 1.0 HEAD`) before starting work on `-1.0` branches.
+	- If branch naming, ancestry, and target baseline are inconsistent, stop and fix/switch the branch first.
+- Version-line UI framework compatibility check:
+	- `1.0` line must stay aligned with PatternFly 5 compatibility.
+	- `master` (2.x line) is the branch where PatternFly 6 support is expected.
+	- If a branch baseline implies a different PatternFly major than what the workspace currently resolves, pause and reconcile branch/baseline before continuing.
+- Root branches are reserved for releases only.
+- `master` is the mainline branch.
+- `1.0` is a release line branch for the 1.x stream.
 - If a change is compatible with both versions, apply it on both `master` and `1.0` branches.
 - If a change is not compatible with `1.0`, document why and keep it `master`-only.
 - PatternFly-version-specific fixes should be evaluated per branch and applied where applicable.

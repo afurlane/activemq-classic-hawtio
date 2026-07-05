@@ -73,7 +73,6 @@ export const MessageModal: React.FC<MessageModalProps> = ({ message, isOpen, onC
     <CodeBlockAction>
       <ClipboardCopyButton
         id="copy-body-button"
-        textId="message-body"
         aria-label="Copy to clipboard"
         onClick={handleCopyClick}
       >
@@ -83,7 +82,7 @@ export const MessageModal: React.FC<MessageModalProps> = ({ message, isOpen, onC
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} variant="large">
+    <Modal isOpen={isOpen} onClose={onClose} variant="large" aria-label="Message Details">
       <ModalHeader>
         <h2 ref={headerRef} tabIndex={-1}>Message Details</h2>
       </ModalHeader>
