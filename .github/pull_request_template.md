@@ -13,6 +13,7 @@ Explain what this PR changes and why.
 
 ## Checklist
 - [ ] My commits follow the Conventional Commits specification
+- [ ] If this PR is ready to merge, commits are squashed
 - [ ] I added screenshots if the UI was modified
 - [ ] I tested the changes locally
 - [ ] I updated documentation where needed

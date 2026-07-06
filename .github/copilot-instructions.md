@@ -104,7 +104,7 @@ The goal is consistency, correctness, and alignment with the plugin architecture
 - Use `origin` only when explicitly requested for backup synchronization.
 
 ## Pull Request Rules
-- Before final approval/merge, PR branches in review should have their work commits squashed to keep history clean and readable.
+- When a PR is ready for merge, squashing commits is mandatory: always squash work commits to keep history clean and readable.
 - When opening a PR, always use the repository template in `.github/pull_request_template.md`.
 - Do not open PRs with an empty or ad-hoc description when the template is available; fill in all relevant sections.
 
