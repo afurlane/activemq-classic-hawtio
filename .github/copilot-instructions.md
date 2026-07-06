@@ -103,6 +103,11 @@ The goal is consistency, correctness, and alignment with the plugin architecture
 - Prefer `github` for pull, fetch, push, branch tracking, and PR-related workflows.
 - Use `origin` only when explicitly requested for backup synchronization.
 
+## Pull Request Rules
+- When a PR is ready for merge, squashing commits is mandatory: always squash work commits to keep history clean and readable.
+- When opening a PR, always use the repository template in `.github/pull_request_template.md`.
+- Do not open PRs with an empty or ad-hoc description when the template is available; fill in all relevant sections.
+
 ## Constraints
 - Do not modify the ActiveMQ Classic JMX model.
 - Do not introduce breaking changes to existing UI navigation and plugin loading behavior unless requested.
