@@ -105,6 +105,7 @@ Pannelli:
 - QueueStorage  
 - QueueDLQ  
 - QueueConsumers  
+- QueueMessageGroups  
 - QueueOperations  
 - QueueBrowser  
 

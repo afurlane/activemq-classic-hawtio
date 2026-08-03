@@ -26,6 +26,7 @@ import { QueueAlerts } from './QueueAlerts'
 import { QueueStorage } from './QueueStorage'
 import { QueueDLQ } from './QueueDLQ'
 import { QueueConsumers } from './QueueConsumers'
+import { QueueMessageGroups } from './QueueMessageGroups'
 
 import { useQueueMetrics } from '../../hooks/useQueueMetrics'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
@@ -42,7 +43,7 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
   }, [])
 
     // SWR: carica la queue
-  const { data: queue, isLoading: queueLoading } = useQueue(brokerName, queueName)
+  const { data: queue, isLoading: queueLoading, mutate: refreshQueue } = useQueue(brokerName, queueName)
 
   // SWR: carica metriche
   const [autoRefresh, setAutoRefresh] = useState(false)
@@ -56,7 +57,10 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
   const handleManualRefresh = useCallback(() => {
     poll()
   }, [poll])
-  const handleNoopAction = useCallback(async () => {}, [])
+  const handleQueueAction = useCallback(async () => {
+    await refreshQueue()
+    poll()
+  }, [refreshQueue, poll])
 
   if (!brokerName) {
     return (
@@ -128,6 +132,7 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
           <Tab eventKey="metrics" title={<TabTitleText>Metrics</TabTitleText>} />
           <Tab eventKey="messages" title={<TabTitleText>Messages</TabTitleText>} />
           <Tab eventKey="consumers" title={<TabTitleText>Consumers</TabTitleText>} />
+          <Tab eventKey="message-groups" title={<TabTitleText>Message Groups</TabTitleText>} />
           <Tab eventKey="storage" title={<TabTitleText>Storage</TabTitleText>} />
           <Tab eventKey="dlq" title={<TabTitleText>DLQ</TabTitleText>} />
           <Tab eventKey="attributes" title={<TabTitleText>Attributes</TabTitleText>} />
@@ -159,6 +164,10 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
           <QueueConsumers queue={latest} history={history} />
         )}
 
+        {activeTab === 'message-groups' && (
+          <QueueMessageGroups queue={queue} onAction={handleQueueAction} />
+        )}
+
         {activeTab === 'storage' && <QueueStorage queue={latest} />}
 
         {activeTab === 'dlq' && <QueueDLQ queue={latest} />}
@@ -181,7 +190,7 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
 
 
         {activeTab === 'operations' && (
-          <QueueOperations queue={queue} onAction={handleNoopAction} />
+          <QueueOperations queue={queue} onAction={handleQueueAction} />
         )}
       </PageSection>
     </>

@@ -15,7 +15,11 @@ import org.slf4j.LoggerFactory;
 public class ActiveMQClassicPluginServlet extends HttpServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(ActiveMQClassicPluginServlet.class);
+    private static final String PATH_DELIMITER = "/";
+    private static final String DEFAULT_ENTRY_POINT_PARAM = "defaultEntryPoint";
+    private static final String DEFAULT_ENTRY_POINT_FALLBACK = "/remoteEntry.js";
     private final String pluginId;
+    private String defaultEntryPoint = DEFAULT_ENTRY_POINT_FALLBACK;
 
     public ActiveMQClassicPluginServlet() {
         super();
@@ -37,9 +41,17 @@ public class ActiveMQClassicPluginServlet extends HttpServlet {
     @Override
     public void init() {
         ServletContext ctx = getServletContext();
+        String configuredEntryPoint = getServletConfig().getInitParameter(DEFAULT_ENTRY_POINT_PARAM);
+        if (configuredEntryPoint != null && !configuredEntryPoint.isBlank()) {
+            defaultEntryPoint = configuredEntryPoint.startsWith(PATH_DELIMITER)
+                    ? configuredEntryPoint
+                    : PATH_DELIMITER + configuredEntryPoint;
+        }
+
         LOG.debug("=== Servlet INIT ===");
         LOG.debug("Context path: {}", ctx.getContextPath());
         LOG.debug("Servlet context name: {}", ctx.getServletContextName());
+        LOG.debug("Default entry point: {}", defaultEntryPoint);
         LOG.debug("Classloader: {}", this.getClass().getClassLoader());
         LOG.debug("Servlet mappings: {}", ctx.getServletRegistrations());
         LOG.debug("====================");
@@ -56,17 +68,24 @@ public class ActiveMQClassicPluginServlet extends HttpServlet {
         LOG.debug("Request {}", req);
         LOG.debug("Path {}", path);
         if (path == null || path.equals("/")) {
-            path = "/remoteEntry.js";
+            path = defaultEntryPoint;
             LOG.debug("Path is null or /, using remoteEntry path");
         }
 
-        String resourcePath  = "/" + pluginId + path;
+        String normalizedPath = path.startsWith(PATH_DELIMITER)
+                ? path
+                : PATH_DELIMITER + path;
+        String resourcePath = PATH_DELIMITER + pluginId + normalizedPath;
         LOG.debug("Resource path in JAR: {}", resourcePath);
         try (InputStream in = getClass().getResourceAsStream(resourcePath)) {
             LOG.debug("Writing to output stream....");
             if (in == null) {
                 LOG.debug("Output stream is NULL!!!");
-                resp.sendError(404, "Not found: " + resourcePath);
+                try {
+                    sendNotFound(resp, resourcePath);
+                } catch (IOException e) {
+                    LOG.error("Failed to send 404 for resource {}", resourcePath, e);
+                }
                 return;
             }
 
@@ -83,8 +102,21 @@ public class ActiveMQClassicPluginServlet extends HttpServlet {
             }
 
             LOG.debug("Writing streamed resource");
-            in.transferTo(resp.getOutputStream());
+            try {
+                writeResourceToResponse(in, resp);
+            } catch (IOException e) {
+                LOG.error("Failed to stream plugin resource {} to HTTP response", resourcePath, e);
+                return;
+            }
         }
         LOG.debug("End processing servlet request");
+    }
+
+    private void sendNotFound(HttpServletResponse resp, String resourcePath) throws IOException {
+        resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Not found: " + resourcePath);
+    }
+
+    private void writeResourceToResponse(InputStream in, HttpServletResponse resp) throws IOException {
+        in.transferTo(resp.getOutputStream());
     }
 }
