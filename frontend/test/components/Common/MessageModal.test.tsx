@@ -43,8 +43,9 @@ describe('MessageModal', () => {
 
     render(<MessageModal isOpen={true} message={message} onClose={noop} />)
 
-    // PatternFly Modal usa un portal → il contenuto è in document.body
-    const codeBlock = document.body.querySelector('.pf-v5-c-code-block')
+    // PatternFly Modal usa un portal -> il contenuto e' in document.body.
+    // Avoid hardcoding PF major class names (v5/v6) in selectors.
+    const codeBlock = document.body.querySelector('[class*="c-code-block"]')
 
     expect(codeBlock).not.toBeNull()
     expect(codeBlock).toHaveStyle('overflow-y: auto')

@@ -188,11 +188,14 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_URL: ${{ secrets.SONAR_URL }}
         run: |
+          SONAR_JAVA_LIBS="${HOME}/.m2/repository/**/*.jar"
+
           sonar-scanner \
             -Dsonar.projectKey=activemq-classic-hawtio \
             -Dsonar.projectName="ActiveMQ Classic Hawtio Plugin" \
             -Dsonar.sources=src/main/java,frontend/src \
             -Dsonar.java.binaries=target/classes \
+            -Dsonar.java.libraries="$SONAR_JAVA_LIBS" \
             -Dsonar.scanner.javaExePath="$JAVA_HOME/bin/java" \
             -Dsonar.branch.name=${{ github.event.workflow_run.head_branch }} \
             -Dsonar.host.url=$SONAR_URL \

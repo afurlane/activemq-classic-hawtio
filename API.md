@@ -142,6 +142,17 @@ getQueue(mbean)
 ```
 
 Returns a single queue.
+The returned queue model now includes message groups metadata when broker exposes it:
+
+```ts
+queue.messageGroups?: {
+	supported: boolean
+	type: string | null
+	groups: Array<{ id: string; consumerId: string | null; state: 'assigned' | 'unassigned' }>
+	totals: { total: number; assigned: number; unassigned: number }
+} | null
+```
+
 ```ts
 listQueuesWithRawAttributes(brokerName)
 ```
