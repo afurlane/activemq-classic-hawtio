@@ -16,3 +16,20 @@ jobs:
         uses: wagoid/commitlint-github-action@v6
         with:
           configFile: commitlint.config.mjs
+
+      - name: Block accidental breaking changes
+        if: ${{ !contains(join(github.event.pull_request.labels.*.name, ','), 'allow-breaking-change') }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          git fetch --no-tags --depth=200 origin "$BASE_SHA" "$HEAD_SHA"
+          RANGE="$BASE_SHA..$HEAD_SHA"
+
+          if git log --format='%s%n%b%n---' "$RANGE" | grep -Eiq '(^[a-z]+(\(.+\))?!:|^BREAKING CHANGE:)'; then
+            echo "Detected breaking-change markers in PR commits."
+            echo "If intentional, add PR label: allow-breaking-change"
+            exit 1
+          fi
