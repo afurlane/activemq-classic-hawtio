@@ -14,7 +14,10 @@ jobs:
   release:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'master' }}
-    
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -22,32 +25,8 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Detect releasable commits
-        id: releasable
-        run: |
-          git fetch --tags --force
-          LAST_TAG=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)
-
-          if [[ -n "$LAST_TAG" ]]; then
-            RANGE="$LAST_TAG..HEAD"
-          else
-            RANGE="HEAD"
-          fi
-
-          echo "Using commit range: $RANGE"
-          git log --format=%s "$RANGE" | cat
-
-          if git log --format=%s "$RANGE" | grep -Eq '^(feat|fix|perf|revert|deps)(\(.+\))?(!)?:'; then
-            echo "has_releasable=true" >> "$GITHUB_OUTPUT"
-            echo "Releasable commits found."
-          else
-            echo "has_releasable=false" >> "$GITHUB_OUTPUT"
-            echo "No releasable commits found since latest tag; skipping release-please."
-          fi
-
       - name: Release Please
         id: release
-        if: ${{ steps.releasable.outputs.has_releasable == 'true' }}
         uses: googleapis/release-please-action@v5
         with:
           release-type: simple
@@ -117,7 +96,7 @@ jobs:
 
   publish-green-checks:
     needs: release
-    if: ${{ needs.release.outputs.release_created }}
+    if: ${{ needs.release.outputs.release_created == 'true' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -153,7 +132,7 @@ jobs:
     name: SonarQube Quality Scan
     runs-on: ubuntu-latest
     needs: release
-    if: ${{ needs.release.outputs.release_created }}
+    if: ${{ needs.release.outputs.release_created == 'true' }}
     continue-on-error: true
 
     steps:
