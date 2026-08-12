@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react'
 import {
   PageSection,
+  PageSectionVariants,
   Title,
   Button,
   Grid,
@@ -26,7 +27,6 @@ import { QueueAlerts } from './QueueAlerts'
 import { QueueStorage } from './QueueStorage'
 import { QueueDLQ } from './QueueDLQ'
 import { QueueConsumers } from './QueueConsumers'
-import { QueueMessageGroups } from './QueueMessageGroups'
 
 import { useQueueMetrics } from '../../hooks/useQueueMetrics'
 import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
@@ -61,10 +61,9 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
     await refreshQueue()
     poll()
   }, [refreshQueue, poll])
-
   if (!brokerName) {
     return (
-      <Card isCompact>
+      <Card isFlat isCompact>
         <CardBody>
           <Alert variant="danger" title="No broker selected" isInline />
         </CardBody>
@@ -74,7 +73,7 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
 
   if (queueLoading || metricsLoading || !queue || !latest) {
     return (
-      <PageSection hasBodyWrapper={false}>
+      <PageSection>
         <Title headingLevel="h3">Loading queue {queueName}…</Title>
       </PageSection>
     )
@@ -83,7 +82,7 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
   return (
     <>
       {/* HEADER */}
-      <PageSection hasBodyWrapper={false} >
+      <PageSection variant={PageSectionVariants.light}>
         <Grid hasGutter>
           <GridItem span={8}>
             <Title headingLevel="h2">{queue.name}</Title>
@@ -100,8 +99,8 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
       </PageSection>
 
       {/* SUMMARY */}
-      <PageSection hasBodyWrapper={false}>
-        <Card >
+      <PageSection>
+        <Card isFlat>
           <CardBody>
             <Grid hasGutter>
               <GridItem span={2}><b>Size:</b> {queue.size}</GridItem>
@@ -123,7 +122,7 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
       </PageSection>
 
       {/* TABS */}
-      <PageSection hasBodyWrapper={false}>
+      <PageSection>
         <Tabs
           activeKey={activeTab}
           onSelect={handleTabSelect}
@@ -132,7 +131,6 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
           <Tab eventKey="metrics" title={<TabTitleText>Metrics</TabTitleText>} />
           <Tab eventKey="messages" title={<TabTitleText>Messages</TabTitleText>} />
           <Tab eventKey="consumers" title={<TabTitleText>Consumers</TabTitleText>} />
-          <Tab eventKey="message-groups" title={<TabTitleText>Message Groups</TabTitleText>} />
           <Tab eventKey="storage" title={<TabTitleText>Storage</TabTitleText>} />
           <Tab eventKey="dlq" title={<TabTitleText>DLQ</TabTitleText>} />
           <Tab eventKey="attributes" title={<TabTitleText>Attributes</TabTitleText>} />
@@ -142,7 +140,7 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
       </PageSection>
 
       {/* TAB CONTENT */}
-      <PageSection hasBodyWrapper={false}>
+      <PageSection>
         {activeTab === 'overview' && (
           <>
             <QueueHealth queue={latest} />
@@ -158,14 +156,10 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
           </>
         )}
 
-        {activeTab === 'messages' && <QueueBrowser queue={queue} />}
+        {activeTab === 'messages' && <QueueBrowser queue={queue} onAction={handleQueueAction} />}
 
         {activeTab === 'consumers' && (
           <QueueConsumers queue={latest} history={history} />
-        )}
-
-        {activeTab === 'message-groups' && (
-          <QueueMessageGroups queue={queue} onAction={handleQueueAction} />
         )}
 
         {activeTab === 'storage' && <QueueStorage queue={latest} />}

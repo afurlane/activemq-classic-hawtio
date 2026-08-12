@@ -7,15 +7,18 @@ import {
   Th,
   Td
 } from '@patternfly/react-table'
+import { Button, Checkbox } from '@patternfly/react-core'
 import { Message } from '../../types/domain';
 import { MessageModal } from './MessageModal';
-import { Button } from '@patternfly/react-core'; 
 import { EllipsisVIcon } from '@patternfly/react-icons';
 
 interface Props {
   messages: Message[]
+  selectedMessageIds: string[]
   sortDirection: 'asc' | 'desc'
   onSort: (column: string) => void
+  onToggleMessage: (messageId: string, isSelected: boolean) => void
+  onToggleAll: (isSelected: boolean) => void
 }
 
 const bodyCellStyle = {
@@ -43,15 +46,25 @@ function previewBody(m: Message, maxLines: number = 2, maxChars: number = 120): 
 
 export const MessageTable: React.FC<Props> = ({
   messages,
+  selectedMessageIds,
   sortDirection,
-  onSort
+  onSort,
+  onToggleMessage,
+  onToggleAll,
 }) => {
   const [selected, setSelected] = useState<Message | null>(null)
+  const allSelected = messages.length > 0 && messages.every((message) => selectedMessageIds.includes(message.id))
 
   const onSortId = useCallback(() => onSort('id'), [onSort])
   const onSortTimestamp = useCallback(() => onSort('timestamp'), [onSort])
   const onSortPriority = useCallback(() => onSort('priority'), [onSort])
   const onSortSize = useCallback(() => onSort('size'), [onSort])
+  const onToggleAllMessages = useCallback((_: unknown, isSelected: boolean) => {
+    onToggleAll(isSelected)
+  }, [onToggleAll])
+  const onToggleMessageSelection = useCallback((messageId: string, isSelected: boolean) => {
+    onToggleMessage(messageId, isSelected)
+  }, [onToggleMessage])
   const onCloseDetails = useCallback(() => setSelected(null), [])
   const onOpenDetails = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     const index = Number(event.currentTarget.dataset.index)
@@ -106,6 +119,16 @@ export const MessageTable: React.FC<Props> = ({
         <Thead>
           <Tr>
 
+            {/* Select */}
+            <Th>
+              <Checkbox
+                id="messages-select-all"
+                label=""
+                isChecked={allSelected}
+                onChange={onToggleAllMessages}
+              />
+            </Th>
+
             {/* ID */}
             <Th
               sort={idSort}
@@ -146,6 +169,15 @@ export const MessageTable: React.FC<Props> = ({
         <Tbody>
           {messages.map((m, i) => (
             <Tr key={i}>
+              <Td>
+                <Checkbox
+                  id={`messages-select-${m.id}`}
+                  label=""
+                  isChecked={selectedMessageIds.includes(m.id)}
+                  onChange={(_: unknown, isSelected: boolean) => onToggleMessageSelection(m.id, isSelected)}
+                />
+              </Td>
+
               <Td>{m.id}</Td>
 
               <Td>
@@ -165,12 +197,14 @@ export const MessageTable: React.FC<Props> = ({
               </Td>
 
               <Td>
-                <Button icon={<EllipsisVIcon />}
+                <Button
                   variant="plain"
                   aria-label="Apri dettagli"
                   data-index={i}
                   onClick={onOpenDetails}
-                 />
+                >
+                  <EllipsisVIcon />
+                </Button>
               </Td>
             </Tr>
           ))}
