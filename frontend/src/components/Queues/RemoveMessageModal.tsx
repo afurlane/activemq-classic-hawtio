@@ -1,37 +1,43 @@
-import React, { useCallback, useMemo, useState } from "react"
+import React, { useCallback, useMemo } from "react"
 import { BaseModal } from "./BaseModal"
 import { TrashIcon } from "@patternfly/react-icons"
 import { ButtonVariant } from "@patternfly/react-core"
-import { FormModal } from "./FormModal"
 
 interface RemoveMessageModalProps {
   isOpen: boolean
   onClose: () => void
-  onConfirm: (id: string) => void
+  onConfirm: (messageIds: string[]) => void
+  messageIds: string[]
 }
 
 export const RemoveMessageModal: React.FC<RemoveMessageModalProps> = ({
-  isOpen, onClose, onConfirm
+  isOpen, onClose, onConfirm, messageIds
 }) => {
-  const [id, setId] = useState('')
-  const handleConfirm = useCallback(() => onConfirm(id), [onConfirm, id])
-  const handleIdChange = useCallback((_: unknown, v: string) => setId(v), [])
-  const fields = useMemo(() => [{ name: 'id', label: 'Message ID', required: true, value: id, onChange: handleIdChange }], [id, handleIdChange])
+  const handleConfirm = useCallback(() => onConfirm(messageIds), [onConfirm, messageIds])
+  const summary = useMemo(() => {
+    if (messageIds.length === 0) {
+      return 'Select one or more messages to remove.'
+    }
+
+    if (messageIds.length === 1) {
+      return `This will remove message ${messageIds[0]} from the queue.`
+    }
+
+    return `This will remove ${messageIds.length} selected messages from the queue.`
+  }, [messageIds])
 
   return (
     <BaseModal
-      title="Remove Message"
+      title={messageIds.length === 1 ? 'Remove Message' : 'Remove Messages'}
       isOpen={isOpen}
       onClose={onClose}
       confirmLabel="Remove"
       confirmIcon={<TrashIcon />}
       confirmVariant={ButtonVariant.danger}
-      isConfirmDisabled={!id}
+      isConfirmDisabled={messageIds.length === 0}
       onConfirm={handleConfirm}
     >
-      <FormModal
-        fields={fields}
-      />
+      <p>{summary}</p>
     </BaseModal>
   )
 }

@@ -67,6 +67,9 @@ It is focused on real project structure and responsibilities, not hypothetical a
 - Do not add heavy dependencies if the existing stack can cover the feature.
 
 ## Branch And Release Rules (MUST)
+- `master` and `1.0` are different Hawtio version lines and must not be treated as interchangeable baselines.
+- `master` maps to the 2.x line (PatternFly 6 expectations); `1.0` maps to the 1.x line (PatternFly 5 compatibility).
+- Before porting changes between branches, validate branch-specific compatibility (UI framework APIs, dependency set, and build behavior).
 - Apply compatible changes to both `master` and `1.0`.
 - For `master`-only changes, document compatibility rationale explicitly.
 - For PatternFly-version-sensitive fixes, evaluate and apply per-branch as applicable.
