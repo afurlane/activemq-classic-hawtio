@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { ArrowRightIcon } from "@patternfly/react-icons"
 import { BaseModal } from "./BaseModal"
 import { FormModal } from "./FormModal"
@@ -6,30 +6,46 @@ import { FormModal } from "./FormModal"
 interface MoveMessageModalProps {
   isOpen: boolean
   onClose: () => void
-  onConfirm: (id: string, dest: string) => void
+  onConfirm: (messageIds: string[], dest: string) => void
+  messageIds: string[]
 }
 
 export const MoveMessageModal: React.FC<MoveMessageModalProps> = ({
-  isOpen, onClose, onConfirm
+  isOpen, onClose, onConfirm, messageIds
 }) => {
-  const [id, setId] = useState('')
   const [dest, setDest] = useState('')
-  const handleConfirm = useCallback(() => onConfirm(id, dest), [onConfirm, id, dest])
+  useEffect(() => {
+    if (!isOpen) {
+      setDest('')
+    }
+  }, [isOpen])
+  const handleConfirm = useCallback(() => onConfirm(messageIds, dest.trim()), [onConfirm, messageIds, dest])
   const fields = useMemo(() => [
-    { name: 'id', label: 'Message ID', required: true, value: id, onChange: (_: unknown, v: string) => setId(v) },
-    { name: 'dest', label: 'Destination', required: true, value: dest, onChange: (_: unknown, v: string) => setDest(v) }
-  ], [id, dest])
+    { name: 'dest', label: 'Destination queue', required: true, value: dest, onChange: (_: unknown, v: string) => setDest(v) }
+  ], [dest])
+  const summary = useMemo(() => {
+    if (messageIds.length === 0) {
+      return 'Select one or more messages to move.'
+    }
+
+    if (messageIds.length === 1) {
+      return `This will move message ${messageIds[0]} to another queue.`
+    }
+
+    return `This will move ${messageIds.length} selected messages to another queue.`
+  }, [messageIds])
 
   return (
     <BaseModal
-      title="Move Message"
+      title={messageIds.length === 1 ? 'Move Message' : 'Move Messages'}
       isOpen={isOpen}
       onClose={onClose}
       confirmLabel="Move"
       confirmIcon={<ArrowRightIcon />}
-      isConfirmDisabled={!id || !dest}
+      isConfirmDisabled={messageIds.length === 0 || !dest.trim()}
       onConfirm={handleConfirm}
     >
+      <p>{summary}</p>
       <FormModal
         fields={fields}
       />

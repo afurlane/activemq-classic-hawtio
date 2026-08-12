@@ -154,7 +154,7 @@ export const QueueDetailsPage: React.FC<{ queueName: string }> = ({ queueName })
           </>
         )}
 
-        {activeTab === 'messages' && <QueueBrowser queue={queue} />}
+        {activeTab === 'messages' && <QueueBrowser queue={queue} onAction={handleQueueAction} />}
 
         {activeTab === 'consumers' && (
           <QueueConsumers queue={latest} history={history} />
