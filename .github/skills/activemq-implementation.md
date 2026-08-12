@@ -67,6 +67,10 @@ It is focused on real project structure and responsibilities, not hypothetical a
 - Do not add heavy dependencies if the existing stack can cover the feature.
 
 ## Branch And Release Rules (MUST)
+- Default policy: all changes must be implemented on a `feature/*` branch and merged through PR.
+- Direct commits to root/release branches are exception-only for explicit build/release process fixes, and should still be avoided whenever possible.
+- When a change applies to both maintained lines, use two dedicated feature branches: one for `master` (2.x) and one for `1.0` (1.x).
+- Never deliver cross-line work from a single shared branch; each target line must have its own branch and PR.
 - `master` and `1.0` are different Hawtio version lines and must not be treated as interchangeable baselines.
 - `master` maps to the 2.x line (PatternFly 6 expectations); `1.0` maps to the 1.x line (PatternFly 5 compatibility).
 - Before porting changes between branches, validate branch-specific compatibility (UI framework APIs, dependency set, and build behavior).
