@@ -76,10 +76,6 @@ The goal is consistency, correctness, and alignment with the plugin architecture
 ## Release And Branch Rules
 - Every issue in this codebase, including CI-related issues, must be worked on a dedicated branch.
 - Dedicated work branches must use the `feature/` prefix.
-- Default policy: every change must be developed on a `feature/*` branch and integrated via PR.
-- Direct commits to root/release branches are allowed only for explicit build/release process fixes that require immediate intervention, and should be avoided whenever possible.
-- If a change must be delivered to both maintained lines, prepare it on two dedicated feature branches: one targeting `master` (2.x) and one targeting `1.0` (1.x).
-- Do not reuse a single feature branch across `master` and `1.0`; each target line must have its own branch and PR.
 - Branch naming convention for issue work:
 	- `master` target: `feature/<issue-number>-<short-description>` (example: `feature/69-message-groups`)
 	- `1.0` target: `feature/<issue-number>-<short-description>-1.0` (example: `feature/69-message-groups-1.0`)
