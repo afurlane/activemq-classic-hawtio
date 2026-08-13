@@ -2,7 +2,7 @@ name: Release 1.0
 
 on:
   workflow_run:
-    workflows: ["Green Checks (1.0)"]
+    workflows: ["Green Checks 1.0"]
     types:
       - completed
 
