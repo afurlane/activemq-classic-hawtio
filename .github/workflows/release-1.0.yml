@@ -2,7 +2,7 @@ name: Release (1.0)
 
 on:
   workflow_run:
-    workflows: ["Green Checks"]
+    workflows: ["Green Checks (1.0)"]
     types:
       - completed
 
@@ -14,16 +14,21 @@ jobs:
   release:
     runs-on: ubuntu-latest
 
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.ref == 'refs/heads/1.0' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == '1.0' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
 
       - name: Release Please
         id: release
         uses: googleapis/release-please-action@v5
         with:
+          release-type: simple
+          target-branch: 1.0
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
 
