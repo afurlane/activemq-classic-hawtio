@@ -1,0 +1,74 @@
+name: Code Scanning
+
+"on":
+  push:
+    branches: [ master, "1.0" ]
+  pull_request:
+    branches: [ master, "1.0" ]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  build-gate:
+    name: Build Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Java
+        uses: actions/setup-java@v5.6.0
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+
+      - name: Build plugin (Maven)
+        run: ./mvnw -B clean install
+
+  analyze:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    needs: build-gate
+    if: ${{ needs.build-gate.result == 'success' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ "java-kotlin", "javascript-typescript" ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Setup Java
+        if: ${{ matrix.language == 'java-kotlin' }}
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Node
+        if: ${{ matrix.language == 'javascript-typescript' }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v4
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
