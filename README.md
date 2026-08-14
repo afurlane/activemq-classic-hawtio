@@ -1,16 +1,25 @@
 # ActiveMQ Classic 6 – Hawtio Plugin
 
-A modern, fast, and modular management console for **ActiveMQ Classic 6**, delivered as a fully self‑contained **Hawtio 4 federated plugin** running on **Jetty 11 / Jakarta EE**. 
+A modern, fast, and modular management console for **ActiveMQ Classic 6**, delivered as a fully self-contained Hawtio federated plugin running on **Jetty 11 / Jakarta EE**.
 
 ![Build](https://github.com/afurlane/activemq-classic-hawtio/actions/workflows/build.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![Hawtio](https://img.shields.io/badge/Hawtio-4.x-orange)
+![Hawtio](https://img.shields.io/badge/Hawtio-4.x%20%7C%205.x-orange)
 ![Jetty](https://img.shields.io/badge/Jetty-11%20%2F%20Jakarta%20EE-green)
 ![Dependabot](https://img.shields.io/badge/dependabot-enabled-brightgreen)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://www.conventionalcommits.org/en/v1.0.0/)
 [![Release Automation](https://img.shields.io/badge/Release%20Automation-Enabled-brightgreen)](RELEASE_PROCESS.md)
 ![React](https://img.shields.io/badge/React-18.x-blue)
 ![Latest Release](https://img.shields.io/github/v/release/afurlane/activemq-classic-hawtio?label=latest-release&color=blue)
+
+## Branches and Version Lines
+
+This repository maintains two active release lines:
+
+- `master` -> **2.x line** -> **Hawtio 5**
+- `1.0` -> **1.x line** -> **Hawtio 4**
+
+When opening pull requests, choose the base branch that matches the target line above.
 
 ## 🌿 Green Metrics
 ![Creedengo](https://afurlane.github.io/activemq-classic-hawtio/badges/creedengo.svg)
