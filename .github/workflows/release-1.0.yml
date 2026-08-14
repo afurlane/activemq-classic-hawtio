@@ -30,7 +30,7 @@ jobs:
         uses: googleapis/release-please-action@v5
         with:
           release-type: simple
-          target-branch: 1.0
+          target-branch: "1.0"
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
 
