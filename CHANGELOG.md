@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 This project adheres to the Conventional Commits specification and uses
 automated release generation via GitHub Actions.
 
+## [1.3.0](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.2.0...v1.3.0) (2026-08-14)
+
+
+### Features
+
+* add GitHub workflows for build, green checks, and release processes ([7720666](https://github.com/afurlane/activemq-classic-hawtio/commit/77206661500be1b7007ab5f3947724db3d1b35a3))
+* **queues:** separate queue and message operations ([da5252e](https://github.com/afurlane/activemq-classic-hawtio/commit/da5252e16c974903cf2e0514425b18b703055200))
+
+
+### Bug Fixes
+
+* [#30](https://github.com/afurlane/activemq-classic-hawtio/issues/30) - Unable to view message body in QueueBrowser due to large message size ([bce70ee](https://github.com/afurlane/activemq-classic-hawtio/commit/bce70eeafc7568548b126bb463c14d7f1c820124))
+* **1.0:** regenerate lockfile with yarn 4.12 metadata ([#107](https://github.com/afurlane/activemq-classic-hawtio/issues/107)) ([57e42ca](https://github.com/afurlane/activemq-classic-hawtio/commit/57e42ca4422bc05cc18767d3f5f630e5a359ef84))
+
 ## [1.2.0](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.1.0...v1.2.0) (2026-05-22)
 
 
