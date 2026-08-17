@@ -1,17 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { BaseModal } from "./BaseModal"
 import { CopyIcon } from "@patternfly/react-icons"
-import { FormModal } from "./FormModal"
+import { MessageDestinationField } from './MessageDestinationField'
 
 interface CopyMessageModalProps {
   isOpen: boolean
   onClose: () => void
   onConfirm: (messageIds: string[], dest: string) => void
   messageIds: string[]
+  availableQueues: string[]
 }
 
 export const CopyMessageModal: React.FC<CopyMessageModalProps> = ({
-  isOpen, onClose, onConfirm, messageIds
+  isOpen, onClose, onConfirm, messageIds, availableQueues
 }) => {
   const [dest, setDest] = useState('')
   useEffect(() => {
@@ -20,9 +21,6 @@ export const CopyMessageModal: React.FC<CopyMessageModalProps> = ({
     }
   }, [isOpen])
   const handleConfirm = useCallback(() => onConfirm(messageIds, dest.trim()), [onConfirm, messageIds, dest])
-  const fields = useMemo(() => [
-    { name: 'dest', label: 'Destination queue', required: true, value: dest, onChange: (_: unknown, value: string) => setDest(value) }
-  ], [dest])
   const summary = useMemo(() => {
     if (messageIds.length === 0) {
       return 'Select one or more messages to copy.'
@@ -46,7 +44,11 @@ export const CopyMessageModal: React.FC<CopyMessageModalProps> = ({
       onConfirm={handleConfirm}
     >
       <p>{summary}</p>
-      <FormModal fields={fields} />
+      <MessageDestinationField
+        destination={dest}
+        availableQueues={availableQueues}
+        onDestinationChange={setDest}
+      />
     </BaseModal>
   )
 }
