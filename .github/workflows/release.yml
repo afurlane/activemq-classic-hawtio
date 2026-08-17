@@ -9,6 +9,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   release:
@@ -80,6 +81,33 @@ jobs:
           gh release upload "${{ steps.release.outputs.tag_name }}" \
             "$PKG" \
             --clobber
+
+      - name: Close related issues
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag_name }}
+          RELEASE_BRANCH: master
+          RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ steps.release.outputs.tag_name }}
+        run: |
+          set -euo pipefail
+
+          RELEASE_NOTES="$(gh release view "$RELEASE_TAG" --json body --jq '.body // ""')"
+          ISSUE_NUMBERS="$(printf '%s\n' "$RELEASE_NOTES" | perl -ne 'while (/(?i)\b(?:close[sd]?|fix(?:es|ed)?|resolve[sd]?)\b[^0-9#]*#?\[?(\d+)\]?/g) { print "$1\n" }' | sort -u)"
+
+          if [ -z "$ISSUE_NUMBERS" ]; then
+            echo "No related issues found in release notes."
+            exit 0
+          fi
+
+          for issue_number in $ISSUE_NUMBERS; do
+            issue_state="$(gh issue view "$issue_number" --json state --jq '.state')"
+            if [ "$issue_state" = "OPEN" ]; then
+              gh issue close "$issue_number" --comment "Closed in $RELEASE_TAG ($RELEASE_BRANCH): $RELEASE_URL"
+            else
+              gh issue comment "$issue_number" --body "Mentioned in $RELEASE_TAG ($RELEASE_BRANCH): $RELEASE_URL"
+            fi
+          done
 
       - name: Update README badge
         if: ${{ steps.release.outputs.release_created }}
