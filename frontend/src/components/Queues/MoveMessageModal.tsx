@@ -1,17 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { ArrowRightIcon } from "@patternfly/react-icons"
 import { BaseModal } from "./BaseModal"
-import { FormModal } from "./FormModal"
+import { MessageDestinationField } from './MessageDestinationField'
 
 interface MoveMessageModalProps {
   isOpen: boolean
   onClose: () => void
   onConfirm: (messageIds: string[], dest: string) => void
   messageIds: string[]
+  availableQueues: string[]
 }
 
 export const MoveMessageModal: React.FC<MoveMessageModalProps> = ({
-  isOpen, onClose, onConfirm, messageIds
+  isOpen, onClose, onConfirm, messageIds, availableQueues
 }) => {
   const [dest, setDest] = useState('')
   useEffect(() => {
@@ -20,9 +21,6 @@ export const MoveMessageModal: React.FC<MoveMessageModalProps> = ({
     }
   }, [isOpen])
   const handleConfirm = useCallback(() => onConfirm(messageIds, dest.trim()), [onConfirm, messageIds, dest])
-  const fields = useMemo(() => [
-    { name: 'dest', label: 'Destination queue', required: true, value: dest, onChange: (_: unknown, v: string) => setDest(v) }
-  ], [dest])
   const summary = useMemo(() => {
     if (messageIds.length === 0) {
       return 'Select one or more messages to move.'
@@ -46,8 +44,10 @@ export const MoveMessageModal: React.FC<MoveMessageModalProps> = ({
       onConfirm={handleConfirm}
     >
       <p>{summary}</p>
-      <FormModal
-        fields={fields}
+      <MessageDestinationField
+        destination={dest}
+        availableQueues={availableQueues}
+        onDestinationChange={setDest}
       />
     </BaseModal>
   )
