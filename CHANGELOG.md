@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 This project adheres to the Conventional Commits specification and uses
 automated release generation via GitHub Actions.
 
+## [1.4.0](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.3.0...v1.4.0) (2026-08-18)
+
+
+### Features
+
+* **queue-browser:** add destination queue combobox ([49cbab3](https://github.com/afurlane/activemq-classic-hawtio/commit/49cbab3a1eeca5e7218fdd23ef15ef6635d237ae))
+
 ## [1.3.0](https://github.com/afurlane/activemq-classic-hawtio/compare/v1.2.0...v1.3.0) (2026-08-14)
 
 
