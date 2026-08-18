@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 This project adheres to the Conventional Commits specification and uses
 automated release generation via GitHub Actions.
 
+## [2.1.1](https://github.com/afurlane/activemq-classic-hawtio/compare/v2.1.0...v2.1.1) (2026-08-18)
+
+
+### Bug Fixes
+
+* **ci:** remove no-op copy step in publish-green-checks ([1b0cef2](https://github.com/afurlane/activemq-classic-hawtio/commit/1b0cef2349efc091b9d422a4ac32b7ac39f008a6))
+
 ## [2.1.0](https://github.com/afurlane/activemq-classic-hawtio/compare/v2.0.1...v2.1.0) (2026-08-18)
 
 
