@@ -111,6 +111,7 @@ The goal is consistency, correctness, and alignment with the plugin architecture
 - When a PR is ready for merge, squashing commits is mandatory: always squash work commits to keep history clean and readable.
 - When opening a PR, always use the repository template in `.github/pull_request_template.md`.
 - Do not open PRs with an empty or ad-hoc description when the template is available; fill in all relevant sections.
+- If a PR/commit resolves a GitHub issue, the final (squashed) commit message must include a closing keyword and the issue number, e.g. `Closes #86`, `Fixes #86`, `Resolves #86`. The release workflow closes issues only by scanning release notes for these keywords, so omitting them leaves the issue open even after release.
 
 ## Constraints
 - Do not modify the ActiveMQ Classic JMX model.

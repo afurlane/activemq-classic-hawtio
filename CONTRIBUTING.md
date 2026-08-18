@@ -90,6 +90,26 @@ Example:
 - One commit per logical change  
 - Avoid mixing unrelated changes in a single commit  
 
+### Referencing Issues
+
+- If a commit (or the PR it belongs to) resolves a GitHub issue, the commit
+  message body **must** include a closing keyword followed by the issue
+  number, e.g. `Closes #86`, `Fixes #86`, or `Resolves #86`.  
+- This is required for the release automation: the release workflow closes
+  issues by scanning the generated release notes for these keywords. Without
+  them, the issue is released but never automatically closed.  
+- When squash-merging a PR, make sure the closing keyword survives into the
+  final squashed commit message (GitHub does not carry it over automatically
+  unless it is present in the PR description/title or re-added manually).  
+
+Example:
+
+```
+feat(queue-browser): add destination queue combobox
+
+Closes #86
+```
+
 ---
 
 Thank you for contributing!

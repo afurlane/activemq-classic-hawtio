@@ -19,4 +19,7 @@ Explain what this PR changes and why.
 - [ ] I updated documentation where needed
 
 ## Related Issues
-Link any related issues here.
+Link any related issues here. If this PR resolves an issue, use a closing
+keyword and the issue number (e.g. `Closes #86`) so it carries into the
+squashed commit message — the release workflow relies on it to auto-close
+issues.
