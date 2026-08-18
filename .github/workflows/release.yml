@@ -141,13 +141,6 @@ jobs:
             --name green-checks \
             --dir .
 
-      - name: Copy reports and badges
-        run: |
-          mkdir -p reports
-          mkdir -p badges
-          cp -f reports/*.json reports/
-          cp -f badges/*.svg badges/
-
       - name: Commit and push updates
         run: |
           git config user.name "github-actions[bot]"
