@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   Button,
   Card,
@@ -17,6 +17,8 @@ import {
 
 import { Queue, Message } from '../../types/domain'
 import { useQueueMessages } from '../../hooks/useQueueMessages'
+import { useQueues } from '../../hooks/useQueues'
+import { useSelectedBrokerName } from '../../hooks/useSelectedBroker'
 import { MessageTable } from '../Common/MessageTable'
 import { RefreshToolbar } from '../Common/RefreshControls'
 import { MoveMessageModal } from './MoveMessageModal'
@@ -40,6 +42,8 @@ const perPageOptions = [
 ]
 
 export const QueueBrowser: React.FC<Props> = ({ queue, onAction }) => {
+  const brokerName = useSelectedBrokerName()
+  const { data: brokerQueues = [] } = useQueues(brokerName)
   const [page, setPage] = useState(0)
   const [pageSize, setPageSize] = useState(20)
   const [sortBy, setSortBy] = useState<string | null>(null)
@@ -56,6 +60,12 @@ export const QueueBrowser: React.FC<Props> = ({ queue, onAction }) => {
 
   const raw = data ?? []
   const total = raw.length
+  const availableDestinationQueues = useMemo(() => (
+    brokerQueues
+      .map((brokerQueue) => brokerQueue.name)
+      .filter((queueName) => queueName !== queue.name)
+      .sort((left, right) => left.localeCompare(right))
+  ), [brokerQueues, queue.name])
 
   const onSetPage = useCallback((_evt: unknown, newPage: number) => {
     setPage(newPage - 1)
@@ -275,6 +285,7 @@ export const QueueBrowser: React.FC<Props> = ({ queue, onAction }) => {
           onClose={closeMoveModal}
           onConfirm={handleMoveConfirm}
           messageIds={selectedMessageIds}
+          availableQueues={availableDestinationQueues}
         />
 
         <CopyMessageModal
@@ -282,6 +293,7 @@ export const QueueBrowser: React.FC<Props> = ({ queue, onAction }) => {
           onClose={closeCopyModal}
           onConfirm={handleCopyConfirm}
           messageIds={selectedMessageIds}
+          availableQueues={availableDestinationQueues}
         />
 
         <RemoveMessageModal
